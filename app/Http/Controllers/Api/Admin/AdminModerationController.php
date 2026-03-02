@@ -116,7 +116,20 @@ class AdminModerationController extends Controller
         $thread->delete();
 
         $forum->decrement('thread_count');
-        $forum->decrement('post_count', $postCount);
+        $forum->decrement('post_count', max(0, $postCount));
+
+        // Update forum last post to the actual latest remaining post
+        $latestPost = $forum->threads()
+            ->with(['posts' => fn($q) => $q->orderByDesc('created_at')->limit(1), 'posts.user:id,username,avatar_color'])
+            ->orderByDesc('last_reply_at')
+            ->first()
+            ?->posts
+            ?->first();
+
+        $forum->update([
+            'last_post_at'      => $latestPost?->created_at,
+            'last_post_user_id' => $latestPost?->user_id,
+        ]);
 
         return response()->json([
             'message' => 'Thread deleted.',
