@@ -86,7 +86,7 @@ class ConversationController extends Controller
         ], 201);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, int|string $id): JsonResponse
     {
         $user = $request->user();
 
