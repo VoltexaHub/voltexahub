@@ -119,6 +119,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/forums', [AdminForumController::class, 'createForum']);
     Route::put('/forums/{id}', [AdminForumController::class, 'updateForum']);
     Route::delete('/forums/{id}', [AdminForumController::class, 'deleteForum']);
+    Route::post('/games/reorder', [AdminForumController::class, 'reorderGames']);
+    Route::post('/categories/reorder', [AdminForumController::class, 'reorderCategories']);
+    Route::post('/forums/reorder', [AdminForumController::class, 'reorderForums']);
 
     // Moderation
     Route::get('/moderation/reports', [AdminModerationController::class, 'reports']);

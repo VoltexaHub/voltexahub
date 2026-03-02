@@ -189,4 +189,49 @@ class AdminForumController extends Controller
             'message' => 'Forum deleted successfully.',
         ]);
     }
+
+    public function reorderGames(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.id' => ['required', 'exists:games,id'],
+            'items.*.display_order' => ['required', 'integer'],
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            Game::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+        }
+
+        return response()->json(['message' => 'Reordered successfully']);
+    }
+
+    public function reorderCategories(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.id' => ['required', 'exists:categories,id'],
+            'items.*.display_order' => ['required', 'integer'],
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            Category::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+        }
+
+        return response()->json(['message' => 'Reordered successfully']);
+    }
+
+    public function reorderForums(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.id' => ['required', 'exists:forums,id'],
+            'items.*.display_order' => ['required', 'integer'],
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            Forum::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+        }
+
+        return response()->json(['message' => 'Reordered successfully']);
+    }
 }
