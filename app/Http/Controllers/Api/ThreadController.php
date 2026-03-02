@@ -95,11 +95,22 @@ class ThreadController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'forum_id' => ['required', 'exists:forums,id'],
+            'forum_id' => ['nullable', 'integer', 'exists:forums,id'],
+            'forum_slug' => ['nullable', 'string', 'exists:forums,slug'],
             'subforum_id' => ['nullable', 'exists:subforums,id'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'body' => ['required', 'string', 'min:10'],
         ]);
+
+        // Resolve forum_id from slug if not provided directly
+        if (empty($validated['forum_id']) && !empty($validated['forum_slug'])) {
+            $forum = \App\Models\Forum::where('slug', $validated['forum_slug'])->firstOrFail();
+            $validated['forum_id'] = $forum->id;
+        }
+
+        if (empty($validated['forum_id'])) {
+            return response()->json(['message' => 'Forum is required.'], 422);
+        }
 
         $user = $request->user();
 
