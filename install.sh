@@ -69,14 +69,14 @@ case "$OS_ID" in
     ;;
   debian)
     case "$OS_VERSION" in
-      11|12) SUPPORTED=true ;;
+      11|12|13) SUPPORTED=true ;;
     esac
     ;;
 esac
 
 if [ "$SUPPORTED" = false ]; then
   warn "Detected OS: $OS_NAME"
-  warn "Supported: Ubuntu 20.04/22.04/24.04, Debian 11/12"
+  warn "Supported: Ubuntu 20.04/22.04/24.04, Debian 11/12/13"
   if [ "$FORCE" = false ]; then
     error "Unsupported OS. Use --force to continue anyway."
   else
