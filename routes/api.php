@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AdminModerationController;
 use App\Http\Controllers\Api\Admin\AdminStoreController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\ForumConfigController;
@@ -67,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/settings/privacy', [UserController::class, 'updatePrivacySettings']);
     Route::get('/user/sessions', [UserController::class, 'sessions']);
     Route::delete('/user/sessions/{id}', [UserController::class, 'destroySession']);
+    Route::post('/user/avatar', [AvatarController::class, 'store']);
 
     // Forum actions
     Route::post('/threads', [ThreadController::class, 'store']);

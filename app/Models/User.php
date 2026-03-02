@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Events\NewNotification;
 use App\Notifications\AchievementUnlockedNotification;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -27,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'bio',
         'signature',
         'avatar_color',
+        'avatar_path',
         'credits',
         'post_count',
         'is_online',
@@ -45,6 +48,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    protected $appends = ['avatar_url'];
+
     protected function casts(): array
     {
         return [
@@ -57,6 +62,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'credits' => 'integer',
             'post_count' => 'integer',
         ];
+    }
+
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->avatar_path
+            ? Storage::disk('public')->url($this->avatar_path)
+            : null
+        );
     }
 
     public function threads(): HasMany
