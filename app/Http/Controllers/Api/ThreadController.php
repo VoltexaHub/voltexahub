@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Forum;
+use App\Models\ForumConfig;
 use App\Models\Thread;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -144,7 +145,7 @@ class ThreadController extends Controller
         }
 
         // Award credits
-        $user->addCredits(10, 'Created a thread', Thread::class, $thread->id);
+        $user->addCredits((int) ForumConfig::get('credits_per_thread', 10), 'Created a thread', Thread::class, $thread->id);
         $user->increment('post_count');
         $user->checkAchievements();
 

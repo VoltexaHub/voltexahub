@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ConversationController;
+use App\Http\Controllers\Api\CreditsController;
 use App\Http\Controllers\Api\ForumConfigController;
 use App\Http\Controllers\Api\ForumController;
 use App\Http\Controllers\Api\GameController;
@@ -38,6 +39,7 @@ Route::get('/achievements', [AchievementController::class, 'index']);
 Route::get('/users/online', [UserController::class, 'online']);
 Route::get('/users/{username}/profile', [UserController::class, 'profile']);
 Route::get('/search', [SearchController::class, 'search']);
+Route::get('/credits/earning-info', [CreditsController::class, 'earningInfo']);
 
 // Auth routes
 Route::post('/auth/register', [AuthController::class, 'register']);

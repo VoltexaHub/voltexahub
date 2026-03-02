@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\ForumConfig;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -128,6 +129,16 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function addCredits(int $amount, string $reason, ?string $referenceType = null, ?int $referenceId = null): void
     {
+        // Apply role-based credit multiplier
+        $multipliers = json_decode(ForumConfig::get('role_credit_multipliers', '{}'), true) ?: [];
+        $highestMultiplier = 1.0;
+        foreach ($this->roles as $role) {
+            if (isset($multipliers[$role->name]) && (float) $multipliers[$role->name] > $highestMultiplier) {
+                $highestMultiplier = (float) $multipliers[$role->name];
+            }
+        }
+        $amount = (int) round($amount * $highestMultiplier);
+
         $this->increment('credits', $amount);
 
         CreditsLog::create([

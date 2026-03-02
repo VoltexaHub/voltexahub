@@ -19,6 +19,13 @@ class ForumConfigSeeder extends Seeder
             'rcon_host_rust' => '',
             'rcon_port_rust' => '28016',
             'rcon_password_rust' => '',
+            'credits_per_thread' => '10',
+            'credits_per_reply' => '5',
+            'credits_for_solved' => '25',
+            'credits_per_like' => '1',
+            'credits_per_like_given' => '0',
+            'credits_daily_post_limit' => '50',
+            'role_credit_multipliers' => '{"admin":1.0,"moderator":1.0,"member":1.0}',
         ];
 
         foreach ($configs as $key => $value) {

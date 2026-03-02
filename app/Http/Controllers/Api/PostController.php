@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
+use App\Models\ForumConfig;
 use App\Models\Post;
 use App\Models\Reaction;
 use App\Models\Thread;
@@ -83,7 +84,7 @@ class PostController extends Controller
         }
 
         // Award credits and update user
-        $user->addCredits(5, 'Posted a reply', Post::class, $post->id);
+        $user->addCredits((int) ForumConfig::get('credits_per_reply', 5), 'Posted a reply', Post::class, $post->id);
         $user->increment('post_count');
         $user->checkAchievements();
 
@@ -193,6 +194,12 @@ class PostController extends Controller
         ]);
 
         $post->increment('reaction_count');
+
+        // Award credits to post author for receiving a reaction
+        $creditsPerLike = (int) ForumConfig::get('credits_per_like', 1);
+        if ($creditsPerLike > 0 && $post->user_id !== $user->id) {
+            $post->user->addCredits($creditsPerLike, 'Received a like', Post::class, $post->id);
+        }
 
         return response()->json([
             'message' => 'Reaction added.',
