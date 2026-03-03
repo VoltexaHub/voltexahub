@@ -23,7 +23,7 @@ class PostController extends Controller
         $posts = $thread->posts()
             ->with([
                 'user' => fn ($q) => $q->select(
-                    'id', 'username', 'avatar_color', 'user_title',
+                    'id', 'username', 'avatar_color', 'avatar_path', 'user_title',
                     'post_count', 'credits', 'created_at'
                 ),
                 'user.roles',
@@ -120,7 +120,7 @@ class PostController extends Controller
         return response()->json([
             'data' => $post->load([
                 'user' => fn ($q) => $q->select(
-                    'id', 'username', 'avatar_color', 'user_title',
+                    'id', 'username', 'avatar_color', 'avatar_path', 'user_title',
                     'post_count', 'credits', 'created_at'
                 ),
                 'user.roles',
@@ -153,7 +153,7 @@ class PostController extends Controller
         return response()->json([
             'data' => $post->fresh()->load([
                 'user' => fn ($q) => $q->select(
-                    'id', 'username', 'avatar_color', 'user_title',
+                    'id', 'username', 'avatar_color', 'avatar_path', 'user_title',
                     'post_count', 'credits', 'created_at'
                 ),
                 'user.roles',
