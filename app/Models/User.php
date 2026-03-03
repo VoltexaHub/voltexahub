@@ -80,18 +80,18 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function groupColor(): Attribute
     {
         return Attribute::get(function () {
-            $role = $this->relationLoaded('roles') ? $this->roles->first()?->name : null;
-            if (!$role) return '#6b7280';
-            return ForumConfig::get("group_color_{$role}", '#6b7280');
+            if (!$this->relationLoaded('roles')) return '#6b7280';
+            $role = $this->roles->first(fn ($r) => $r->name !== 'banned') ?? $this->roles->first();
+            return $role?->color ?? '#6b7280';
         });
     }
 
     protected function groupLabel(): Attribute
     {
         return Attribute::get(function () {
-            $role = $this->relationLoaded('roles') ? $this->roles->first()?->name : null;
-            if (!$role) return null;
-            return ForumConfig::get("group_label_{$role}", ucfirst($role));
+            if (!$this->relationLoaded('roles')) return null;
+            $role = $this->roles->first(fn ($r) => $r->name !== 'banned') ?? $this->roles->first();
+            return $role?->label ?? ($role ? ucfirst($role->name) : null);
         });
     }
 
