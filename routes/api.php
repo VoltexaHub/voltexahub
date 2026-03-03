@@ -173,4 +173,5 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Config
     Route::get('/config', [AdminConfigController::class, 'index']);
     Route::put('/config', [AdminConfigController::class, 'update']);
+    Route::post('/config/test-email', [AdminConfigController::class, 'testEmail']);
 });
