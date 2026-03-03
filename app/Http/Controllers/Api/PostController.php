@@ -19,9 +19,9 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    public function index(int $threadId): JsonResponse
+    public function index(string $threadId): JsonResponse
     {
-        $thread = Thread::findOrFail($threadId);
+        $thread = Thread::where(is_numeric($threadId) ? 'id' : 'slug', $threadId)->firstOrFail();
 
         $posts = $thread->posts()
             ->with([
@@ -64,9 +64,9 @@ class PostController extends Controller
         ]);
     }
 
-    public function store(Request $request, int $threadId): JsonResponse
+    public function store(Request $request, string $threadId): JsonResponse
     {
-        $thread = Thread::findOrFail($threadId);
+        $thread = Thread::where(is_numeric($threadId) ? 'id' : 'slug', $threadId)->firstOrFail();
 
         if ($thread->is_locked) {
             return response()->json([
