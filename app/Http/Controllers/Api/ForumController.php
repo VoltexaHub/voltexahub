@@ -39,7 +39,10 @@ class ForumController extends Controller
                         'last_post_user' => $forum->lastPostUser ? [
                             'username' => $forum->lastPostUser->username,
                             'avatar_url' => $forum->lastPostUser->avatar_url,
+                            'avatar_color' => $forum->lastPostUser->avatar_color,
+                            'group_color' => $forum->lastPostUser->primary_role['color'] ?? null,
                         ] : null,
+                        'last_thread' => $forum->threads()->latest('created_at')->select('id','title','slug')->first(),
                         'subforums' => $forum->subforums->map(fn ($sf) => [
                             'id' => $sf->id,
                             'name' => $sf->name,
