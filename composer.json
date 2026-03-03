@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
+        "league/commonmark": "^2.8",
         "pusher/pusher-php-server": "^7.2",
         "s9e/text-formatter": "^2.19",
         "spatie/laravel-medialibrary": "^11.21",
