@@ -55,12 +55,14 @@ class PluginManager
     }
 
     /**
-     * Boot all enabled plugins — called from AppServiceProvider.
+     * Boot all installed plugins — called from AppServiceProvider.
+     * register() runs for ALL installed plugins (so admin routes are always available).
+     * boot() only runs for ENABLED plugins (public-facing features).
      */
     public function bootEnabled(): void
     {
         try {
-            $plugins = InstalledPlugin::where('enabled', true)->get();
+            $plugins = InstalledPlugin::all();
         } catch (\Throwable) {
             return; // Table may not exist yet
         }
@@ -69,8 +71,10 @@ class PluginManager
             try {
                 $instance = $this->loadPlugin($record->slug);
                 if ($instance) {
-                    $instance->register();
-                    $instance->boot();
+                    $instance->register(); // Always register routes
+                    if ($record->enabled) {
+                        $instance->boot(); // Only boot public features when enabled
+                    }
                 }
             } catch (\Throwable) {
                 // Don't let a broken plugin crash the app
