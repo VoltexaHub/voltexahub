@@ -16,7 +16,7 @@ class Post extends Model
         'edited_at', 'edit_count',
     ];
 
-    protected $appends = ['is_edited'];
+    protected $appends = ['is_edited', 'author'];
 
     protected function casts(): array
     {
@@ -31,6 +31,11 @@ class Post extends Model
         return \Illuminate\Database\Eloquent\Casts\Attribute::get(
             fn () => $this->edited_at !== null
         );
+    }
+
+    public function getAuthorAttribute()
+    {
+        return $this->relationLoaded('user') ? $this->user : null;
     }
 
     public function thread(): BelongsTo

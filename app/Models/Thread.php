@@ -39,6 +39,11 @@ class Thread extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function getAuthorAttribute()
+    {
+        return $this->relationLoaded('user') ? $this->user : null;
+    }
+
     public function lastReplyUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'last_reply_user_id');
