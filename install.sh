@@ -195,13 +195,13 @@ PHP_FPM_VER=""
 # PHP 8.2+
 if ! command -v php &>/dev/null; then
   info 'Installing PHP 8.2...'
-  apt-get install -y -qq software-properties-common >/dev/null
 
   if [ "$OS_ID" = "ubuntu" ]; then
+    apt-get install -y -qq software-properties-common >/dev/null
     add-apt-repository -y ppa:ondrej/php >/dev/null 2>&1
   else
-    # Debian: use sury.org repo
-    apt-get install -y -qq apt-transport-https lsb-release ca-certificates curl >/dev/null
+    # Debian: use sury.org repo (no software-properties-common needed)
+    apt-get install -y -qq apt-transport-https lsb-release ca-certificates curl gnupg >/dev/null
     curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
     dpkg -i /tmp/debsuryorg-archive-keyring.deb >/dev/null 2>&1
     echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" \
