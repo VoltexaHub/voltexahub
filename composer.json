@@ -13,6 +13,7 @@
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
         "pusher/pusher-php-server": "^7.2",
+        "s9e/text-formatter": "^2.19",
         "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-permission": "^7.2"
     },

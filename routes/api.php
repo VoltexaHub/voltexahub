@@ -4,9 +4,11 @@ use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\Admin\AdminAchievementController;
 use App\Http\Controllers\Api\Admin\AdminAwardController;
 use App\Http\Controllers\Api\Admin\AdminConfigController;
+use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminGroupController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminPluginController;
+use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminForumController;
 use App\Http\Controllers\Api\Admin\AdminForumPermissionController;
 use App\Http\Controllers\Api\Admin\AdminModerationController;
@@ -22,8 +24,11 @@ use App\Http\Controllers\Api\ForumConfigController;
 use App\Http\Controllers\Api\ForumController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\ThreadSubscriptionController;
 use App\Http\Controllers\Api\StripeWebhookController;
 use App\Http\Controllers\Api\ThreadController;
 use App\Http\Controllers\Api\UserController;
@@ -45,6 +50,7 @@ Route::get('/staff', [UserController::class, 'staff']);
 Route::get('/users/{username}/profile', [UserController::class, 'profile']);
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/credits/earning-info', [CreditsController::class, 'earningInfo']);
+Route::get('/public/custom-code', [PublicConfigController::class, 'customCode']);
 
 // Auth routes
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -88,6 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/posts/{id}', [PostController::class, 'destroy']);
     Route::put('/threads/{id}', [ThreadController::class, 'update']);
     Route::post('/threads/{id}/like', [ThreadController::class, 'like']);
+    Route::post('/threads/{id}/subscribe', [ThreadSubscriptionController::class, 'toggle']);
+    Route::get('/threads/{id}/subscription', [ThreadSubscriptionController::class, 'show']);
 
     // Store
     Route::post('/store/purchase', [StoreController::class, 'purchaseWithCredits']);
@@ -98,6 +106,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read']);
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // Reports
+    Route::post('/reports', [ReportController::class, 'store']);
 
     // Conversations / DMs
     Route::get('/conversations', [ConversationController::class, 'index']);
@@ -180,6 +191,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/config/test-email', [AdminConfigController::class, 'testEmail']);
     Route::get('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'index']);
     Route::put('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'update']);
+
+    // Reports
+    Route::get('/reports', [AdminReportController::class, 'index']);
+    Route::put('/reports/{id}', [AdminReportController::class, 'update']);
+
+    // Content management
+    Route::get('/content/threads', [AdminContentController::class, 'threads']);
+    Route::get('/content/posts', [AdminContentController::class, 'posts']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);

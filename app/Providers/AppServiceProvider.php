@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\PluginManager;
+use App\Services\TextFormatterService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
@@ -11,6 +12,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PluginManager::class);
+        $this->app->singleton(TextFormatterService::class);
     }
 
     public function boot(): void

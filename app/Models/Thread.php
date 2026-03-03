@@ -14,7 +14,7 @@ class Thread extends Model
         'last_reply_at', 'last_reply_user_id',
     ];
 
-    protected $appends = ['author', 'likes_count'];
+    protected $appends = ['author', 'likes_count', 'rendered_content'];
 
     protected function casts(): array
     {
@@ -24,6 +24,17 @@ class Thread extends Model
             'is_solved' => 'boolean',
             'last_reply_at' => 'datetime',
         ];
+    }
+
+    public function getRenderedContentAttribute(): string
+    {
+        try {
+            $svc = app(\App\Services\TextFormatterService::class);
+
+            return $svc->renderFromText($this->body ?? '');
+        } catch (\Throwable) {
+            return e($this->body ?? '');
+        }
     }
 
     public function forum(): BelongsTo

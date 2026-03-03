@@ -8,9 +8,11 @@ use App\Models\ForumConfig;
 use App\Models\Post;
 use App\Models\Reaction;
 use App\Models\Thread;
+use App\Models\ThreadSubscription;
 use App\Models\User;
 use App\Notifications\MentionNotification;
 use App\Notifications\ThreadReplyNotification;
+use App\Notifications\ThreadSubscriptionNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -95,6 +97,23 @@ class PostController extends Controller
             broadcast(new NewNotification($thread->user_id, [
                 'type' => 'thread_reply',
                 'title' => 'New reply to your thread',
+                'body' => $user->username . ' replied to "' . $thread->title . '"',
+                'url' => '/threads/' . $thread->id,
+            ]));
+        }
+
+        // Notify thread subscribers (except the post author and thread owner who was already notified)
+        $subscriberIds = ThreadSubscription::where('thread_id', $thread->id)
+            ->where('user_id', '!=', $user->id)
+            ->where('user_id', '!=', $thread->user_id)
+            ->pluck('user_id');
+
+        $subscribers = User::whereIn('id', $subscriberIds)->get();
+        foreach ($subscribers as $subscriber) {
+            $subscriber->notify(new ThreadSubscriptionNotification($thread, $post));
+            broadcast(new NewNotification($subscriber->id, [
+                'type' => 'thread_reply',
+                'title' => 'New reply in subscribed thread',
                 'body' => $user->username . ' replied to "' . $thread->title . '"',
                 'url' => '/threads/' . $thread->id,
             ]));

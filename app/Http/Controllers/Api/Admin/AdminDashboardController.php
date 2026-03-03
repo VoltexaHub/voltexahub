@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\Report;
 use App\Models\StorePurchase;
 use App\Models\Thread;
 use App\Models\User;
@@ -18,7 +19,7 @@ class AdminDashboardController extends Controller
         $postCount = Post::count();
         $threadCount = Thread::count();
         $onlineCount = User::where('last_seen', '>=', Carbon::now()->subMinutes(15))->count();
-        $pendingReports = 0; // TODO: wire to reports table when built
+        $pendingReports = Report::where('status', 'pending')->count();
 
         $revenueThisMonth = StorePurchase::where('status', 'completed')
             ->where('payment_method', 'money')

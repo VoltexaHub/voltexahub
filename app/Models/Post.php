@@ -16,7 +16,7 @@ class Post extends Model
         'edited_at', 'edit_count',
     ];
 
-    protected $appends = ['is_edited', 'author'];
+    protected $appends = ['is_edited', 'author', 'rendered_content'];
 
     protected function casts(): array
     {
@@ -36,6 +36,17 @@ class Post extends Model
     public function getAuthorAttribute()
     {
         return $this->relationLoaded('user') ? $this->user : null;
+    }
+
+    public function getRenderedContentAttribute(): string
+    {
+        try {
+            $svc = app(\App\Services\TextFormatterService::class);
+
+            return $svc->renderFromText($this->body ?? '');
+        } catch (\Throwable) {
+            return e($this->body ?? '');
+        }
     }
 
     public function thread(): BelongsTo
