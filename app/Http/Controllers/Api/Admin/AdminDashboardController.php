@@ -8,6 +8,7 @@ use App\Models\StorePurchase;
 use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 class AdminDashboardController extends Controller
 {
@@ -16,6 +17,8 @@ class AdminDashboardController extends Controller
         $userCount = User::count();
         $postCount = Post::count();
         $threadCount = Thread::count();
+        $onlineCount = User::where('last_seen', '>=', Carbon::now()->subMinutes(15))->count();
+        $pendingReports = 0; // TODO: wire to reports table when built
 
         $revenueThisMonth = StorePurchase::where('status', 'completed')
             ->where('payment_method', 'money')
@@ -68,6 +71,8 @@ class AdminDashboardController extends Controller
                 'user_count' => $userCount,
                 'post_count' => $postCount,
                 'thread_count' => $threadCount,
+                'online_count' => $onlineCount,
+                'pending_reports' => $pendingReports,
                 'revenue_this_month' => (float) $revenueThisMonth,
                 'recent_activity' => $recentActivity,
             ],

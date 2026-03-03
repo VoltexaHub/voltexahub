@@ -18,9 +18,9 @@ class ThreadController extends Controller
 
         $query = $forum->threads()
             ->with([
-                'user:id,username,avatar_color',
+                'user:id,username,avatar_color,avatar_path',
                 'user.roles',
-                'lastReplyUser:id,username',
+                'lastReplyUser:id,username,avatar_color,avatar_path',
             ])
             ->orderByDesc('is_pinned')
             ->latest();
