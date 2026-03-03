@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Forum extends Model
 {
     protected $fillable = [
-        'category_id', 'name', 'slug', 'description', 'icon',
+        'category_id', 'parent_forum_id', 'name', 'slug', 'description', 'icon',
         'display_order', 'is_active', 'thread_count', 'post_count',
         'last_post_at', 'last_post_user_id',
     ];
@@ -34,7 +34,12 @@ class Forum extends Model
 
     public function subforums(): HasMany
     {
-        return $this->hasMany(Subforum::class);
+        return $this->hasMany(Forum::class, 'parent_forum_id')->orderBy('display_order');
+    }
+
+    public function parentForum(): BelongsTo
+    {
+        return $this->belongsTo(Forum::class, 'parent_forum_id');
     }
 
     public function lastPostUser(): BelongsTo

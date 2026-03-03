@@ -135,8 +135,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/users/{id}/awards', [AdminUserController::class, 'grantAward']);
     Route::delete('/users/{id}/awards/{awardId}', [AdminUserController::class, 'revokeAward']);
 
-    // Forums (tree + CRUD for games, categories, forums)
-    Route::get('/forums', [AdminForumController::class, 'tree']);
+    // Forums (list, tree + CRUD for games, categories, forums)
+    Route::get('/forums', [AdminForumController::class, 'index']);
+    Route::get('/forums/tree', [AdminForumController::class, 'tree']);
     Route::post('/games', [AdminForumController::class, 'createGame']);
     Route::put('/games/{id}', [AdminForumController::class, 'updateGame']);
     Route::delete('/games/{id}', [AdminForumController::class, 'deleteGame']);

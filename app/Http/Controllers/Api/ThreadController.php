@@ -15,7 +15,7 @@ class ThreadController extends Controller
 {
     public function index(Request $request, string $slug): JsonResponse
     {
-        $forum = Forum::where('slug', $slug)->firstOrFail();
+        $forum = Forum::with(['category', 'parentForum'])->where('slug', $slug)->firstOrFail();
 
         $query = $forum->threads()
             ->with([
@@ -33,6 +33,16 @@ class ThreadController extends Controller
 
         $threads = $query->paginate(15);
 
+        $forumData = $forum->toArray();
+        $forumData['breadcrumb'] = [
+            'category' => ['id' => $forum->category->id, 'name' => $forum->category->name],
+            'parent_forum' => $forum->parentForum ? [
+                'id' => $forum->parentForum->id,
+                'name' => $forum->parentForum->name,
+                'slug' => $forum->parentForum->slug,
+            ] : null,
+        ];
+
         return response()->json([
             'data' => $threads->items(),
             'meta' => [
@@ -41,20 +51,29 @@ class ThreadController extends Controller
                 'per_page' => $threads->perPage(),
                 'total' => $threads->total(),
             ],
-            'forum' => $forum->load('category.game'),
+            'forum' => $forumData,
         ]);
     }
 
     public function show(int $id): JsonResponse
     {
         $thread = Thread::with([
-                'user', 'user.roles', 'forum.category', 'lastReplyUser', 'lastReplyUser.roles',
+                'user', 'user.roles', 'forum.category', 'forum.parentForum', 'lastReplyUser', 'lastReplyUser.roles',
             ])
             ->findOrFail($id);
 
         $thread->increment('view_count');
 
         $threadData = $thread->toArray();
+        $forum = $thread->forum;
+        $threadData['breadcrumb'] = [
+            'category' => ['id' => $forum->category->id, 'name' => $forum->category->name],
+            'parent_forum' => $forum->parentForum ? [
+                'id' => $forum->parentForum->id,
+                'name' => $forum->parentForum->name,
+                'slug' => $forum->parentForum->slug,
+            ] : null,
+        ];
         $threadData['likers'] = $thread->likes()->with('user:id,username,avatar_color,avatar_path')->get()->map(fn($l) => [
             'id' => $l->user->id ?? $l->user_id,
             'username' => $l->user->username ?? 'Unknown',

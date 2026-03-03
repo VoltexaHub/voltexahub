@@ -11,8 +11,10 @@ class ForumConfigSeeder extends Seeder
     {
         $configs = [
             'forum_name' => 'My Forum',
+            'is_multi_game' => 'false',
             'multi_game_mode' => 'false',
             'multi_game' => 'false',
+            'default_game_id' => '',
             'maintenance_mode' => 'false',
             'accent_color' => '#7c3aed',
             'rcon_host_minecraft' => '',

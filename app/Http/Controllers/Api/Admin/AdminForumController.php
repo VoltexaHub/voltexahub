@@ -12,21 +12,51 @@ use Illuminate\Support\Str;
 
 class AdminForumController extends Controller
 {
+    /**
+     * Flat list of all forums with parent/category info.
+     */
+    public function index(): JsonResponse
+    {
+        $forums = Forum::with(['category:id,name', 'parentForum:id,name'])
+            ->orderBy('category_id')
+            ->orderBy('parent_forum_id')
+            ->orderBy('display_order')
+            ->get()
+            ->map(fn ($f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'slug' => $f->slug,
+                'description' => $f->description,
+                'icon' => $f->icon,
+                'category_id' => $f->category_id,
+                'category_name' => $f->category?->name,
+                'parent_forum_id' => $f->parent_forum_id,
+                'parent_forum_name' => $f->parentForum?->name,
+                'display_order' => $f->display_order,
+                'is_active' => $f->is_active,
+            ]);
+
+        return response()->json(['data' => $forums]);
+    }
+
+    /**
+     * Structured tree: categories → top-level forums → subforums.
+     */
     public function tree(): JsonResponse
     {
-        $games = Game::with([
-            'categories' => fn ($q) => $q->orderBy('display_order')->with([
-                'forums' => fn ($q) => $q->orderBy('display_order')->with([
+        $categories = Category::with([
+            'forums' => fn ($q) => $q->whereNull('parent_forum_id')
+                ->orderBy('display_order')
+                ->with([
                     'subforums' => fn ($q) => $q->orderBy('display_order'),
                     'lastPostUser:id,username',
                 ]),
-            ]),
         ])->orderBy('display_order')->get();
 
-        return response()->json([
-            'data' => $games,
-        ]);
+        return response()->json(['data' => $categories]);
     }
+
+    // ── Game CRUD (kept for backwards compat, games table not dropped) ──
 
     public function createGame(Request $request): JsonResponse
     {
@@ -81,10 +111,12 @@ class AdminForumController extends Controller
         ]);
     }
 
+    // ── Category CRUD ──
+
     public function createCategory(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'game_id' => ['required', 'exists:games,id'],
+            'game_id' => ['nullable', 'exists:games,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug'],
             'description' => ['nullable', 'string'],
@@ -98,7 +130,7 @@ class AdminForumController extends Controller
         $category = Category::create($validated);
 
         return response()->json([
-            'data' => $category->load('game'),
+            'data' => $category,
             'message' => 'Category created successfully.',
         ], 201);
     }
@@ -108,7 +140,7 @@ class AdminForumController extends Controller
         $category = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'game_id' => ['sometimes', 'exists:games,id'],
+            'game_id' => ['nullable', 'exists:games,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:categories,slug,' . $id],
             'description' => ['nullable', 'string'],
@@ -119,7 +151,7 @@ class AdminForumController extends Controller
         $category->update($validated);
 
         return response()->json([
-            'data' => $category->fresh()->load('game'),
+            'data' => $category->fresh(),
             'message' => 'Category updated successfully.',
         ]);
     }
@@ -134,10 +166,13 @@ class AdminForumController extends Controller
         ]);
     }
 
+    // ── Forum CRUD ──
+
     public function createForum(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
+            'parent_forum_id' => ['nullable', 'exists:forums,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:forums,slug'],
             'description' => ['nullable', 'string'],
@@ -153,7 +188,7 @@ class AdminForumController extends Controller
         $forum = Forum::create($validated);
 
         return response()->json([
-            'data' => $forum->load('category.game'),
+            'data' => $forum->load(['category', 'parentForum']),
             'message' => 'Forum created successfully.',
         ], 201);
     }
@@ -164,6 +199,7 @@ class AdminForumController extends Controller
 
         $validated = $request->validate([
             'category_id' => ['sometimes', 'exists:categories,id'],
+            'parent_forum_id' => ['nullable', 'exists:forums,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:forums,slug,' . $id],
             'description' => ['nullable', 'string'],
@@ -180,7 +216,7 @@ class AdminForumController extends Controller
         $forum->update($validated);
 
         return response()->json([
-            'data' => $forum->fresh()->load('category.game'),
+            'data' => $forum->fresh()->load(['category', 'parentForum']),
             'message' => 'Forum updated successfully.',
         ]);
     }
@@ -194,6 +230,8 @@ class AdminForumController extends Controller
             'message' => 'Forum deleted successfully.',
         ]);
     }
+
+    // ── Reordering ──
 
     public function reorderGames(Request $request): JsonResponse
     {
