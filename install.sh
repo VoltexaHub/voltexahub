@@ -321,12 +321,17 @@ fi
 if [ "$DB_TYPE" = 'mysql' ]; then
   header 'Setting Up Database'
   info 'Creating MySQL database and user...'
-  mysql -u root <<SQL
-CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '$DB_USER'@'127.0.0.1' IDENTIFIED BY '$DB_PASS';
-GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'127.0.0.1';
-FLUSH PRIVILEGES;
-SQL
+  # Write SQL to temp file so special chars in password are handled safely
+  MYSQL_TMP=$(mktemp /tmp/voltexahub_setup_XXXXXX.sql)
+  cat > "$MYSQL_TMP" << SQLEOF
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+SQLEOF
+  # Use printf for the password line to avoid heredoc interpolation issues
+  printf "CREATE USER IF NOT EXISTS '%s'@'127.0.0.1' IDENTIFIED BY '%s';\n" "$DB_USER" "$(echo "$DB_PASS" | sed "s/'/\\'\\'/g")" >> "$MYSQL_TMP"
+  printf "GRANT ALL PRIVILEGES ON \`%s\`.* TO '%s'@'127.0.0.1';\n" "$DB_NAME" "$DB_USER" >> "$MYSQL_TMP"
+  echo "FLUSH PRIVILEGES;" >> "$MYSQL_TMP"
+  mysql -u root < "$MYSQL_TMP" || { warn 'DB user may already exist — continuing'; }
+  rm -f "$MYSQL_TMP"
   success "Database '$DB_NAME' created"
 fi
 
@@ -408,6 +413,8 @@ success '.env configured'
 header 'Installing Dependencies'
 
 info 'Installing PHP dependencies...'
+# Delete composer.lock — generated on macOS/PHP 8.5, incompatible with VPS PHP 8.2
+rm -f "$INSTALL_DIR/composer.lock"
 HOME=/root COMPOSER_HOME=/root/.composer composer install --no-dev --optimize-autoloader --working-dir="$INSTALL_DIR" --no-interaction --quiet 2>&1 || { echo 'Composer install failed. Check logs.'; exit 1; }
 success 'PHP dependencies installed'
 
