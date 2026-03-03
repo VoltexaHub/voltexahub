@@ -1,7 +1,8 @@
 #!/bin/bash
 # ============================================================================
 # VoltexaHub Production VPS Installer
-# Supports: Ubuntu 20.04/22.04/24.04, Debian 11/12
+# Supports: Ubuntu 20.04/22.04/24.04, Debian 11/12/13
+# Requires: PHP 8.4+
 # Run: chmod +x install.sh && sudo ./install.sh
 # ============================================================================
 # Errors handled explicitly per section
@@ -197,7 +198,7 @@ PHP_FPM_VER=""
 
 # PHP 8.2+
 if ! command -v php &>/dev/null; then
-  info 'Installing PHP 8.2...'
+  info 'Installing PHP 8.4...'
 
   if [ "$OS_ID" = "ubuntu" ]; then
     apt-get install -y -qq software-properties-common >/dev/null
@@ -212,10 +213,10 @@ if ! command -v php &>/dev/null; then
   fi
 
   apt-get update -qq
-  apt-get install -y -qq php8.2 php8.2-cli php8.2-fpm php8.2-mysql php8.2-sqlite3 \
-    php8.2-mbstring php8.2-xml php8.2-curl php8.2-zip php8.2-bcmath php8.2-gd >/dev/null
-  PHP_FPM_VER="8.2"
-  success 'PHP 8.2 installed'
+  apt-get install -y -qq php8.4 php8.4-cli php8.4-fpm php8.4-mysql php8.4-sqlite3 \
+    php8.4-mbstring php8.4-xml php8.4-curl php8.4-zip php8.4-bcmath php8.4-gd >/dev/null
+  PHP_FPM_VER="8.4"
+  success 'PHP 8.4 installed'
 else
   PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
   PHP_FPM_VER="$PHP_VER"
