@@ -298,4 +298,68 @@ class UserController extends Controller
             'message' => 'Session terminated.',
         ]);
     }
+
+    public function members(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $perPage = min((int) $request->get('per_page', 24), 48);
+        $sort = $request->get('sort', 'joined'); // joined|posts|credits|username
+        $search = $request->get('q', '');
+
+        $query = User::with('roles')
+            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'banned'))
+            ->when($search, fn ($q) => $q->where('username', 'like', "%{$search}%"));
+
+        $query->orderBy(match ($sort) {
+            'posts'    => 'post_count',
+            'credits'  => 'credits',
+            'username' => 'username',
+            default    => 'created_at',
+        }, $sort === 'username' ? 'asc' : 'desc');
+
+        $members = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $members->through(fn ($u) => [
+                'id'          => $u->id,
+                'username'    => $u->username,
+                'avatar_url'  => $u->avatar_url,
+                'avatar_color'=> $u->avatar_color,
+                'post_count'  => $u->post_count ?? 0,
+                'credits'     => $u->credits ?? 0,
+                'joined'      => $u->created_at,
+                'is_online'   => $u->last_seen && $u->last_seen->gte(now()->subMinutes(15)),
+                'primary_role'=> $u->roles->first()?->name,
+            ]),
+            'meta' => [
+                'total'        => $members->total(),
+                'current_page' => $members->currentPage(),
+                'last_page'    => $members->lastPage(),
+            ],
+        ]);
+    }
+
+    public function staff(): JsonResponse
+    {
+        $staffRoles = ['admin', 'moderator'];
+
+        $staff = User::with('roles')
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', $staffRoles))
+            ->orderByRaw("FIELD(username, 'admin') DESC")
+            ->get();
+
+        $grouped = collect($staffRoles)->mapWithKeys(function ($role) use ($staff) {
+            $members = $staff->filter(fn ($u) => $u->roles->contains('name', $role))->values();
+            return [$role => $members->map(fn ($u) => [
+                'id'           => $u->id,
+                'username'     => $u->username,
+                'avatar_url'   => $u->avatar_url,
+                'avatar_color' => $u->avatar_color,
+                'post_count'   => $u->post_count ?? 0,
+                'joined'       => $u->created_at,
+                'is_online'    => $u->last_seen && $u->last_seen->gte(now()->subMinutes(15)),
+            ])];
+        });
+
+        return response()->json(['data' => $grouped]);
+    }
 }

@@ -39,6 +39,8 @@ Route::get('/threads/{id}/posts', [PostController::class, 'index']);
 Route::get('/store/items', [StoreController::class, 'index']);
 Route::get('/achievements', [AchievementController::class, 'index']);
 Route::get('/users/online', [UserController::class, 'online']);
+Route::get('/members', [UserController::class, 'members']);
+Route::get('/staff', [UserController::class, 'staff']);
 Route::get('/users/{username}/profile', [UserController::class, 'profile']);
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/credits/earning-info', [CreditsController::class, 'earningInfo']);
