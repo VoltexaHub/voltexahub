@@ -50,7 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected $appends = ['avatar_url'];
+    protected $appends = ['avatar_url', 'group_color', 'group_label'];
 
     protected function casts(): array
     {
@@ -73,6 +73,24 @@ class User extends Authenticatable implements MustVerifyEmail
             ? '/storage/' . $this->avatar_path
             : null
         );
+    }
+
+    protected function groupColor(): Attribute
+    {
+        return Attribute::get(function () {
+            $role = $this->relationLoaded('roles') ? $this->roles->first()?->name : null;
+            if (!$role) return '#6b7280';
+            return ForumConfig::get("group_color_{$role}", '#6b7280');
+        });
+    }
+
+    protected function groupLabel(): Attribute
+    {
+        return Attribute::get(function () {
+            $role = $this->relationLoaded('roles') ? $this->roles->first()?->name : null;
+            if (!$role) return null;
+            return ForumConfig::get("group_label_{$role}", ucfirst($role));
+        });
     }
 
     public function threads(): HasMany

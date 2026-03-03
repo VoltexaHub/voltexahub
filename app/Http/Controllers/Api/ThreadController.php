@@ -22,6 +22,7 @@ class ThreadController extends Controller
                 'user:id,username,avatar_color,avatar_path',
                 'user.roles',
                 'lastReplyUser:id,username,avatar_color,avatar_path',
+                'lastReplyUser.roles',
             ])
             ->orderByDesc('is_pinned')
             ->latest();
@@ -47,7 +48,7 @@ class ThreadController extends Controller
     public function show(int $id): JsonResponse
     {
         $thread = Thread::with([
-                'user', 'forum.category', 'lastReplyUser',
+                'user', 'user.roles', 'forum.category', 'lastReplyUser', 'lastReplyUser.roles',
             ])
             ->findOrFail($id);
 
