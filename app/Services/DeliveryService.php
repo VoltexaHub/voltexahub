@@ -15,6 +15,25 @@ class DeliveryService
         $item = $purchase->storeItem;
         $user = $purchase->user;
 
+        // Currency packs — award credits directly
+        if ($item->item_type === 'currency') {
+            $amount = (int) $item->item_value;
+            if ($amount > 0) {
+                $user->addCredits($amount, "Store purchase: {$item->name}", StorePurchase::class, $purchase->id);
+            }
+            $purchase->update(['delivered_at' => now(), 'status' => 'completed']);
+            Log::info("Purchase #{$purchase->id} delivered (currency: +{$amount} credits)");
+            return true;
+        }
+
+        // Postbit background — apply URL to user profile
+        if ($item->item_type === 'postbit_bg') {
+            $user->update(['postbit_bg' => $item->item_value ?: null]);
+            $purchase->update(['delivered_at' => now(), 'status' => 'completed']);
+            Log::info("Purchase #{$purchase->id} delivered (postbit_bg applied)");
+            return true;
+        }
+
         // Cosmetics and flairs don't need RCON delivery
         if (in_array($item->item_type, ['cosmetic', 'flair'])) {
             $purchase->update([
