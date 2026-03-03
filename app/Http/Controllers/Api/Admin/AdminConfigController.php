@@ -40,7 +40,7 @@ class AdminConfigController extends Controller
             'message' => 'Configuration updated successfully.',
         ]);
     }
-}
+
     public function testEmail(Request $request): JsonResponse
     {
         $user = $request->user();
