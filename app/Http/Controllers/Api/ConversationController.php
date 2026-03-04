@@ -52,12 +52,19 @@ class ConversationController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-        ]);
-
         $user = $request->user();
-        $otherUserId = $validated['user_id'];
+
+        // Accept either user_id or username
+        if ($request->has('username')) {
+            $other = \App\Models\User::where('username', $request->input('username'))->first();
+            if (!$other) {
+                return response()->json(['message' => 'User not found.'], 404);
+            }
+            $otherUserId = $other->id;
+        } else {
+            $request->validate(['user_id' => ['required', 'exists:users,id']]);
+            $otherUserId = $request->input('user_id');
+        }
 
         if ($user->id === (int) $otherUserId) {
             return response()->json([
