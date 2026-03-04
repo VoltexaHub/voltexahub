@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    use \App\Http\Controllers\Concerns\ChecksForumPermissions;
+
     public function index(string $threadId): JsonResponse
     {
         $thread = Thread::where(is_numeric($threadId) ? 'id' : 'slug', $threadId)->firstOrFail();
@@ -69,9 +71,12 @@ class PostController extends Controller
         $thread = Thread::where(is_numeric($threadId) ? 'id' : 'slug', $threadId)->firstOrFail();
 
         if ($thread->is_locked) {
-            return response()->json([
-                'message' => 'This thread is locked.',
-            ], 403);
+            return response()->json(['message' => 'This thread is locked.'], 403);
+        }
+
+        $forum = $thread->forum;
+        if (!$this->canReply($request, $forum)) {
+            return $this->denyReply();
         }
 
         $validated = $request->validate([

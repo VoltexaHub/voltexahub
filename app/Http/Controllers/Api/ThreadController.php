@@ -13,9 +13,15 @@ use Illuminate\Support\Str;
 
 class ThreadController extends Controller
 {
+    use \App\Http\Controllers\Concerns\ChecksForumPermissions;
+
     public function index(Request $request, string $slug): JsonResponse
     {
         $forum = Forum::with(['category', 'parentForum'])->where('slug', $slug)->firstOrFail();
+
+        if (!$this->canView($request, $forum)) {
+            return $this->denyView();
+        }
 
         $query = $forum->threads()
             ->with([
@@ -141,6 +147,11 @@ class ThreadController extends Controller
 
         if (empty($validated['forum_id'])) {
             return response()->json(['message' => 'Forum is required.'], 422);
+        }
+
+        $forum = \App\Models\Forum::findOrFail($validated['forum_id']);
+        if (!$this->canPost($request, $forum)) {
+            return $this->denyPost();
         }
 
         $user = $request->user();

@@ -15,9 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'ban'  => \App\Http\Middleware\EnforceBan::class,
         ]);
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\UpdateLastSeen::class,
+            \App\Http\Middleware\EnforceBan::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

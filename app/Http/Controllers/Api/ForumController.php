@@ -8,7 +8,9 @@ use Illuminate\Http\JsonResponse;
 
 class ForumController extends Controller
 {
-    public function index(): JsonResponse
+    use \App\Http\Controllers\Concerns\ChecksForumPermissions;
+
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
         $categories = Category::with([
             'forums' => function ($q) {
@@ -22,11 +24,17 @@ class ForumController extends Controller
             ->orderBy('display_order')
             ->get();
 
-        $data = $categories->map(function ($cat) {
+        $role = $this->getRole($request);
+
+        $data = $categories->map(function ($cat) use ($role) {
+            $visibleForums = $cat->forums->filter(function ($forum) use ($role) {
+                $perms = \App\Services\PermissionService::resolve($role, $forum->id);
+                return $perms['can_view'];
+            });
             return [
                 'id' => $cat->id,
                 'name' => $cat->name,
-                'forums' => $cat->forums->map(function ($forum) {
+                'forums' => $visibleForums->map(function ($forum) use ($role) {
                     return [
                         'id' => $forum->id,
                         'name' => $forum->name,
@@ -43,7 +51,10 @@ class ForumController extends Controller
                             'group_color' => $forum->lastPostUser->primary_role['color'] ?? null,
                         ] : null,
                         'last_thread' => $forum->threads()->latest('created_at')->select('id','title','slug')->first(),
-                        'subforums' => $forum->subforums->map(fn ($sf) => [
+                        'subforums' => $forum->subforums->filter(function ($sf) use ($role) {
+                            $perms = \App\Services\PermissionService::resolve($role, $sf->id);
+                            return $perms['can_view'];
+                        })->map(fn ($sf) => [
                             'id' => $sf->id,
                             'name' => $sf->name,
                             'slug' => $sf->slug,
