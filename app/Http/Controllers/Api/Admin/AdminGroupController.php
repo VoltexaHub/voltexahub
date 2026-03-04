@@ -11,7 +11,7 @@ class AdminGroupController extends Controller
 {
     public function index(): JsonResponse
     {
-        $roles = Role::withCount('users')->get()->map(fn ($r) => $this->formatRole($r));
+        $roles = Role::all()->map(fn ($r) => $this->formatRole($r));
 
         return response()->json(['data' => $roles]);
     }
@@ -73,7 +73,7 @@ class AdminGroupController extends Controller
             'guard_name'  => $role->guard_name,
             'color'       => $role->color ?? '#94a3b8',
             'label'       => $role->label ?? ucfirst($role->name),
-            'users_count' => $role->users_count ?? 0,
+            'users_count' => \DB::table('model_has_roles')->where('role_id', $role->id)->count(),
             'created_at'  => $role->created_at,
             'updated_at'  => $role->updated_at,
         ];
