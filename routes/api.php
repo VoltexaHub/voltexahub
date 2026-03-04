@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\AdminPluginController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminForumController;
 use App\Http\Controllers\Api\Admin\AdminForumPermissionController;
+use App\Http\Controllers\Api\Admin\AdminGroupPermissionController;
 use App\Http\Controllers\Api\Admin\AdminModerationController;
 use App\Http\Controllers\Api\Admin\AdminStoreController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
@@ -203,6 +204,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::delete('/logo', [AdminLogoController::class, 'remove']);
     Route::get('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'index']);
     Route::put('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'update']);
+    Route::get('/group-permissions', [AdminGroupPermissionController::class, 'index']);
+    Route::put('/group-permissions', [AdminGroupPermissionController::class, 'update']);
 
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index']);
