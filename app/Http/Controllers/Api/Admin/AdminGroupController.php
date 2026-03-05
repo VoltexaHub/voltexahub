@@ -22,6 +22,7 @@ class AdminGroupController extends Controller
             'name'  => ['required', 'string', 'max:255', 'unique:roles,name'],
             'color' => ['nullable', 'string', 'max:50'],
             'label' => ['nullable', 'string', 'max:255'],
+            'perks' => ['nullable', 'array'],
         ]);
 
         $role = Role::create([
@@ -29,6 +30,7 @@ class AdminGroupController extends Controller
             'guard_name' => 'web',
             'color'      => $validated['color'] ?? '#94a3b8',
             'label'      => $validated['label'] ?? null,
+            'perks'      => $validated['perks'] ?? [],
         ]);
 
         return response()->json([
@@ -44,11 +46,13 @@ class AdminGroupController extends Controller
         $validated = $request->validate([
             'color' => ['nullable', 'string', 'max:50'],
             'label' => ['nullable', 'string', 'max:255'],
+            'perks' => ['nullable', 'array'],
         ]);
 
         $role->update([
             'color' => $validated['color'] ?? $role->color,
             'label' => $validated['label'] ?? $role->label,
+            'perks' => array_key_exists('perks', $validated) ? ($validated['perks'] ?? []) : ($role->perks ?? []),
         ]);
 
         return response()->json([
@@ -73,6 +77,7 @@ class AdminGroupController extends Controller
             'guard_name'  => $role->guard_name,
             'color'       => $role->color ?? '#94a3b8',
             'label'       => $role->label ?? ucfirst($role->name),
+            'perks'       => $role->perks ?? [],
             'users_count' => \DB::table('model_has_roles')->where('role_id', $role->id)->count(),
             'created_at'  => $role->created_at,
             'updated_at'  => $role->updated_at,

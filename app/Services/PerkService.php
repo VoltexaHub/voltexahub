@@ -25,10 +25,20 @@ class PerkService
 
         $userRoles = $user->getRoleNames()->toArray();
 
+        // Check role-level perks (set directly on the group)
+        $roles = Cache::remember('roles_perks', 300, fn () =>
+            \Spatie\Permission\Models\Role::whereNotNull('perks')->get(['name', 'perks'])
+        );
+        foreach ($roles as $role) {
+            if (!in_array($role->name, $userRoles)) continue;
+            $perks = is_array($role->perks) ? $role->perks : (json_decode($role->perks, true) ?? []);
+            if (in_array($type, $perks)) return true;
+        }
+
+        // Check upgrade plan features
         $plans = Cache::remember('upgrade_plans_features', 300, fn () =>
             UpgradePlan::where('is_active', true)->get(['role_name', 'features'])
         );
-
         foreach ($plans as $plan) {
             if (!$plan->role_name || !in_array($plan->role_name, $userRoles)) continue;
             foreach (($plan->features ?? []) as $f) {
