@@ -45,6 +45,15 @@ class ForumConfigSeeder extends Seeder
             'show_usergroup_legend'    => 'true',
             'usergroup_legend_groups'  => json_encode(['admin','moderator','vip','elite','member']),
 
+            // Payment Providers
+            'payment_providers' => json_encode([
+                'stripe' => ['enabled' => true, 'public_key' => '', 'secret_key' => '', 'webhook_secret' => '', 'sandbox' => false],
+                'paypal' => ['enabled' => false, 'client_id' => '', 'client_secret' => '', 'sandbox' => true],
+                'coinbase' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => ''],
+                'lemonsqueezy' => ['enabled' => false, 'api_key' => '', 'store_id' => '', 'webhook_secret' => ''],
+                'philio' => ['enabled' => false, 'api_key' => '', 'merchant_id' => '', 'sandbox' => true],
+            ]),
+
             // Email / SMTP (empty = use .env defaults)
             'mail_mailer'       => '',
             'mail_host'         => '',

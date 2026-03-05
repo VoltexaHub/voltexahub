@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
+use App\Http\Controllers\Api\Admin\AdminPaymentProvidersController;
 use App\Http\Controllers\Api\Admin\AdminPluginController;
 use App\Http\Controllers\Api\Admin\AdminThreadPrefixController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
@@ -279,6 +280,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/thread-prefixes/{id}', [AdminThreadPrefixController::class, 'update']);
     Route::delete('/thread-prefixes/{id}', [AdminThreadPrefixController::class, 'destroy']);
     Route::post('/thread-prefixes/reorder', [AdminThreadPrefixController::class, 'reorder']);
+
+    // Payment Providers
+    Route::get('/payment-providers', [AdminPaymentProvidersController::class, 'index']);
+    Route::put('/payment-providers/{provider}', [AdminPaymentProvidersController::class, 'update']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);
