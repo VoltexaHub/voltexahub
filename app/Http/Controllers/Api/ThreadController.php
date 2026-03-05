@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Forum;
 use App\Models\ForumConfig;
+use App\Models\Tag;
 use App\Models\Thread;
 use App\Models\ThreadLike;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +30,8 @@ class ThreadController extends Controller
                 'user.roles',
                 'lastReplyUser:id,username,avatar_color,avatar_path',
                 'lastReplyUser.roles',
+                'prefix:id,name,color,bg_color,text_color',
+                'tags:id,name,slug',
             ])
             ->orderByDesc('is_pinned')
             ->latest();
@@ -65,6 +68,8 @@ class ThreadController extends Controller
     {
         $thread = Thread::with([
                 'user', 'user.roles', 'forum.category', 'forum.parentForum', 'lastReplyUser', 'lastReplyUser.roles',
+                'prefix:id,name,color,bg_color,text_color', 'tags:id,name,slug',
+                'solvedPost:id,user_id', 'solvedPost.user:id,username',
             ])
             ->where(is_numeric($id) ? 'id' : 'slug', $id)
             ->firstOrFail();
@@ -137,6 +142,9 @@ class ThreadController extends Controller
             'subforum_id' => ['nullable', 'exists:subforums,id'],
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'body' => ['required', 'string', 'min:10'],
+            'prefix_id' => ['nullable', 'integer', 'exists:thread_prefixes,id'],
+            'tags' => ['nullable', 'array', 'max:5'],
+            'tags.*' => ['string', 'max:30'],
         ]);
 
         // Resolve forum_id from slug if not provided directly
@@ -156,9 +164,18 @@ class ThreadController extends Controller
 
         $user = $request->user();
 
+        // Validate prefix is active if provided
+        if (! empty($validated['prefix_id'])) {
+            $prefixExists = \App\Models\ThreadPrefix::where('id', $validated['prefix_id'])->where('is_active', true)->exists();
+            if (! $prefixExists) {
+                return response()->json(['message' => 'Invalid prefix.'], 422);
+            }
+        }
+
         $thread = Thread::create([
             'forum_id' => $validated['forum_id'],
             'subforum_id' => $validated['subforum_id'] ?? null,
+            'prefix_id' => $validated['prefix_id'] ?? null,
             'user_id' => $user->id,
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']) . '-' . Str::random(6),
@@ -171,6 +188,19 @@ class ThreadController extends Controller
             'body' => $validated['body'],
             'is_first_post' => true,
         ]);
+
+        // Sync tags
+        if (! empty($validated['tags'])) {
+            $tagIds = [];
+            foreach ($validated['tags'] as $tagName) {
+                $slug = Str::slug($tagName);
+                if (! $slug) continue;
+                $tag = Tag::firstOrCreate(['slug' => $slug], ['name' => $tagName, 'slug' => $slug]);
+                $tag->increment('use_count');
+                $tagIds[] = $tag->id;
+            }
+            $thread->tags()->sync($tagIds);
+        }
 
         // Increment forum counters
         $thread->forum->increment('thread_count');
@@ -191,7 +221,7 @@ class ThreadController extends Controller
         $user->checkAchievements();
 
         return response()->json([
-            'data' => $thread->load('user'),
+            'data' => $thread->load(['user', 'prefix:id,name,color,bg_color,text_color', 'tags:id,name,slug']),
             'message' => 'Thread created successfully.',
         ], 201);
     }

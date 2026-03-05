@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminPluginController;
+use App\Http\Controllers\Api\Admin\AdminThreadPrefixController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUnlockRequirementsController;
 use App\Http\Controllers\Api\Admin\AdminForumController;
@@ -43,7 +44,11 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\ThreadSubscriptionController;
 use App\Http\Controllers\Api\StripeWebhookController;
+use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\SolvedController;
+use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\ThreadController;
+use App\Http\Controllers\Api\ThreadPrefixController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -66,6 +71,10 @@ Route::get('/upgrade-plans', [UpgradePlanController::class, 'index']);
 Route::get('/credits/earning-info', [CreditsController::class, 'earningInfo']);
 Route::get('/public/custom-code', [PublicConfigController::class, 'customCode']);
 Route::get('/ads', [AdvertisementController::class, 'index']);
+Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+Route::get('/thread-prefixes', [ThreadPrefixController::class, 'index']);
+Route::get('/tags', [TagController::class, 'index']);
+Route::get('/tags/{slug}/threads', [TagController::class, 'threads']);
 
 // Auth routes
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -133,6 +142,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/threads/{id}/like', [ThreadController::class, 'like']);
     Route::post('/threads/{id}/subscribe', [ThreadSubscriptionController::class, 'toggle']);
     Route::get('/threads/{id}/subscription', [ThreadSubscriptionController::class, 'show']);
+    Route::post('/threads/{thread}/solved', [SolvedController::class, 'markSolved']);
+    Route::delete('/threads/{thread}/solved', [SolvedController::class, 'unmarkSolved']);
 
     // Store
     Route::post('/store/purchase', [StoreController::class, 'purchaseWithCredits']);
@@ -258,6 +269,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Unlock requirements
     Route::get('/unlock-requirements', [AdminUnlockRequirementsController::class, 'show']);
     Route::put('/unlock-requirements', [AdminUnlockRequirementsController::class, 'update']);
+
+    // Thread Prefixes
+    Route::get('/thread-prefixes', [AdminThreadPrefixController::class, 'index']);
+    Route::post('/thread-prefixes', [AdminThreadPrefixController::class, 'store']);
+    Route::put('/thread-prefixes/{id}', [AdminThreadPrefixController::class, 'update']);
+    Route::delete('/thread-prefixes/{id}', [AdminThreadPrefixController::class, 'destroy']);
+    Route::post('/thread-prefixes/reorder', [AdminThreadPrefixController::class, 'reorder']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);

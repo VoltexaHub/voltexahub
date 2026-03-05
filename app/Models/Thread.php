@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Thread extends Model
 {
     protected $fillable = [
         'forum_id', 'subforum_id', 'user_id', 'title', 'slug', 'body',
-        'is_pinned', 'is_locked', 'is_solved', 'view_count', 'reply_count',
-        'last_reply_at', 'last_reply_user_id',
+        'is_pinned', 'is_locked', 'is_solved', 'solved_post_id', 'prefix_id',
+        'view_count', 'reply_count', 'last_reply_at', 'last_reply_user_id',
     ];
 
     protected $appends = ['author', 'likes_count', 'rendered_content'];
@@ -75,5 +76,20 @@ class Thread extends Model
     public function getLikesCountAttribute(): int
     {
         return $this->likes()->count();
+    }
+
+    public function solvedPost(): BelongsTo
+    {
+        return $this->belongsTo(Post::class, 'solved_post_id');
+    }
+
+    public function prefix(): BelongsTo
+    {
+        return $this->belongsTo(ThreadPrefix::class, 'prefix_id');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'thread_tags');
     }
 }
