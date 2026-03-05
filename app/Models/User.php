@@ -46,6 +46,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'rust_steam_id',
         'rust_verified',
         'cover_photo_path',
+        'cover_overlay_opacity',
         'custom_css',
         'username_color',
         'userbar_hue',

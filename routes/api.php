@@ -120,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Profile cover
     Route::post('/user/cover', [ProfileCoverController::class, 'store']);
+    Route::put('/user/cover/overlay', [ProfileCoverController::class, 'updateOverlay']);
     Route::delete('/user/cover', [ProfileCoverController::class, 'destroy']);
 
     // User perks

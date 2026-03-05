@@ -24,7 +24,17 @@ class ProfileCoverController extends Controller
         $path = $request->file('image')->store('covers', 'public');
         $user->update(['cover_photo_path' => $path]);
 
-        return response()->json(['cover_url' => $user->fresh()->cover_url]);
+        return response()->json([
+            'cover_url' => $user->fresh()->cover_url,
+            'cover_overlay_opacity' => $user->cover_overlay_opacity,
+        ]);
+    }
+
+    public function updateOverlay(Request $request): JsonResponse
+    {
+        $request->validate(['opacity' => ['required', 'integer', 'min:0', 'max:80']]);
+        $request->user()->update(['cover_overlay_opacity' => $request->opacity]);
+        return response()->json(['cover_overlay_opacity' => $request->opacity]);
     }
 
     public function destroy(Request $request): JsonResponse
