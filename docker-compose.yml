@@ -1,0 +1,58 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    env_file: .env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage:/app/storage/app/public
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../voltexaforum
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_PUSHER_APP_KEY: voltexahub-key
+        VITE_PUSHER_HOST: localhost
+        VITE_PUSHER_PORT: 6001
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: voltexahub
+      MYSQL_USER: voltexahub
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "voltexahub", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  soketi:
+    image: quay.io/soketi/soketi:latest-16-alpine
+    ports:
+      - "6001:6001"
+    environment:
+      SOKETI_APP_ID: voltexahub-id
+      SOKETI_APP_KEY: voltexahub-key
+      SOKETI_APP_SECRET: voltexahub-secret
+      SOKETI_DEFAULT_APP_MAX_CONNS: "100"
+    restart: unless-stopped
+
+volumes:
+  storage:
+  dbdata:
