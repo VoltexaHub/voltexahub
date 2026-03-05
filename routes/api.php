@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LockedContentController;
+use App\Http\Controllers\Api\LockedContentReportController;
 use App\Http\Controllers\Api\ProfileCoverController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\UserPerkController;
@@ -130,6 +131,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Locked content
     Route::post('/locked-content/unlock', [LockedContentController::class, 'unlock']);
     Route::get('/locked-content/check', [LockedContentController::class, 'check']);
+    Route::get('/locked-content/{hash}/status', [LockedContentReportController::class, 'status']);
+    Route::post('/locked-content/{hash}/report', [LockedContentReportController::class, 'report']);
 
     // Forum actions
     Route::post('/threads', [ThreadController::class, 'store']);
