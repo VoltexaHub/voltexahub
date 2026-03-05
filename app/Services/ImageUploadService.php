@@ -32,10 +32,7 @@ class ImageUploadService
         // Store them directly without processing to preserve animation.
         if (in_array(strtolower($file->getClientOriginalExtension()), ['gif'])
             || $file->getMimeType() === 'image/gif') {
-            $filename = Str::random(40) . '.gif';
-            $path = $directory . '/' . $filename;
-            Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
-            return $path;
+            return $file->storeAs($directory, Str::random(40) . '.gif', 'public');
         }
 
         $filename = Str::random(40) . '.webp';
