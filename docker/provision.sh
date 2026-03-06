@@ -32,14 +32,14 @@ DB_PASSWORD="$(openssl rand -hex 16)"
 PUSHER_KEY="$(openssl rand -hex 16)"
 PUSHER_SECRET="$(openssl rand -hex 16)"
 
-# Create MySQL database and user
+# Create MySQL database and user (via docker exec)
 echo "==> Creating database..."
-mysql -h "${MYSQL_HOST}" -u root -p"${MYSQL_ROOT_PASSWORD}" <<SQL
+docker exec voltexahub-mysql mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "
 CREATE DATABASE IF NOT EXISTS \`forum_${INSTANCE_ID}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'forum_${INSTANCE_ID}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`forum_${INSTANCE_ID}\`.* TO 'forum_${INSTANCE_ID}'@'%';
 FLUSH PRIVILEGES;
-SQL
+"
 
 # Create instance directory
 mkdir -p "${INSTANCE_DIR}"
