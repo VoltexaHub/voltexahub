@@ -1,3 +1,13 @@
+# Stage 1: Build frontend
+FROM node:20-alpine AS frontend
+
+WORKDIR /frontend
+COPY voltexaforum/package*.json ./
+RUN npm ci
+COPY voltexaforum/ .
+RUN npm run build
+
+# Stage 2: Backend
 FROM php:8.4-fpm-alpine
 
 # System dependencies
@@ -46,11 +56,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Install PHP deps (layer cache)
-COPY composer.json composer.lock ./
+COPY voltexahub/composer.json voltexahub/composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
-# Copy app
-COPY . .
+# Copy backend app
+COPY voltexahub/ .
+
+# Copy built frontend into public/spa
+COPY --from=frontend /frontend/dist /app/public/spa
 
 # Optimise autoloader
 RUN composer dump-autoload --optimize --no-dev
@@ -65,9 +78,9 @@ RUN mkdir -p \
     && chmod -R 775 storage bootstrap/cache
 
 # Docker config files
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/start.sh /start.sh
+COPY voltexahub/docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY voltexahub/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY voltexahub/docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 80
