@@ -46,13 +46,13 @@ mkdir -p "${INSTANCE_DIR}"
 
 # Write docker-compose from template
 sed \
-  -e "s/INSTANCE_ID/${INSTANCE_ID}/g" \
-  -e "s/INSTANCE_SUBDOMAIN/${SUBDOMAIN}/g" \
-  -e "s/INSTANCE_APP_KEY/${APP_KEY}/g" \
-  -e "s/INSTANCE_DB_PASSWORD/${DB_PASSWORD}/g" \
-  -e "s/INSTANCE_PUSHER_KEY/${PUSHER_KEY}/g" \
-  -e "s/INSTANCE_PUSHER_SECRET/${PUSHER_SECRET}/g" \
-  -e "s/MYSQL_HOST/${MYSQL_HOST}/g" \
+  -e "s|INSTANCE_ID|${INSTANCE_ID}|g" \
+  -e "s|INSTANCE_SUBDOMAIN|${SUBDOMAIN}|g" \
+  -e "s|INSTANCE_APP_KEY|${APP_KEY}|g" \
+  -e "s|INSTANCE_DB_PASSWORD|${DB_PASSWORD}|g" \
+  -e "s|INSTANCE_PUSHER_KEY|${PUSHER_KEY}|g" \
+  -e "s|INSTANCE_PUSHER_SECRET|${PUSHER_SECRET}|g" \
+  -e "s|MYSQL_HOST|${MYSQL_HOST}|g" \
   "${BASE_DIR}/app/voltexahub/docker/instance.yml" > "${INSTANCE_DIR}/docker-compose.yml"
 
 # Start instance
