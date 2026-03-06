@@ -60,6 +60,32 @@ echo "==> Starting container..."
 cd "${INSTANCE_DIR}"
 docker compose up -d
 
+# Wait briefly for container to get an IP
+sleep 3
+CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "forum_${INSTANCE_ID}" 2>/dev/null)
+
+# Register route in Traefik dynamic config
+if [ -n "$CONTAINER_IP" ]; then
+  echo "==> Registering Traefik route (${CONTAINER_IP})..."
+  python3 - <<PYEOF
+import yaml, os
+
+path = "/opt/voltexahub/traefik/dynamic/forums.yml"
+d = yaml.safe_load(open(path)) if os.path.exists(path) else {"http": {"routers": {}, "services": {}}}
+d["http"]["routers"]["forum-${INSTANCE_ID}"] = {
+    "rule": "Host(\`${SUBDOMAIN}.voltexahub.com\`)",
+    "entryPoints": ["websecure"],
+    "tls": {"certResolver": "letsencrypt"},
+    "service": "forum-${INSTANCE_ID}"
+}
+d["http"]["services"]["forum-${INSTANCE_ID}"] = {
+    "loadBalancer": {"servers": [{"url": "http://${CONTAINER_IP}:80"}]}
+}
+yaml.dump(d, open(path, "w"), default_flow_style=False)
+print("Route registered.")
+PYEOF
+fi
+
 echo "==> Waiting for instance to initialize..."
 sleep 10
 
