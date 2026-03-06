@@ -24,7 +24,8 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     libexif-dev \
-    exiftool
+    exiftool \
+    libxml2-dev
 
 # PHP extensions (tokenizer, ctype, fileinfo, opcache, posix are bundled in PHP 8.4-FPM)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
