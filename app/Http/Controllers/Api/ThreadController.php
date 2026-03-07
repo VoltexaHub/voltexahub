@@ -18,7 +18,7 @@ class ThreadController extends Controller
 
     public function index(Request $request, string $slug): JsonResponse
     {
-        $forum = Forum::with(['category', 'parentForum'])->where('slug', $slug)->firstOrFail();
+        $forum = Forum::with(['category', 'parentForum', 'subforums' => fn ($q) => $q->where('is_active', true)->orderBy('display_order')])->where('slug', $slug)->firstOrFail();
 
         if (!$this->canView($request, $forum)) {
             return $this->denyView();
