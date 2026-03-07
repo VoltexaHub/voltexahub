@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\Admin\AdminAchievementController;
 use App\Http\Controllers\Api\Admin\AdminAwardController;
 use App\Http\Controllers\Api\Admin\AdminLevelController;
 use App\Http\Controllers\Api\Admin\AdminConfigController;
-use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminLogoController;
 use App\Http\Controllers\Api\Admin\AdminGroupController;
 use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
@@ -273,8 +272,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/reports/{id}', [AdminReportController::class, 'update']);
 
     // Content management
-    Route::get('/content/threads', [AdminContentController::class, 'threads']);
-    Route::get('/content/posts', [AdminContentController::class, 'posts']);
+
 
     // Advertisements
     Route::get('/advertisements', [AdminAdvertisementController::class, 'index']);
