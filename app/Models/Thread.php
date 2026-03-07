@@ -92,4 +92,9 @@ class Thread extends Model
     {
         return $this->belongsToMany(Tag::class, 'thread_tags');
     }
+
+    public function poll(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Poll::class);
+    }
 }

@@ -102,6 +102,7 @@ class ThreadController extends Controller
                 'user', 'user.roles', 'forum.category', 'forum.parentForum', 'lastReplyUser', 'lastReplyUser.roles',
                 'prefix:id,name,color,bg_color,text_color', 'tags:id,name,slug',
                 'solvedPost:id,user_id', 'solvedPost.user:id,username',
+                'poll.options',
             ])
             ->where(is_numeric($id) ? 'id' : 'slug', $id)
             ->firstOrFail();
@@ -124,6 +125,31 @@ class ThreadController extends Controller
             'avatar_url' => $l->user->avatar_url ?? null,
         ]);
         $threadData['is_liked_by_me'] = auth()->check() ? $thread->likes()->where('user_id', auth()->id())->exists() : false;
+
+        if ($thread->poll) {
+            $poll = $thread->poll;
+            $totalVotes = $poll->votes()->count();
+            $userVotedOptionIds = auth()->check()
+                ? $poll->votes()->where('user_id', auth()->id())->pluck('poll_option_id')->toArray()
+                : [];
+
+            $threadData['poll'] = [
+                'id' => $poll->id,
+                'question' => $poll->question,
+                'allow_multiple' => $poll->allow_multiple,
+                'closes_at' => $poll->closes_at,
+                'is_closed' => $poll->isClosed(),
+                'total_votes' => $totalVotes,
+                'user_voted_option_ids' => $userVotedOptionIds,
+                'options' => $poll->options->map(fn($o) => [
+                    'id' => $o->id,
+                    'label' => $o->label,
+                    'sort_order' => $o->sort_order,
+                    'vote_count' => $o->votes()->count(),
+                    'vote_percentage' => $totalVotes > 0 ? round(($o->votes()->count() / $totalVotes) * 100, 1) : 0,
+                ]),
+            ];
+        }
 
         return response()->json(['data' => $threadData]);
     }

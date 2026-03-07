@@ -41,4 +41,8 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'github_sponsors' => [
+        'webhook_secret' => env('GITHUB_SPONSORS_WEBHOOK_SECRET'),
+    ],
+
 ];

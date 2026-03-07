@@ -31,7 +31,7 @@ class PostController extends Controller
             ->with([
                 'user' => fn ($q) => $q->select(
                     'id', 'username', 'avatar_color', 'avatar_path', 'postbit_bg', 'user_title',
-                    'post_count', 'credits', 'xp', 'created_at'
+                    'post_count', 'credits', 'xp', 'created_at', 'is_sponsor', 'sponsor_since'
                 ),
                 'user.roles',
                 'user.activeBoost',

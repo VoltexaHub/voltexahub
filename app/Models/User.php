@@ -47,6 +47,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'minecraft_verified',
         'rust_steam_id',
         'rust_verified',
+        'github_username',
+        'is_sponsor',
+        'sponsor_since',
+        'sponsor_tier',
         'cover_photo_path',
         'cover_overlay_opacity',
         'custom_css',
@@ -80,6 +84,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'post_count' => 'integer',
             'username_changed_at' => 'datetime',
             'awards_sort_order' => 'array',
+            'is_sponsor' => 'boolean',
+            'sponsor_since' => 'datetime',
         ];
     }
 

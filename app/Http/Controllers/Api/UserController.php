@@ -196,6 +196,10 @@ class UserController extends Controller
                 "twitter_handle" => $user->twitter_handle ?? null,
                 "website_url" => $user->website_url ?? null,
                 "minecraft_ign" => $user->minecraft_ign ?? null,
+                "github_username" => $user->github_username ?? null,
+                "is_sponsor" => (bool) $user->is_sponsor,
+                "sponsor_since" => $user->sponsor_since?->toISOString(),
+                "sponsor_tier" => $user->sponsor_tier,
                 "cover_url" => $user->cover_url,
                 "cover_overlay_opacity" => $user->cover_overlay_opacity ?? 20,
                 "custom_css" => $user->custom_css,
@@ -228,9 +232,39 @@ class UserController extends Controller
             'website_url' => ['nullable', 'url', 'max:255'],
             'minecraft_ign' => ['nullable', 'string', 'max:50'],
             'rust_steam_id' => ['nullable', 'string', 'max:50'],
+            'github_username' => ['nullable', 'string', 'max:100'],
         ]);
 
         $user->update($validated);
+
+        // Auto-check sponsor status when github_username changes
+        if (array_key_exists('github_username', $validated)) {
+            $ghUser = $validated['github_username'];
+            if ($ghUser) {
+                $sponsor = \App\Models\GithubSponsor::where('github_login', $ghUser)
+                    ->where('active', true)
+                    ->first();
+                if ($sponsor) {
+                    $user->update([
+                        'is_sponsor' => true,
+                        'sponsor_since' => $sponsor->sponsored_at ?? now(),
+                        'sponsor_tier' => $sponsor->tier,
+                    ]);
+                } else {
+                    $user->update([
+                        'is_sponsor' => false,
+                        'sponsor_since' => null,
+                        'sponsor_tier' => null,
+                    ]);
+                }
+            } else {
+                $user->update([
+                    'is_sponsor' => false,
+                    'sponsor_since' => null,
+                    'sponsor_tier' => null,
+                ]);
+            }
+        }
 
         return response()->json([
             'data' => $user->fresh(),

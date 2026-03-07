@@ -1,0 +1,7 @@
+{
+    "slug": "github-sponsors",
+    "name": "GitHub Sponsors",
+    "version": "1.0.0",
+    "author": "VoltexaHub",
+    "description": "Integrate GitHub Sponsors with your forum — webhook sync, sponsor badges, and admin management."
+}
