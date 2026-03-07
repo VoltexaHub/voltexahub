@@ -171,36 +171,98 @@ bash ~/Projects/voltexaforum/scripts/soketi-start.sh
 
 ---
 
+## Session: 2026-03-06 — Major Feature Sprint
+
+### XP Boost Store Items
+- `user_xp_boosts` table (user_id, multiplier, expires_at) + `UserXpBoost` model
+- `XpService::award()` checks active boost and multiplies XP
+- `StoreController` handles `xp_boost` item type — purchases stack by extending `expires_at`
+- Profile: amber glowing badge with live countdown timer
+- Postbit: amber ⚡ icon when author has active boost
+- Navbar: pulsing amber bolt when logged-in user has active boost
+- Store: amber "XP Boost" tag on boost items
+- Admin store form: replaced raw JSON input with multiplier (1.5x/2x/3x/5x) + duration dropdowns
+
+### Admin Panel Improvements
+- **Dashboard**: added Posts Today / Threads Today / New Users Today stat cards, Top 5 Forums ranked list, fixed recent registrations + purchases, removed dead `failed_deliveries` field
+- **Reports**: lazy-load tabs (only pending fetched on mount), inline post content preview + "View Thread →" link
+- **Thread moderation**: checkboxes + bulk action bar (lock/unlock/delete selected)
+- **Admin nav**: removed redundant Content → Threads and Content → Posts pages; moved Forums into Content section alongside Thread Prefixes
+- **Admin sidebar**: removed bolt icon from header
+
+### Performance Fixes
+- Levels table cached for 5 minutes (busted on admin save/delete)
+- `Post::getAuthorAttribute()` — eager loads `activeBoost` relation instead of per-post query; uses cached levels
+- Subforum stats — replaced per-subforum loop (N+1) with 3 bulk queries total
+- Removed redundant manual level computation from PostController
+
+### Component Refactors
+- Split `UserCPView.vue` (1,368 lines) → `UserCPProfile`, `UserCPAccount`, `UserCPNotifications`, `UserCPCover` sub-components
+- Split `ThreadView.vue` (885 lines) → `PostCard.vue`, `PostEditor.vue` sub-components
+
+### Subforum Display
+- Fixed admin forum list not showing subforums (flattened into category.forums after fetch)
+- Removed redundant "Sub forum of: X" label from admin list
+- `ThreadController` now includes subforums with thread_count, post_count, last_thread, lastPostUser
+- Subforum rows in ThreadListView use same grid as thread header (aligned columns)
+- Added Forum/Posts/Last Post header row to subforum section
+- Removed pinned/regular thread divider from thread list
+- Homepage subforum strip: inline links with subtle darker bg
+
+### FA Icon Picker
+- Expanded to full FA7 free solid set (~1,385 icons incl. all folder variants)
+
+### Profile Page Enrichment
+- **Mood/Status**: nullable `status` field (max 100), set in UserCP, shows below username on profile
+- **Pinned Thread**: `pinned_thread_id` on users; "Pin to Profile" button on first post; amber card on profile
+- **Reputation**: total likes received across all posts, shown in stats row
+- **Stat breakdown**: replies_made, likes_given returned from API
+- **Recent Activity feed**: last 8 posts with thread/forum context + excerpt, timeline style on Overview tab
+
+### Credits Page
+- Replaced `&#9889;` lightning bolt entities with `fa-solid fa-coins` icon
+- "How to Earn Credits" grid: 4 boxes per row (was 3)
+
+### GitHub / Deployment
+- All repos migrated to VoltexaHub org as origin
+- community.voltexahub.com (187.124.80.32) updated throughout
+
+---
+
 ## What's Next 🔧
 
 ### High Priority
 1. **BBCode editor (Option C)** — Markdown + BBCode side by side
    - s9e/TextFormatter PHP library for parsing
    - BBCode toolbar: color, size, spoiler, code block, image, video embeds
-   - Store content as-is (mixed), parser handles both
 
 2. **Thread subscriptions**
    - thread_subscriptions table (user_id, thread_id)
    - Subscribe button in ThreadView
    - Trigger ThreadReply notification for subscribers
 
-3. **Report system**
-   - reports table (reporter_id, post_id, reason, status)
-   - Report button on posts
-   - Admin moderation queue page (pending_reports already in dashboard)
+3. **Report system** ✅ (built — reports table, report button, admin queue with inline preview)
 
 ### Medium Priority
 4. **Image embeds** — upload endpoint + paste/drag handler in MarkdownEditor
-5. **Thread solved/best answer** — mark reply as solution, credits_for_solved
-6. **Frontend password reset form** — /reset-password (backend done)
-7. **Email verification flow** — frontend redirect from email link → verify
+5. **Solved badge in thread list** — green pill next to title for solved threads (deferred, low priority)
+6. **Email templates** — deferred
+7. **Frontend password reset form** — /reset-password (backend done)
+8. **Email verification flow** — frontend redirect from email link → verify
+
+### Profile — Future Ideas (Lower Priority)
+- Visitor log (profile_visits table, opt-in)
+- Showcase slots (JSON column, 3–5 featured items/links)
+- Rarity badge ("Top X% poster this month")
+- Longest streak (needs daily activity tracking)
+- Custom profile layout / section ordering (premium)
+- Follow/follower system (new table)
 
 ### Lower Priority
-8. **Leaderboard** — top credits earners, top posters
-9. **Tag/flair system** — thread tags, filter by tag
-10. **Thread prefixes** — [Guide], [Question], etc. with colors
+9. **Leaderboard** — top credits earners, top posters
+10. **Tag/flair system** — thread tags, filter by tag
 11. **Plugin system** — admin panel hook registration
-12. **Marketing site (voltexahub.com)** — showcase site separate from community subdomain
+12. **Marketing site (voltexahub.com)** — showcase site
 
 ### Known Issues / Tech Debt
 - BBCode not yet implemented (just Markdown)
@@ -208,7 +270,6 @@ bash ~/Projects/voltexaforum/scripts/soketi-start.sh
 - RCON delivery untested end-to-end
 - Stripe keys are placeholders in dev
 - `php artisan serve` in systemd (dev simplification — OK for now)
-- Server restart needed (`*** System restart required ***`) — VPS kernel update pending
 
 ---
 
