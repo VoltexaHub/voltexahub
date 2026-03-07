@@ -107,8 +107,10 @@ class CheckSystemStatus extends Command
 
     protected function checkWebSocket(): array
     {
-        $host = config('broadcasting.connections.reverb.options.host', '127.0.0.1');
-        $port = config('broadcasting.connections.reverb.options.port', 8080);
+        // Use internal Docker service name if REVERB_INTERNAL_HOST is set,
+        // otherwise fall back to config (useful for non-Docker installs)
+        $host = env('REVERB_INTERNAL_HOST', config('broadcasting.connections.reverb.options.host', '127.0.0.1'));
+        $port = env('REVERB_INTERNAL_PORT', config('broadcasting.connections.reverb.options.port', 8080));
         $scheme = config('broadcasting.connections.reverb.options.scheme', 'http');
 
         if (! $host) {
