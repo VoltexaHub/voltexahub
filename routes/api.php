@@ -109,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/notifications', [UserController::class, 'notifications']);
     Route::get('/user/cosmetics', [UserController::class, 'cosmetics']);
     Route::put('/user/cosmetics/{id}/toggle', [UserController::class, 'toggleCosmetic']);
+    Route::put('/user/pinned-thread', [UserController::class, 'updatePinnedThread']);
     Route::put('/user/settings/notifications', [UserController::class, 'updateNotificationSettings']);
     Route::put('/user/settings/privacy', [UserController::class, 'updatePrivacySettings']);
     Route::get('/user/sessions', [UserController::class, 'sessions']);

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\ForumConfig;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -53,6 +54,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'userbar_hue',
         'username_changed_at',
         'awards_sort_order',
+        'status',
+        'pinned_thread_id',
     ];
 
     protected $hidden = [
@@ -170,6 +173,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function activeCosmetic(): HasOne
     {
         return $this->hasOne(UserCosmetic::class)->where('is_active', true);
+    }
+
+    public function pinnedThread(): BelongsTo
+    {
+        return $this->belongsTo(Thread::class, 'pinned_thread_id');
     }
 
     public function sessions(): HasMany

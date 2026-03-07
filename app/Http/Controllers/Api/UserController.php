@@ -8,6 +8,7 @@ use App\Services\PerkService;
 use App\Services\XpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -62,8 +63,56 @@ class UserController extends Controller
             ->take(5)
             ->get();
 
+        // Recent activity (last 8 posts with thread/forum info)
+        $recentActivity = $user->posts()
+            ->with(['thread:id,title,slug,forum_id', 'thread.forum:id,name,slug'])
+            ->latest()
+            ->take(8)
+            ->get(['id', 'thread_id', 'created_at', 'body'])
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'thread_title' => $p->thread?->title,
+                'thread_slug' => $p->thread?->slug,
+                'forum_name' => $p->thread?->forum?->name,
+                'forum_slug' => $p->thread?->forum?->slug,
+                'created_at' => $p->created_at?->toISOString(),
+                'excerpt' => mb_strimwidth(strip_tags($p->body ?? ''), 0, 120, '...'),
+            ]);
+
         $isOnline = $user->last_seen && $user->last_seen->gte(now()->subMinutes(15));
         $threadCount = $user->threads()->count();
+
+        // Reputation (total likes received on all posts)
+        $reputation = DB::table('post_likes')
+            ->join('posts', 'post_likes.post_id', '=', 'posts.id')
+            ->where('posts.user_id', $user->id)
+            ->count();
+
+        // Likes given
+        $likesGiven = DB::table('post_likes')->where('user_id', $user->id)->count();
+
+        // Replies made (posts minus threads started)
+        $repliesMade = max(0, ($user->post_count ?? 0) - $threadCount);
+
+        // Pinned thread
+        $pinnedThread = null;
+        if ($user->pinned_thread_id) {
+            $pt = $user->pinnedThread()->with('forum:id,name,slug')->first();
+            if ($pt) {
+                $pinnedThread = [
+                    'id' => $pt->id,
+                    'title' => $pt->title,
+                    'slug' => $pt->slug,
+                    'reply_count' => $pt->reply_count ?? 0,
+                    'created_at' => $pt->created_at?->toISOString(),
+                    'forum' => $pt->forum ? [
+                        'id' => $pt->forum->id,
+                        'name' => $pt->forum->name,
+                        'slug' => $pt->forum->slug,
+                    ] : null,
+                ];
+            }
+        }
 
         $xp = $user->xp ?? 0;
         $currentLevel = XpService::levelFor($xp);
@@ -98,6 +147,7 @@ class UserController extends Controller
                 "avatar_color" => $user->avatar_color,
                 "user_title" => $user->user_title,
                 "bio" => $user->bio,
+                "status" => $user->status,
                 "signature" => $user->signature,
                 "post_count" => $user->post_count,
                 "thread_count" => $threadCount,
@@ -154,6 +204,11 @@ class UserController extends Controller
                 "xp_boost_active" => $boost ? true : false,
                 "xp_boost_multiplier" => $boost?->multiplier,
                 "xp_boost_expires_at" => $boost?->expires_at?->toIso8601String(),
+                "reputation" => $reputation,
+                "likes_given" => $likesGiven,
+                "replies_made" => $repliesMade,
+                "pinned_thread" => $pinnedThread,
+                "recent_activity" => $recentActivity,
             ],
         ]);
     }
@@ -165,6 +220,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'user_title' => ['nullable', 'string', 'max:100'],
             'bio' => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', 'string', 'max:100'],
             'signature' => ['nullable', 'string', 'max:500'],
             'avatar_color' => ['nullable', 'string', 'max:7'],
             'discord_username' => ['nullable', 'string', 'max:100'],
@@ -319,6 +375,26 @@ class UserController extends Controller
         // Placeholder for privacy preferences - can be extended
         return response()->json([
             'message' => 'Privacy settings updated.',
+        ]);
+    }
+
+    public function updatePinnedThread(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'thread_id' => ['nullable', 'integer'],
+        ]);
+
+        if ($validated['thread_id']) {
+            $thread = $user->threads()->where('id', $validated['thread_id'])->firstOrFail();
+            $user->update(['pinned_thread_id' => $thread->id]);
+        } else {
+            $user->update(['pinned_thread_id' => null]);
+        }
+
+        return response()->json([
+            'message' => $validated['thread_id'] ? 'Thread pinned to profile.' : 'Thread unpinned from profile.',
         ]);
     }
 
