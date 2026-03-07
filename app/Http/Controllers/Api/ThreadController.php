@@ -18,7 +18,18 @@ class ThreadController extends Controller
 
     public function index(Request $request, string $slug): JsonResponse
     {
-        $forum = Forum::with(['category', 'parentForum', 'subforums' => fn ($q) => $q->where('is_active', true)->orderBy('display_order')])->where('slug', $slug)->firstOrFail();
+        $forum = Forum::with([
+            'category',
+            'parentForum',
+            'subforums' => fn ($q) => $q->where('is_active', true)->orderBy('display_order')->with(['lastPostUser:id,username,avatar_color,avatar_path']),
+        ])->where('slug', $slug)->firstOrFail();
+
+        // Enrich subforums with counts + last thread
+        $forum->subforums->each(function ($sub) {
+            $sub->thread_count = $sub->threads()->count();
+            $sub->post_count   = $sub->threads()->withCount('posts')->get()->sum('posts_count');
+            $sub->last_thread  = $sub->threads()->latest('created_at')->select('id', 'title', 'slug')->first();
+        });
 
         if (!$this->canView($request, $forum)) {
             return $this->denyView();
