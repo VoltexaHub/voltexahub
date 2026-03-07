@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\Admin\AdminAchievementController;
 use App\Http\Controllers\Api\Admin\AdminAwardController;
+use App\Http\Controllers\Api\Admin\AdminLevelController;
 use App\Http\Controllers\Api\Admin\AdminConfigController;
 use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminLogoController;
@@ -234,6 +235,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/awards', [AdminAwardController::class, 'store']);
     Route::put('/awards/{id}', [AdminAwardController::class, 'update']);
     Route::delete('/awards/{id}', [AdminAwardController::class, 'destroy']);
+
+    // Levels & XP
+    Route::post('/levels/preset', [AdminLevelController::class, 'preset']);
+    Route::get('/levels/xp-settings', [AdminLevelController::class, 'xpSettings']);
+    Route::put('/levels/xp-settings', [AdminLevelController::class, 'updateXpSettings']);
+    Route::get('/levels', [AdminLevelController::class, 'index']);
+    Route::post('/levels', [AdminLevelController::class, 'store']);
+    Route::put('/levels/{id}', [AdminLevelController::class, 'update']);
+    Route::delete('/levels/{id}', [AdminLevelController::class, 'destroy']);
 
     // Groups
     Route::get('/groups', [AdminGroupController::class, 'index']);

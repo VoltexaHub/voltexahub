@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\PerkService;
+use App\Services\XpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -57,6 +58,26 @@ class UserController extends Controller
         $isOnline = $user->last_seen && $user->last_seen->gte(now()->subMinutes(15));
         $threadCount = $user->threads()->count();
 
+        $xp = $user->xp ?? 0;
+        $currentLevel = XpService::levelFor($xp);
+        $nextLevel = XpService::nextLevel($xp);
+        $levelProgress = XpService::progressPercent($xp);
+
+        // Years of service
+        $yearsOfService = null;
+        if ($user->created_at) {
+            $days = (int) $user->created_at->diffInDays(now());
+            if ($days >= 1825) $yearsOfService = '5+ years';
+            elseif ($days >= 1460) $yearsOfService = '4 years';
+            elseif ($days >= 1095) $yearsOfService = '3 years';
+            elseif ($days >= 730) $yearsOfService = '2 years';
+            elseif ($days >= 365) $yearsOfService = '1 year';
+            elseif ($days >= 180) $yearsOfService = '6 months';
+            elseif ($days >= 90) $yearsOfService = '3 months';
+            elseif ($days >= 30) $yearsOfService = '1 month';
+            elseif ($days >= 7) $yearsOfService = '1 week';
+        }
+
         return response()->json([
             "data" => [
                 "id" => $user->id,
@@ -70,6 +91,12 @@ class UserController extends Controller
                 "post_count" => $user->post_count,
                 "thread_count" => $threadCount,
                 "credits" => $user->credits,
+                "xp" => $xp,
+                "level" => $currentLevel?->level,
+                "level_label" => $currentLevel?->label,
+                "xp_next_level" => $nextLevel?->xp_required,
+                "level_progress" => $levelProgress,
+                "years_of_service" => $yearsOfService,
                 "join_date" => $user->created_at?->toISOString(),
                 "last_seen" => $user->last_seen?->toISOString(),
                 "is_online" => $isOnline,
