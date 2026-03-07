@@ -440,7 +440,7 @@ info 'Setting up frontend...'
 FRONTEND_DIR="$(dirname "$INSTALL_DIR")/voltexaforum"
 if [ ! -d "$FRONTEND_DIR" ]; then
   info 'Cloning voltexaforum...'
-  git clone --depth=1 https://github.com/joogiebear/voltexaforum.git "$FRONTEND_DIR" >/dev/null 2>&1
+  git clone --depth=1 https://github.com/VoltexaHub/voltexaforum.git "$FRONTEND_DIR" >/dev/null 2>&1
 fi
 
 if [ -d "$FRONTEND_DIR" ]; then
@@ -464,7 +464,7 @@ VITEENV
   cd "$INSTALL_DIR"
 else
   warn "Could not clone frontend — Nginx will fallback to Laravel public dir"
-  warn "Run manually: git clone https://github.com/joogiebear/voltexaforum.git $FRONTEND_DIR && cd $FRONTEND_DIR && npm install && npm run build"
+  warn "Run manually: git clone https://github.com/VoltexaHub/voltexaforum.git $FRONTEND_DIR && cd $FRONTEND_DIR && npm install && npm run build"
 fi
 
 # ---------------------------------------------------------------------------
