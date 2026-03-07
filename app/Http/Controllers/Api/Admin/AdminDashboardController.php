@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Forum;
 use App\Models\Post;
 use App\Models\Report;
 use App\Models\StorePurchase;
@@ -21,11 +22,20 @@ class AdminDashboardController extends Controller
         $onlineCount = User::where('last_seen', '>=', Carbon::now()->subMinutes(15))->count();
         $pendingReports = Report::where('status', 'pending')->count();
 
+        $postsToday = Post::whereDate('created_at', today())->count();
+        $threadsToday = Thread::whereDate('created_at', today())->count();
+        $usersToday = User::whereDate('created_at', today())->count();
+        $totalCredits = (int) User::sum('credits');
+
         $revenueThisMonth = StorePurchase::where('status', 'completed')
             ->where('payment_method', 'money')
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('amount_paid');
+
+        $topForums = Forum::orderByDesc('thread_count')
+            ->take(5)
+            ->get(['id', 'name', 'slug', 'thread_count', 'post_count']);
 
         // Recent activity: mix of registrations, purchases, and threads
         $recentUsers = User::latest()
@@ -37,7 +47,7 @@ class AdminDashboardController extends Controller
                 'at' => $u->created_at,
             ]);
 
-        $recentPurchases = StorePurchase::with(['user:id,username', 'storeItem:id,name'])
+        $recentPurchasesActivity = StorePurchase::with(['user:id,username', 'storeItem:id,name'])
             ->where('status', 'completed')
             ->latest()
             ->take(10)
@@ -61,11 +71,28 @@ class AdminDashboardController extends Controller
             ]);
 
         $recentActivity = $recentUsers
-            ->concat($recentPurchases)
+            ->concat($recentPurchasesActivity)
             ->concat($recentThreads)
             ->sortByDesc('at')
             ->take(10)
             ->values();
+
+        $recentRegistrations = User::latest()
+            ->take(5)
+            ->get(['id', 'username', 'created_at', 'avatar_color', 'avatar_path']);
+
+        $recentPurchases = StorePurchase::with(['user:id,username', 'storeItem:id,name'])
+            ->where('status', 'completed')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(fn ($p) => [
+                'user' => $p->user->username ?? 'Unknown',
+                'item_name' => $p->storeItem->name ?? 'Unknown',
+                'amount_paid' => $p->amount_paid,
+                'payment_method' => $p->payment_method,
+                'created_at' => $p->created_at,
+            ]);
 
         return response()->json([
             'data' => [
@@ -75,8 +102,15 @@ class AdminDashboardController extends Controller
                 'online_count' => $onlineCount,
                 'pending_reports' => $pendingReports,
                 'revenue_this_month' => (float) $revenueThisMonth,
+                'posts_today' => $postsToday,
+                'threads_today' => $threadsToday,
+                'users_today' => $usersToday,
+                'total_credits' => $totalCredits,
+                'top_forums' => $topForums,
                 'recent_activity' => $recentActivity,
             ],
+            'recent_registrations' => $recentRegistrations,
+            'recent_purchases' => $recentPurchases,
         ]);
     }
 }

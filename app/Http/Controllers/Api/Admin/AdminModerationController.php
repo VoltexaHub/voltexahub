@@ -4,22 +4,30 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\Report;
 use App\Models\Thread;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminModerationController extends Controller
 {
-    public function reports(): JsonResponse
+    public function reports(Request $request): JsonResponse
     {
-        $posts = Post::withTrashed()
-            ->with(['user:id,username', 'thread:id,title,slug'])
+        $status = $request->input('status', 'pending');
+
+        $reports = Report::where('status', $status)
+            ->with([
+                'reporter:id,username',
+                'post:id,thread_id,content',
+                'post.thread:id,title,slug',
+                'thread:id,title,slug',
+            ])
             ->latest()
-            ->take(20)
+            ->take(50)
             ->get();
 
         return response()->json([
-            'data' => $posts,
+            'data' => $reports,
         ]);
     }
 
