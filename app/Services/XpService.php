@@ -9,6 +9,15 @@ class XpService
 {
     public static function award(User $user, int $amount): void
     {
+        $boost = \App\Models\UserXpBoost::where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->orderByDesc('expires_at')
+            ->first();
+
+        if ($boost) {
+            $amount = (int) round($amount * $boost->multiplier);
+        }
+
         $user->increment('xp', $amount);
     }
 

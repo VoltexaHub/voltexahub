@@ -23,6 +23,13 @@ class UserController extends Controller
             ->with('storeItem')
             ->get();
 
+        $boost = \App\Models\UserXpBoost::where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->first();
+        $user->xp_boost_active = $boost ? true : false;
+        $user->xp_boost_multiplier = $boost?->multiplier;
+        $user->xp_boost_expires_at = $boost?->expires_at?->toIso8601String();
+
         $perkService = app(PerkService::class);
         $perkTypes = [
             PerkService::NO_ADS, PerkService::BYPASS_UNLOCK, PerkService::PROFILE_COVER,
@@ -77,6 +84,10 @@ class UserController extends Controller
             elseif ($days >= 30) $yearsOfService = '1 month';
             elseif ($days >= 7) $yearsOfService = '1 week';
         }
+
+        $boost = \App\Models\UserXpBoost::where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->first();
 
         return response()->json([
             "data" => [
@@ -140,6 +151,9 @@ class UserController extends Controller
                 "custom_css" => $user->custom_css,
                 "username_color" => $user->username_color,
                 "userbar_hue" => $user->userbar_hue,
+                "xp_boost_active" => $boost ? true : false,
+                "xp_boost_multiplier" => $boost?->multiplier,
+                "xp_boost_expires_at" => $boost?->expires_at?->toIso8601String(),
             ],
         ]);
     }

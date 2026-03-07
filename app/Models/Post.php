@@ -42,6 +42,10 @@ class Post extends Model
         $level = \App\Services\XpService::levelFor($user->xp ?? 0);
         $user->level = $level?->level;
         $user->level_label = $level?->label;
+        $activeBoost = \App\Models\UserXpBoost::where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->first();
+        $user->xp_boost_active = $activeBoost ? true : false;
         return $user;
     }
 

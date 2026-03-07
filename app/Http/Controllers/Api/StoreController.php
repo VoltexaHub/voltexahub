@@ -71,6 +71,28 @@ class StoreController extends Controller
             ]);
         }
 
+        // If it's an XP boost, create or extend boost
+        if ($item->item_type === 'xp_boost') {
+            $config = json_decode($item->item_value, true);
+            $multiplier = (float) ($config['multiplier'] ?? 2.0);
+            $durationHours = (int) ($config['duration_hours'] ?? 1);
+
+            $existingBoost = \App\Models\UserXpBoost::where('user_id', $user->id)
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if ($existingBoost) {
+                $existingBoost->expires_at = $existingBoost->expires_at->addHours($durationHours);
+                $existingBoost->save();
+            } else {
+                \App\Models\UserXpBoost::create([
+                    'user_id' => $user->id,
+                    'multiplier' => $multiplier,
+                    'expires_at' => now()->addHours($durationHours),
+                ]);
+            }
+        }
+
         // Send purchase confirmation email
         Mail::to($user)->send(new PurchaseConfirmation($purchase));
 
