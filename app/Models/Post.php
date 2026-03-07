@@ -35,7 +35,14 @@ class Post extends Model
 
     public function getAuthorAttribute()
     {
-        return $this->relationLoaded('user') ? $this->user : null;
+        if (!$this->relationLoaded('user') || !$this->user) {
+            return null;
+        }
+        $user = $this->user;
+        $level = \App\Services\XpService::levelFor($user->xp ?? 0);
+        $user->level = $level?->level;
+        $user->level_label = $level?->label;
+        return $user;
     }
 
     public function getRenderedContentAttribute(): string
