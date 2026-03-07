@@ -34,6 +34,7 @@ class PostController extends Controller
                     'post_count', 'credits', 'xp', 'created_at'
                 ),
                 'user.roles',
+                'user.activeBoost',
                 'user.userAwards' => fn ($q) => $q->with('award')->take(4),
                 'reactions',
             ])
@@ -54,12 +55,6 @@ class PostController extends Controller
             $post = $post->toArray();
             $post['like_count'] = $likeCounts[$post['id']] ?? 0;
             $post['is_liked_by_me'] = isset($likedByMe[$post['id']]);
-            if (isset($post['user'])) {
-                $authorXp = $post['user']['xp'] ?? 0;
-                $authorLevel = XpService::levelFor($authorXp);
-                $post['user']['level'] = $authorLevel?->level;
-                $post['user']['level_label'] = $authorLevel?->label;
-            }
             return $post;
         });
 
@@ -178,15 +173,10 @@ class PostController extends Controller
                 'post_count', 'credits', 'xp', 'created_at'
             ),
             'user.roles',
+            'user.activeBoost',
         ])->toArray();
         $postData['like_count'] = 0;
         $postData['is_liked_by_me'] = false;
-        if (isset($postData['user'])) {
-            $authorXp = $postData['user']['xp'] ?? 0;
-            $authorLevel = XpService::levelFor($authorXp);
-            $postData['user']['level'] = $authorLevel?->level;
-            $postData['user']['level_label'] = $authorLevel?->label;
-        }
 
         return response()->json([
             'data' => $postData,
@@ -221,15 +211,10 @@ class PostController extends Controller
                 'post_count', 'credits', 'xp', 'created_at'
             ),
             'user.roles',
+            'user.activeBoost',
         ])->toArray();
         $updatedPost['like_count'] = PostLike::where('post_id', $post->id)->count();
         $updatedPost['is_liked_by_me'] = auth()->check() && PostLike::where('user_id', auth()->id())->where('post_id', $post->id)->exists();
-        if (isset($updatedPost['user'])) {
-            $authorXp = $updatedPost['user']['xp'] ?? 0;
-            $authorLevel = XpService::levelFor($authorXp);
-            $updatedPost['user']['level'] = $authorLevel?->level;
-            $updatedPost['user']['level_label'] = $authorLevel?->label;
-        }
 
         return response()->json([
             'data' => $updatedPost,

@@ -27,6 +27,8 @@ class AdminLevelController extends Controller
 
         $level = Level::create($validated);
 
+        \Illuminate\Support\Facades\Cache::forget('forum_levels');
+
         return response()->json(['data' => $level], 201);
     }
 
@@ -42,12 +44,16 @@ class AdminLevelController extends Controller
 
         $level->update($validated);
 
+        \Illuminate\Support\Facades\Cache::forget('forum_levels');
+
         return response()->json(['data' => $level]);
     }
 
     public function destroy(int $id): JsonResponse
     {
         Level::findOrFail($id)->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('forum_levels');
 
         return response()->json(['message' => 'Level deleted.']);
     }
@@ -82,6 +88,8 @@ class AdminLevelController extends Controller
         foreach ($presets as $preset) {
             Level::create($preset);
         }
+
+        \Illuminate\Support\Facades\Cache::forget('forum_levels');
 
         return response()->json([
             'data' => Level::orderBy('level')->get(),

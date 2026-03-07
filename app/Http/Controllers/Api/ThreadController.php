@@ -24,12 +24,33 @@ class ThreadController extends Controller
             'subforums' => fn ($q) => $q->where('is_active', true)->orderBy('display_order')->with(['lastPostUser:id,username,avatar_color,avatar_path']),
         ])->where('slug', $slug)->firstOrFail();
 
-        // Enrich subforums with counts + last thread
-        $forum->subforums->each(function ($sub) {
-            $sub->thread_count = $sub->threads()->count();
-            $sub->post_count   = $sub->threads()->withCount('posts')->get()->sum('posts_count');
-            $sub->last_thread  = $sub->threads()->latest('created_at')->select('id', 'title', 'slug')->first();
-        });
+        // Enrich subforums with counts + last thread (bulk queries)
+        $subforumIds = $forum->subforums->pluck('id');
+
+        if ($subforumIds->isNotEmpty()) {
+            $threadCounts = \App\Models\Thread::whereIn('forum_id', $subforumIds)
+                ->groupBy('forum_id')
+                ->selectRaw('forum_id, count(*) as count')
+                ->pluck('count', 'forum_id');
+
+            $postCounts = \App\Models\Post::join('threads', 'posts.thread_id', '=', 'threads.id')
+                ->whereIn('threads.forum_id', $subforumIds)
+                ->groupBy('threads.forum_id')
+                ->selectRaw('threads.forum_id, count(posts.id) as count')
+                ->pluck('count', 'forum_id');
+
+            $lastThreads = \App\Models\Thread::whereIn('forum_id', $subforumIds)
+                ->orderByDesc('created_at')
+                ->get(['id', 'title', 'slug', 'forum_id'])
+                ->groupBy('forum_id')
+                ->map(fn($threads) => $threads->first());
+
+            $forum->subforums->each(function ($sub) use ($threadCounts, $postCounts, $lastThreads) {
+                $sub->thread_count = $threadCounts[$sub->id] ?? 0;
+                $sub->post_count   = $postCounts[$sub->id] ?? 0;
+                $sub->last_thread  = $lastThreads[$sub->id] ?? null;
+            });
+        }
 
         if (!$this->canView($request, $forum)) {
             return $this->denyView();

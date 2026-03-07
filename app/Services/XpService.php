@@ -4,9 +4,17 @@ namespace App\Services;
 
 use App\Models\Level;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class XpService
 {
+    private static function getLevels(): \Illuminate\Support\Collection
+    {
+        return Cache::remember('forum_levels', 300, function () {
+            return Level::orderBy('level')->get();
+        });
+    }
+
     public static function award(User $user, int $amount): void
     {
         $boost = \App\Models\UserXpBoost::where('user_id', $user->id)
@@ -23,15 +31,17 @@ class XpService
 
     public static function levelFor(int $xp): ?Level
     {
-        return Level::where('xp_required', '<=', $xp)
-            ->orderByDesc('xp_required')
+        return self::getLevels()
+            ->where('xp_required', '<=', $xp)
+            ->sortByDesc('xp_required')
             ->first();
     }
 
     public static function nextLevel(int $xp): ?Level
     {
-        return Level::where('xp_required', '>', $xp)
-            ->orderBy('xp_required')
+        return self::getLevels()
+            ->where('xp_required', '>', $xp)
+            ->sortBy('xp_required')
             ->first();
     }
 

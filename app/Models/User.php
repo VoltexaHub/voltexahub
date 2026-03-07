@@ -159,6 +159,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserCosmetic::class);
     }
 
+    public function activeBoost(): HasOne
+    {
+        return $this->hasOne(UserXpBoost::class)
+            ->where('expires_at', '>', now())
+            ->orderByDesc('expires_at')
+            ->limit(1);
+    }
+
     public function activeCosmetic(): HasOne
     {
         return $this->hasOne(UserCosmetic::class)->where('is_active', true);
