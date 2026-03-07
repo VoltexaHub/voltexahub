@@ -123,7 +123,8 @@ class CheckSystemStatus extends Command
         try {
             $response = Http::timeout(5)->get("{$scheme}://{$host}:{$port}/");
 
-            if ($response->successful() || $response->status() === 200) {
+            // Any HTTP response (even 404) means the server is reachable and running
+            if ($response->status() > 0) {
                 return [
                     'status' => 'operational',
                     'message' => null,
