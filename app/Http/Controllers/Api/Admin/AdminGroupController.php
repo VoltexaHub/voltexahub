@@ -7,6 +7,7 @@ use App\Models\GroupPermission;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Spatie\Permission\PermissionRegistrar;
 
 class AdminGroupController extends Controller
 {
@@ -40,6 +41,8 @@ class AdminGroupController extends Controller
             'is_staff'          => (bool) ($validated['is_staff'] ?? false),
             'staff_permissions' => $validated['staff_permissions'] ?? [],
         ]);
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return response()->json([
             'data'    => $this->formatRole($role),
@@ -81,6 +84,12 @@ class AdminGroupController extends Controller
             if (array_key_exists('can_reply', $validated)) $gp->can_reply = (bool) $validated['can_reply'];
             $gp->save();
         }
+
+        // Clear Spatie permission cache so updated role data is reflected immediately
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Refresh from DB to ensure response reflects persisted values
+        $role->refresh();
 
         return response()->json([
             'data'    => $this->formatRole($role),

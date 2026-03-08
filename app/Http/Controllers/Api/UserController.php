@@ -16,7 +16,8 @@ class UserController extends Controller
 {
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['roles', 'activeCosmetic.storeItem']);
+        $user = $request->user()->load(['activeCosmetic.storeItem']);
+        $user->load('roles'); // fresh load to bypass Spatie role cache
 
         $user->unread_notifications_count = $user->unreadNotifications()->count();
         $user->active_cosmetics = $user->cosmetics()
