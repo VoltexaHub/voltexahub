@@ -9,7 +9,7 @@ class UpgradePlan extends Model
     protected $fillable = [
         'name', 'slug', 'description', 'color', 'price', 'term',
         'role_name', 'rep_power_pos', 'rep_power_neg', 'rep_daily_limit',
-        'features', 'one_time_bonus', 'stripe_price_id',
+        'xp_multiplier', 'features', 'one_time_bonus', 'stripe_price_id',
         'display_order', 'is_active', 'is_featured', 'required_plan_id',
     ];
 
@@ -27,5 +27,6 @@ class UpgradePlan extends Model
         'rep_power_pos'   => 'integer',
         'rep_power_neg'   => 'integer',
         'rep_daily_limit' => 'integer',
+        'xp_multiplier'   => 'float',
     ];
 }
