@@ -55,6 +55,7 @@ class AdminGroupController extends Controller
         $role = Role::findOrFail($id);
 
         $validated = $request->validate([
+            'name'                => ['nullable', 'string', 'max:64', 'alpha_dash', "unique:roles,name,{$id}"],
             'color'               => ['nullable', 'string', 'max:50'],
             'label'               => ['nullable', 'string', 'max:255'],
             'perks'               => ['nullable', 'array'],
@@ -68,6 +69,7 @@ class AdminGroupController extends Controller
         ]);
 
         $role->update([
+            'name'              => $validated['name'] ?? $role->name,
             'color'             => $validated['color'] ?? $role->color,
             'label'             => $validated['label'] ?? $role->label,
             'perks'             => array_key_exists('perks', $validated) ? ($validated['perks'] ?? []) : ($role->perks ?? []),

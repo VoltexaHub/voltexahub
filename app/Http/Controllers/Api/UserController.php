@@ -525,7 +525,11 @@ class UserController extends Controller
                 'credits'      => $u->credits ?? 0,
                 'joined'       => $u->created_at,
                 'is_online'    => $u->last_seen && $u->last_seen->gte(now()->subMinutes(15)),
-                'primary_role' => $u->roles->first()?->name,
+                'primary_role' => ($pr = $u->roles->first(fn ($r) => $r->name !== 'banned') ?? $u->roles->first()) ? [
+                    'name'  => $pr->name,
+                    'label' => $pr->label ?? ucfirst($pr->name),
+                    'color' => $pr->color ?? '#6b7280',
+                ] : null,
                 'custom_title' => $u->custom_title ?? null,
             ]),
             'meta' => [
@@ -538,24 +542,41 @@ class UserController extends Controller
 
     public function staff(): JsonResponse
     {
-        $staffRoles = ['admin', 'moderator'];
-
-        $staff = User::with('roles')
-            ->whereHas('roles', fn ($q) => $q->whereIn('name', $staffRoles))
-            ->orderByRaw("FIELD(username, 'admin') DESC")
+        // Use is_staff roles ordered by priority (highest first)
+        $staffRoles = \App\Models\Role::where('is_staff', true)
+            ->orderByDesc('priority')
             ->get();
 
-        $grouped = collect($staffRoles)->mapWithKeys(function ($role) use ($staff) {
-            $members = $staff->filter(fn ($u) => $u->roles->contains('name', $role))->values();
-            return [$role => $members->map(fn ($u) => [
-                'id'           => $u->id,
-                'username'     => $u->username,
-                'avatar_url'   => $u->avatar_url,
-                'avatar_color' => $u->avatar_color,
-                'post_count'   => $u->post_count ?? 0,
-                'joined'       => $u->created_at,
-                'is_online'    => $u->last_seen && $u->last_seen->gte(now()->subMinutes(15)),
-            ])];
+        $staffUserIds = \DB::table('model_has_roles')
+            ->whereIn('role_id', $staffRoles->pluck('id'))
+            ->pluck('model_id');
+
+        $staffUsers = User::with('roles')
+            ->whereIn('id', $staffUserIds)
+            ->get();
+
+        $grouped = $staffRoles->mapWithKeys(function ($role) use ($staffUsers) {
+            $members = $staffUsers->filter(
+                fn ($u) => $u->roles->contains('id', $role->id)
+            )->values();
+
+            return [(string) $role->id => [
+                'role' => [
+                    'id'    => $role->id,
+                    'name'  => $role->name,
+                    'label' => $role->label ?? ucfirst($role->name),
+                    'color' => $role->color ?? '#6b7280',
+                ],
+                'members' => $members->map(fn ($u) => [
+                    'id'           => $u->id,
+                    'username'     => $u->username,
+                    'avatar_url'   => $u->avatar_url,
+                    'avatar_color' => $u->avatar_color,
+                    'post_count'   => $u->post_count ?? 0,
+                    'joined'       => $u->created_at,
+                    'is_online'    => $u->last_seen && $u->last_seen->gte(now()->subMinutes(15)),
+                ]),
+            ]];
         });
 
         return response()->json(['data' => $grouped]);
