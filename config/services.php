@@ -45,4 +45,9 @@ return [
         'webhook_secret' => env('GITHUB_SPONSORS_WEBHOOK_SECRET'),
     ],
 
+    'minecraft' => [
+        'api_secret' => env('MINECRAFT_API_SECRET'),
+        'server_url' => env('MINECRAFT_SERVER_URL', 'http://localhost:25575'),
+    ],
+
 ];

@@ -11,7 +11,7 @@ class StoreItem extends Model
     protected $fillable = [
         'name', 'slug', 'description', 'icon', 'category',
         'price_money', 'price_credits', 'supports_both',
-        'item_type', 'item_value', 'game_id', 'is_active', 'display_order',
+        'item_type', 'item_value', 'minecraft_group', 'game_id', 'is_active', 'display_order',
     ];
 
     protected function casts(): array

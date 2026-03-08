@@ -40,6 +40,28 @@ class UserController extends Controller
         ];
         $user->perks = array_values(array_filter($perkTypes, fn ($t) => $perkService->userHasPerk($user, $t)));
 
+        // Staff data
+        $isAdmin = $user->hasRole('admin');
+        $isStaff = $isAdmin || $user->roles->contains(fn ($r) => $r->is_staff);
+
+        $allStaffPerms = ['view_reports', 'manage_threads', 'manage_posts', 'ban_users', 'grant_awards'];
+
+        if ($isAdmin) {
+            $staffPermissions = $allStaffPerms;
+        } else {
+            $staffPermissions = [];
+            foreach ($user->roles as $role) {
+                foreach ($role->staff_permissions ?? [] as $perm) {
+                    if (!in_array($perm, $staffPermissions)) {
+                        $staffPermissions[] = $perm;
+                    }
+                }
+            }
+        }
+
+        $user->is_staff = $isStaff;
+        $user->staff_permissions = $staffPermissions;
+
         return response()->json([
             'data' => $user,
         ]);
@@ -196,6 +218,9 @@ class UserController extends Controller
                 "twitter_handle" => $user->twitter_handle ?? null,
                 "website_url" => $user->website_url ?? null,
                 "minecraft_ign" => $user->minecraft_ign ?? null,
+                "minecraft_username" => $user->minecraft_username ?? null,
+                "minecraft_uuid" => $user->minecraft_uuid ?? null,
+                "minecraft_verified" => (bool) $user->minecraft_verified,
                 "github_username" => $user->github_username ?? null,
                 "is_sponsor" => (bool) $user->is_sponsor,
                 "sponsor_since" => $user->sponsor_since?->toISOString(),

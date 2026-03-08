@@ -174,6 +174,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/unread-count', [ConversationController::class, 'unreadCount']);
 });
 
+// Staff routes
+Route::middleware(['auth:sanctum', 'staff'])->prefix('staffcp')->group(function () {
+    Route::get('/reports', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'reports']);
+    Route::put('/reports/{id}', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'updateReport']);
+    Route::get('/threads', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'threads']);
+    Route::put('/threads/{id}/pin', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'pinThread']);
+    Route::put('/threads/{id}/lock', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'lockThread']);
+    Route::put('/threads/{id}/solve', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'solveThread']);
+    Route::delete('/threads/{id}', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'deleteThread']);
+    Route::delete('/posts/{id}', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'deletePost']);
+    Route::get('/users', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'users']);
+    Route::post('/users/{id}/ban', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'banUser']);
+    Route::delete('/users/{id}/ban', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'unbanUser']);
+    Route::get('/awards', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'awards']);
+    Route::post('/users/{id}/awards', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'grantAward']);
+    Route::delete('/users/{id}/awards/{awardId}', [\App\Http\Controllers\Api\Staff\StaffModerationController::class, 'revokeAward']);
+});
+
 // Admin routes
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     // Dashboard
