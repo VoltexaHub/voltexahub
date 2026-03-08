@@ -57,6 +57,19 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/forum/config', [ForumConfigController::class, 'index']);
+Route::get('/roles', function () {
+    $roles = \App\Models\Role::orderByDesc('priority')->get();
+    return response()->json([
+        'data' => $roles->map(fn ($r) => [
+            'id'       => $r->id,
+            'name'     => $r->name,
+            'label'    => $r->label ?? ucfirst($r->name),
+            'color'    => $r->color ?? '#6b7280',
+            'priority' => $r->priority ?? 0,
+            'is_staff' => (bool) $r->is_staff,
+        ]),
+    ]);
+});
 Route::get('/games', [GameController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/forums', [ForumController::class, 'index']);
