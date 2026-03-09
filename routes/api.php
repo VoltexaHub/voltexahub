@@ -91,6 +91,7 @@ Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 Route::get('/thread-prefixes', [ThreadPrefixController::class, 'index']);
 Route::get('/tags', [TagController::class, 'index']);
 Route::get('/tags/{slug}/threads', [TagController::class, 'threads']);
+Route::get('/payment-providers', [StoreController::class, 'providers']);
 
 
 // Auth routes

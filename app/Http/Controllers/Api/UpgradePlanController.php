@@ -6,9 +6,9 @@ use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
 use App\Models\UpgradePlan;
 use App\Models\UpgradePurchase;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Stripe\StripeClient;
 
 class UpgradePlanController extends Controller
 {
@@ -31,45 +31,66 @@ class UpgradePlanController extends Controller
             return response()->json(['message' => 'This plan cannot be purchased with money.'], 422);
         }
 
+        $request->validate([
+            'provider' => ['sometimes', 'string'],
+        ]);
+
         $user = $request->user();
-        $stripe = new StripeClient(config('services.stripe.secret'));
+        $service = new PaymentService();
+        $providers = $service->getEnabledProviders();
+        $provider = $request->input('provider', $providers[0] ?? 'stripe');
+
+        if (!in_array($provider, $providers)) {
+            return response()->json(['message' => 'Payment provider not available.'], 422);
+        }
+
         $frontendUrl = config('app.frontend_url', 'https://community.voltexahub.com');
 
-        $session = $stripe->checkout->sessions->create([
-            'payment_method_types' => ['card'],
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => 'usd',
-                    'product_data' => [
-                        'name' => $plan->name . ' Upgrade',
-                        'description' => $plan->description ?? '',
-                    ],
-                    'unit_amount' => (int) ($plan->price * 100),
-                ],
-                'quantity' => 1,
-            ]],
-            'mode' => 'payment',
-            'success_url' => $frontendUrl . '/upgrade/success?session_id={CHECKOUT_SESSION_ID}',
+        // Determine mode and interval based on plan term
+        $mode = 'payment';
+        $interval = null;
+
+        if ($plan->term === 'monthly') {
+            $mode = 'subscription';
+            $interval = 'month';
+        } elseif ($plan->term === 'yearly') {
+            $mode = 'subscription';
+            $interval = 'year';
+        }
+
+        $params = [
+            'name' => $plan->name . ' Upgrade',
+            'description' => $plan->description ?? '',
+            'amount' => (float) $plan->price,
+            'mode' => $mode,
+            'success_url' => $frontendUrl . '/upgrade/success?session_id={CHECKOUT_SESSION_ID}&provider=' . $provider,
             'cancel_url' => $frontendUrl . '/upgrade',
-            'metadata' => [
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'type' => 'upgrade',
-            ],
+            'metadata' => ['user_id' => $user->id, 'plan_id' => $plan->id, 'type' => 'upgrade'],
             'customer_email' => $user->email,
-        ]);
+        ];
+
+        if ($interval) {
+            $params['interval'] = $interval;
+        }
+
+        if ($plan->stripe_price_id) {
+            $params['stripe_price_id'] = $plan->stripe_price_id;
+        }
+
+        $result = $service->createCheckout($provider, $params);
 
         UpgradePurchase::create([
             'user_id' => $user->id,
             'upgrade_plan_id' => $plan->id,
             'payment_method' => 'money',
             'amount_paid' => $plan->price,
-            'stripe_session_id' => $session->id,
+            'stripe_session_id' => $result['session_id'],
             'status' => 'pending',
+            'payment_provider' => $provider,
         ]);
 
         return response()->json([
-            'data' => ['url' => $session->url],
+            'data' => ['url' => $result['url'], 'session_id' => $result['session_id'], 'provider' => $provider],
             'message' => 'Checkout session created.',
         ]);
     }

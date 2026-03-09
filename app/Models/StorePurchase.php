@@ -10,7 +10,7 @@ class StorePurchase extends Model
     protected $fillable = [
         'user_id', 'store_item_id', 'payment_method',
         'amount_paid', 'credits_spent', 'status',
-        'stripe_payment_intent', 'delivered_at',
+        'stripe_payment_intent', 'payment_provider', 'delivered_at',
     ];
 
     protected function casts(): array

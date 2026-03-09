@@ -13,6 +13,7 @@ class UpgradePurchase extends Model
         'payment_method',
         'amount_paid',
         'stripe_session_id',
+        'payment_provider',
         'status',
         'delivered_at',
     ];

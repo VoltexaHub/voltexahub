@@ -10,10 +10,10 @@ use App\Models\StoreItem;
 use App\Models\StorePurchase;
 use App\Models\UserCosmetic;
 use App\Notifications\PurchaseConfirmedNotification;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Stripe\StripeClient;
 
 class StoreController extends Controller
 {
@@ -27,6 +27,12 @@ class StoreController extends Controller
         return response()->json([
             'data' => $items,
         ]);
+    }
+
+    public function providers(): JsonResponse
+    {
+        $service = new PaymentService();
+        return response()->json(['data' => $service->getEnabledProviders()]);
     }
 
     public function purchaseWithCredits(Request $request): JsonResponse
@@ -118,6 +124,7 @@ class StoreController extends Controller
     {
         $validated = $request->validate([
             'store_item_id' => ['required', 'exists:store_items,id'],
+            'provider' => ['sometimes', 'string'],
         ]);
 
         $item = StoreItem::findOrFail($validated['store_item_id']);
@@ -129,29 +136,24 @@ class StoreController extends Controller
         }
 
         $user = $request->user();
-        $stripe = new StripeClient(config('services.stripe.secret'));
+        $service = new PaymentService();
+        $providers = $service->getEnabledProviders();
+        $provider = $request->input('provider', $providers[0] ?? 'stripe');
+
+        if (!in_array($provider, $providers)) {
+            return response()->json(['message' => 'Payment provider not available.'], 422);
+        }
+
         $frontendUrl = config('app.frontend_url', 'https://community.voltexahub.com');
 
-        $session = $stripe->checkout->sessions->create([
-            'payment_method_types' => ['card'],
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => 'usd',
-                    'product_data' => [
-                        'name' => $item->name,
-                        'description' => $item->description ?? '',
-                    ],
-                    'unit_amount' => (int) ($item->price_money * 100),
-                ],
-                'quantity' => 1,
-            ]],
+        $result = $service->createCheckout($provider, [
+            'name' => $item->name,
+            'description' => $item->description ?? '',
+            'amount' => (float) $item->price_money,
             'mode' => 'payment',
-            'success_url' => $frontendUrl . '/store/success?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => $frontendUrl . '/store/success?session_id={CHECKOUT_SESSION_ID}&provider=' . $provider,
             'cancel_url' => $frontendUrl . '/store/cancel',
-            'metadata' => [
-                'user_id' => $user->id,
-                'item_id' => $item->id,
-            ],
+            'metadata' => ['user_id' => $user->id, 'item_id' => $item->id, 'type' => 'store'],
             'customer_email' => $user->email,
         ]);
 
@@ -161,11 +163,12 @@ class StoreController extends Controller
             'payment_method' => 'money',
             'amount_paid' => $item->price_money,
             'status' => 'pending',
-            'stripe_payment_intent' => $session->id,
+            'stripe_payment_intent' => $result['session_id'],
+            'payment_provider' => $provider,
         ]);
 
         return response()->json([
-            'data' => ['url' => $session->url],
+            'data' => ['url' => $result['url'], 'session_id' => $result['session_id'], 'provider' => $provider],
             'message' => 'Checkout session created.',
         ]);
     }
