@@ -37,6 +37,17 @@ class UpgradePlanController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Check prerequisite plan
+        if ($plan->required_plan_id) {
+            $requiredPlan = \App\Models\UpgradePlan::find($plan->required_plan_id);
+            if ($requiredPlan && !$user->hasRole($requiredPlan->role_name)) {
+                return response()->json([
+                    'message' => 'You must have the "' . $requiredPlan->name . '" plan before upgrading to "' . $plan->name . '".',
+                ], 422);
+            }
+        }
+
         $service = new PaymentService();
         $providers = $service->getEnabledProviders();
         $provider = $request->input('provider', $providers[0] ?? 'stripe');
@@ -109,6 +120,16 @@ class UpgradePlanController extends Controller
         }
 
         $user = $request->user();
+
+        // Check prerequisite plan
+        if ($plan->required_plan_id) {
+            $requiredPlan = \App\Models\UpgradePlan::find($plan->required_plan_id);
+            if ($requiredPlan && !$user->hasRole($requiredPlan->role_name)) {
+                return response()->json([
+                    'message' => 'You must have the "' . $requiredPlan->name . '" plan before upgrading to "' . $plan->name . '".',
+                ], 422);
+            }
+        }
 
         // Assign role
         if ($plan->role_name) {

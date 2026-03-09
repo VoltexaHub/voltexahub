@@ -250,8 +250,6 @@ class PaymentService
             $crypto = $first ?: 'BTC';
         }
 
-        $frontendUrl = config('app.frontend_url', 'https://community.voltexahub.com');
-
         $response = Http::get('https://api.plisio.net/api/v1/invoices/new', [
             'api_key'              => $apiKey,
             'currency'             => $crypto,
@@ -259,9 +257,9 @@ class PaymentService
             'source_amount'        => number_format($params['amount'], 2, '.', ''),
             'order_number'         => $orderId,
             'order_name'           => $params['name'],
-            'callback_url'         => $frontendUrl . '/api/webhooks/plisio',
-            'success_callback_url' => $frontendUrl . '/store/success?provider=plisio&order=' . $orderId,
-            'fail_callback_url'    => $frontendUrl . '/store/cancel',
+            'callback_url'         => url('/api/webhooks/plisio'),
+            'success_callback_url' => $params['success_url'],
+            'cancel_url'           => $params['cancel_url'],
             'email'                => $params['customer_email'] ?? '',
         ]);
 
