@@ -249,7 +249,7 @@ class PaymentService
             'order_name'           => $params['name'],
             'callback_url'         => url('/api/webhooks/plisio'),
             'success_callback_url' => $params['success_url'],
-            'cancel_url'           => $params['cancel_url'],
+            'fail_callback_url'    => $params['cancel_url'],
             'email'                => $params['customer_email'] ?? '',
         ]);
 
