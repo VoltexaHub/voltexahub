@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\Admin\AdminForumPermissionController;
 use App\Http\Controllers\Api\Admin\AdminGroupPermissionController;
 use App\Http\Controllers\Api\Admin\AdminModerationController;
 use App\Http\Controllers\Api\Admin\AdminStoreController;
+use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\AuthController;
@@ -99,6 +100,10 @@ Route::get('/payment-providers', [StoreController::class, 'providers']);
 Route::get('/store/currency', [StoreController::class, 'currency']);
 Route::get('/payment-providers/plisio/currencies', [StoreController::class, 'plisioCurrencies']);
 
+// Content pages (public)
+Route::get('/content/pages/{page}', [AdminContentController::class, 'getPage']);
+Route::get('/content/help', [AdminContentController::class, 'helpIndex']);
+Route::get('/content/help/{slug}', [AdminContentController::class, 'helpShow']);
 
 // Auth routes
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -319,7 +324,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/reports/{id}', [AdminReportController::class, 'update']);
 
     // Content management
-
+    Route::get('/content/pages', [AdminContentController::class, 'getPages']);
+    Route::put('/content/pages', [AdminContentController::class, 'updatePages']);
+    Route::get('/content/help', [AdminContentController::class, 'adminHelpIndex']);
+    Route::post('/content/help', [AdminContentController::class, 'helpStore']);
+    Route::put('/content/help/{id}', [AdminContentController::class, 'helpUpdate']);
+    Route::delete('/content/help/{id}', [AdminContentController::class, 'helpDestroy']);
 
     // Advertisements
     Route::get('/advertisements', [AdminAdvertisementController::class, 'index']);
