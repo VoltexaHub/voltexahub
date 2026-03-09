@@ -45,11 +45,14 @@ class ForumConfigSeeder extends Seeder
             'show_usergroup_legend'    => 'true',
             'usergroup_legend_groups'  => json_encode(['admin','moderator','vip','elite','member']),
 
+            // Store
+            'store_currency' => 'USD',
+
             // Payment Providers
             'payment_providers' => json_encode([
                 'stripe' => ['enabled' => true, 'public_key' => '', 'secret_key' => '', 'webhook_secret' => '', 'sandbox' => false],
                 'paypal' => ['enabled' => false, 'client_id' => '', 'client_secret' => '', 'sandbox' => true],
-                'plisio' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => '', 'sandbox' => false],
+                'plisio' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => '', 'sandbox' => false, 'currencies' => 'BTC,ETH,LTC,USDT'],
             ]),
 
             // Email / SMTP (empty = use .env defaults)

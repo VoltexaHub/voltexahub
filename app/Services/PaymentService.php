@@ -92,8 +92,9 @@ class PaymentService
         if (($params['mode'] ?? 'payment') === 'subscription' && !empty($params['stripe_price_id'])) {
             $lineItem = ['price' => $params['stripe_price_id'], 'quantity' => 1];
         } else {
+            $storeCurrency = ForumConfig::where('key', 'store_currency')->value('value') ?? 'USD';
             $priceData = [
-                'currency' => 'usd',
+                'currency' => strtolower($storeCurrency),
                 'product_data' => [
                     'name' => $params['name'],
                     'description' => $params['description'] ?? '',
@@ -175,7 +176,7 @@ class PaymentService
             'intent' => 'CAPTURE',
             'purchase_units' => [[
                 'amount' => [
-                    'currency_code' => 'USD',
+                    'currency_code' => ForumConfig::where('key', 'store_currency')->value('value') ?? 'USD',
                     'value' => number_format($params['amount'], 2, '.', ''),
                 ],
                 'description' => $params['name'] . ($params['description'] ? ' - ' . $params['description'] : ''),
@@ -240,16 +241,27 @@ class PaymentService
 
         $orderId = 'vhub_' . uniqid();
 
+        $storeCurrency = ForumConfig::where('key', 'store_currency')->value('value') ?? 'USD';
+
+        // Determine crypto: explicit param > first from config > BTC fallback
+        $crypto = $params['plisio_currency'] ?? null;
+        if (!$crypto) {
+            $first = strtok($config['currencies'] ?? '', ',');
+            $crypto = $first ?: 'BTC';
+        }
+
+        $frontendUrl = config('app.frontend_url', 'https://community.voltexahub.com');
+
         $response = Http::get('https://api.plisio.net/api/v1/invoices/new', [
             'api_key'              => $apiKey,
-            'currency'             => 'BTC',          // settlement crypto (customer can switch on Plisio's page)
-            'source_currency'      => 'USD',          // fiat pricing currency
+            'currency'             => $crypto,
+            'source_currency'      => $storeCurrency,
             'source_amount'        => number_format($params['amount'], 2, '.', ''),
             'order_number'         => $orderId,
             'order_name'           => $params['name'],
-            'callback_url'         => url('/api/webhooks/plisio'),
-            'success_callback_url' => $params['success_url'],
-            'fail_callback_url'    => $params['cancel_url'],
+            'callback_url'         => $frontendUrl . '/api/webhooks/plisio',
+            'success_callback_url' => $frontendUrl . '/store/success?provider=plisio&order=' . $orderId,
+            'fail_callback_url'    => $frontendUrl . '/store/cancel',
             'email'                => $params['customer_email'] ?? '',
         ]);
 

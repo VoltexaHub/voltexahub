@@ -94,6 +94,8 @@ Route::get('/thread-prefixes', [ThreadPrefixController::class, 'index']);
 Route::get('/tags', [TagController::class, 'index']);
 Route::get('/tags/{slug}/threads', [TagController::class, 'threads']);
 Route::get('/payment-providers', [StoreController::class, 'providers']);
+Route::get('/store/currency', [StoreController::class, 'currency']);
+Route::get('/payment-providers/plisio/currencies', [StoreController::class, 'plisioCurrencies']);
 
 
 // Auth routes
@@ -337,6 +339,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Payment Providers
     Route::get('/payment-providers', [AdminPaymentProvidersController::class, 'index']);
     Route::put('/payment-providers/{provider}', [AdminPaymentProvidersController::class, 'update']);
+    Route::put('/store/currency', [AdminPaymentProvidersController::class, 'updateStoreCurrency']);
     Route::post('/payment-gateways/upload', [AdminCustomGatewayController::class, 'upload']);
     Route::delete('/payment-gateways/{slug}', [AdminCustomGatewayController::class, 'destroy']);
 

@@ -57,6 +57,7 @@ class AdminPaymentProvidersController extends Controller
             'api_key'        => ['sometimes', 'nullable', 'string'],
             'store_id'       => ['sometimes', 'nullable', 'string'],
             'merchant_id'    => ['sometimes', 'nullable', 'string'],
+            'currencies'     => ['sometimes', 'nullable', 'string'],
         ]);
 
         $providers[$provider] = array_merge($providers[$provider] ?? [], $incoming);
@@ -66,6 +67,20 @@ class AdminPaymentProvidersController extends Controller
         return response()->json([
             'data' => $providers[$provider],
             'message' => ucfirst($provider) . ' settings updated.',
+        ]);
+    }
+
+    public function updateStoreCurrency(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'currency' => ['required', 'string', 'regex:/^[A-Z]{3}$/'],
+        ]);
+
+        ForumConfig::set('store_currency', $validated['currency']);
+
+        return response()->json([
+            'data' => $validated['currency'],
+            'message' => 'Store currency updated.',
         ]);
     }
 }

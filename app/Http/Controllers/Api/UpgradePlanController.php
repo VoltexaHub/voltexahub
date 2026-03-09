@@ -33,6 +33,7 @@ class UpgradePlanController extends Controller
 
         $request->validate([
             'provider' => ['sometimes', 'string'],
+            'plisio_currency' => ['sometimes', 'string', 'max:10'],
         ]);
 
         $user = $request->user();
@@ -75,6 +76,10 @@ class UpgradePlanController extends Controller
 
         if ($plan->stripe_price_id) {
             $params['stripe_price_id'] = $plan->stripe_price_id;
+        }
+
+        if ($request->filled('plisio_currency')) {
+            $params['plisio_currency'] = $request->input('plisio_currency');
         }
 
         $result = $service->createCheckout($provider, $params);

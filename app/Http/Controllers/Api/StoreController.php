@@ -10,6 +10,7 @@ use App\Models\StoreItem;
 use App\Models\StorePurchase;
 use App\Models\UserCosmetic;
 use App\Notifications\PurchaseConfirmedNotification;
+use App\Models\ForumConfig;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,20 @@ class StoreController extends Controller
     {
         $service = new PaymentService();
         return response()->json(['data' => $service->getEnabledProviders()]);
+    }
+
+    public function currency(): JsonResponse
+    {
+        $currency = ForumConfig::where('key', 'store_currency')->value('value') ?? 'USD';
+        return response()->json(['data' => $currency]);
+    }
+
+    public function plisioCurrencies(): JsonResponse
+    {
+        $raw = ForumConfig::where('key', 'payment_providers')->value('value');
+        $providers = json_decode($raw ?? '{}', true);
+        $currencies = array_values(array_filter(array_map('trim', explode(',', $providers['plisio']['currencies'] ?? 'BTC,ETH,LTC,USDT,TRX,DOGE'))));
+        return response()->json(['data' => $currencies]);
     }
 
     public function purchaseWithCredits(Request $request): JsonResponse
@@ -125,6 +140,7 @@ class StoreController extends Controller
         $validated = $request->validate([
             'store_item_id' => ['required', 'exists:store_items,id'],
             'provider' => ['sometimes', 'string'],
+            'plisio_currency' => ['sometimes', 'string', 'max:10'],
         ]);
 
         $item = StoreItem::findOrFail($validated['store_item_id']);
@@ -146,7 +162,7 @@ class StoreController extends Controller
 
         $frontendUrl = config('app.frontend_url', 'https://community.voltexahub.com');
 
-        $result = $service->createCheckout($provider, [
+        $checkoutParams = [
             'name' => $item->name,
             'description' => $item->description ?? '',
             'amount' => (float) $item->price_money,
@@ -155,7 +171,13 @@ class StoreController extends Controller
             'cancel_url' => $frontendUrl . '/store/cancel',
             'metadata' => ['user_id' => $user->id, 'item_id' => $item->id, 'type' => 'store'],
             'customer_email' => $user->email,
-        ]);
+        ];
+
+        if (!empty($validated['plisio_currency'])) {
+            $checkoutParams['plisio_currency'] = $validated['plisio_currency'];
+        }
+
+        $result = $service->createCheckout($provider, $checkoutParams);
 
         $purchase = StorePurchase::create([
             'user_id' => $user->id,
