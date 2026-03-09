@@ -13,7 +13,10 @@ class UpdateLastSeen
         $user = $request->user();
 
         if ($user && (! $user->last_seen || $user->last_seen->lt(now()->subMinutes(2)))) {
-            $user->update(['last_seen' => now()]);
+            $user->update([
+                'last_seen'       => now(),
+                'last_active_at'  => now(),
+            ]);
         }
 
         return $next($request);
