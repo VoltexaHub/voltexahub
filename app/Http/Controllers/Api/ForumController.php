@@ -34,6 +34,10 @@ class ForumController extends Controller
             return [
                 'id' => $cat->id,
                 'name' => $cat->name,
+                'description' => $cat->description,
+                'header_color' => $cat->header_color,
+                'total_threads' => $cat->forums->sum('thread_count'),
+                'total_posts' => $cat->forums->sum('post_count'),
                 'forums' => $visibleForums->map(function ($forum) use ($role) {
                     return [
                         'id' => $forum->id,
