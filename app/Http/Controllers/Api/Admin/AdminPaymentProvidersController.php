@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class AdminPaymentProvidersController extends Controller
 {
-    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'coinbase', 'lemonsqueezy', 'philio'];
+    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'coinbase', 'lemonsqueezy', 'plisio'];
 
     private function getProviders(): array
     {

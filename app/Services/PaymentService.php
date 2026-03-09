@@ -63,7 +63,7 @@ class PaymentService
             'paypal' => $this->createPaypalCheckout($params),
             'coinbase' => $this->createCoinbaseCheckout($params),
             'lemonsqueezy' => $this->createLemonsqueezyCheckout($params),
-            'philio' => $this->createPhilioCheckout($params),
+            'plisio' => $this->createPlisioCheckout($params),
             default => throw new RuntimeException("Unknown payment provider: {$provider}"),
         };
     }
@@ -78,7 +78,7 @@ class PaymentService
             'paypal' => $this->verifyPaypalPayment($sessionId),
             'coinbase' => $this->verifyCoinbasePayment($sessionId),
             'lemonsqueezy' => $this->verifyLemonsqueezyPayment($sessionId),
-            'philio' => false,
+            'plisio' => $this->verifyPlisioPayment($sessionId),
             default => false,
         };
     }
@@ -344,10 +344,55 @@ class PaymentService
         return $status === 'paid';
     }
 
-    // ── Philio (stub) ────────────────────────────────────────────────────
+    // ── Plisio ───────────────────────────────────────────────────────────
 
-    private function createPhilioCheckout(array $params): array
+    private function getProviderConfig(string $slug): array
     {
-        throw new RuntimeException('Philio gateway not yet implemented');
+        return $this->providers[$slug] ?? [];
+    }
+
+    private function createPlisioCheckout(array $params): array
+    {
+        $config = $this->getProviderConfig('plisio');
+        $apiKey = $config['secret_key'] ?? $config['api_key'] ?? '';
+
+        $orderId = 'vhub_' . uniqid();
+
+        $response = Http::get('https://api.plisio.net/api/v1/invoices/new', [
+            'api_key'              => $apiKey,
+            'currency'             => 'USD',
+            'amount'               => number_format($params['amount'], 2, '.', ''),
+            'order_number'         => $orderId,
+            'order_name'           => $params['name'],
+            'callback_url'         => url('/api/webhooks/plisio'),
+            'success_callback_url' => $params['success_url'],
+            'cancel_url'           => $params['cancel_url'],
+            'email'                => $params['customer_email'] ?? '',
+        ]);
+
+        $data = $response->json();
+
+        if (!isset($data['status']) || $data['status'] !== 'success') {
+            throw new RuntimeException('Plisio error: ' . ($data['data']['message'] ?? 'Unknown error'));
+        }
+
+        return [
+            'url'        => $data['data']['invoice_url'],
+            'session_id' => $data['data']['txn_id'],
+        ];
+    }
+
+    private function verifyPlisioPayment(string $sessionId): bool
+    {
+        $config = $this->getProviderConfig('plisio');
+        $apiKey = $config['secret_key'] ?? $config['api_key'] ?? '';
+
+        $response = Http::get("https://api.plisio.net/api/v1/operations/{$sessionId}", [
+            'api_key' => $apiKey,
+        ]);
+
+        $data = $response->json();
+
+        return isset($data['data']['status']) && in_array($data['data']['status'], ['completed', 'mismatch']);
     }
 }

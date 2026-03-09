@@ -47,6 +47,7 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\ThreadSubscriptionController;
 use App\Http\Controllers\Api\StripeWebhookController;
+use App\Http\Controllers\Api\PlisioWebhookController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\SolvedController;
 use App\Http\Controllers\Api\TagController;
@@ -107,6 +108,9 @@ Route::post('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEma
 
 // Stripe webhook (no auth — verified by signature)
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+
+// Plisio webhook (no auth — verified by hash)
+Route::post('/webhooks/plisio', [PlisioWebhookController::class, 'handle']);
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {

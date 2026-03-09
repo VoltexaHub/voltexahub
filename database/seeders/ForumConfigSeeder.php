@@ -51,7 +51,7 @@ class ForumConfigSeeder extends Seeder
                 'paypal' => ['enabled' => false, 'client_id' => '', 'client_secret' => '', 'sandbox' => true],
                 'coinbase' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => ''],
                 'lemonsqueezy' => ['enabled' => false, 'api_key' => '', 'store_id' => '', 'webhook_secret' => ''],
-                'philio' => ['enabled' => false, 'api_key' => '', 'merchant_id' => '', 'sandbox' => true],
+                'plisio' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => '', 'sandbox' => false],
             ]),
 
             // Email / SMTP (empty = use .env defaults)
