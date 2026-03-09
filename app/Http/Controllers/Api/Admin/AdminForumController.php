@@ -121,18 +121,13 @@ class AdminForumController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug'],
             'description' => ['nullable', 'string'],
-            'header_image' => ['nullable', 'image', 'max:4096'],
+            'header_color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'display_order' => ['nullable', 'integer'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['is_active'] = $validated['is_active'] ?? true;
-
-        if ($request->hasFile('header_image')) {
-            $path = $request->file('header_image')->store('category-headers', 'public');
-            $validated['header_image'] = Storage::disk('public')->url($path);
-        }
 
         $category = Category::create($validated);
 
@@ -151,20 +146,10 @@ class AdminForumController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:categories,slug,' . $id],
             'description' => ['nullable', 'string'],
-            'header_image' => ['nullable', 'image', 'max:4096'],
-            'remove_header_image' => ['nullable', 'boolean'],
+            'header_color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'display_order' => ['nullable', 'integer'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-
-        if ($request->hasFile('header_image')) {
-            $path = $request->file('header_image')->store('category-headers', 'public');
-            $validated['header_image'] = Storage::disk('public')->url($path);
-        } elseif ($request->boolean('remove_header_image')) {
-            $validated['header_image'] = null;
-        }
-
-        unset($validated['remove_header_image']);
 
         $category->update($validated);
 
