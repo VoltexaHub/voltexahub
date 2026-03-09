@@ -31,6 +31,24 @@ class ForumController extends Controller
                 $perms = \App\Services\PermissionService::resolve($role, $forum->id);
                 return $perms['can_view'];
             });
+            // Compute category-level last post from visible forums
+            $latestForum = $visibleForums->filter(fn($f) => $f->last_post_at)
+                ->sortByDesc('last_post_at')->first();
+
+            $lastPostUser = null;
+            $lastPostThread = null;
+            if ($latestForum) {
+                $lpu = $latestForum->lastPostUser;
+                $lastPostUser = $lpu ? [
+                    'username'     => $lpu->username,
+                    'avatar_url'   => $lpu->avatar_url,
+                    'avatar_color' => $lpu->avatar_color,
+                    'group_color'  => $lpu->primary_role['color'] ?? null,
+                ] : null;
+                $lastPostThread = \App\Models\Thread::where('forum_id', $latestForum->id)
+                    ->latest('created_at')->select('id', 'title', 'slug')->first();
+            }
+
             return [
                 'id' => $cat->id,
                 'name' => $cat->name,
@@ -38,6 +56,9 @@ class ForumController extends Controller
                 'header_color' => $cat->header_color,
                 'total_threads' => $cat->forums->sum('thread_count'),
                 'total_posts' => $cat->forums->sum('post_count'),
+                'last_post_at' => $latestForum?->last_post_at,
+                'last_post_user' => $lastPostUser,
+                'last_post_thread' => $lastPostThread,
                 'forums' => $visibleForums->map(function ($forum) use ($role) {
                     return [
                         'id' => $forum->id,
