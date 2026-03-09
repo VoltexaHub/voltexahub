@@ -49,8 +49,6 @@ class ForumConfigSeeder extends Seeder
             'payment_providers' => json_encode([
                 'stripe' => ['enabled' => true, 'public_key' => '', 'secret_key' => '', 'webhook_secret' => '', 'sandbox' => false],
                 'paypal' => ['enabled' => false, 'client_id' => '', 'client_secret' => '', 'sandbox' => true],
-                'coinbase' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => ''],
-                'lemonsqueezy' => ['enabled' => false, 'api_key' => '', 'store_id' => '', 'webhook_secret' => ''],
                 'plisio' => ['enabled' => false, 'api_key' => '', 'webhook_secret' => '', 'sandbox' => false],
             ]),
 

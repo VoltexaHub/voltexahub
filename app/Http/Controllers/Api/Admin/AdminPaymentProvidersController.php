@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class AdminPaymentProvidersController extends Controller
 {
-    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'coinbase', 'lemonsqueezy', 'plisio'];
+    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'plisio'];
 
     private function getProviders(): array
     {
@@ -18,14 +18,29 @@ class AdminPaymentProvidersController extends Controller
         return $raw ? json_decode($raw, true) : [];
     }
 
+    private function getCustomGateways(): array
+    {
+        return json_decode(ForumConfig::where('key', 'custom_payment_gateways')->value('value') ?? '[]', true);
+    }
+
     public function index(): JsonResponse
     {
-        return response()->json(['data' => $this->getProviders()]);
+        $providers = $this->getProviders();
+        $customSlugs = $this->getCustomGateways();
+
+        foreach ($providers as $slug => &$data) {
+            $data['is_custom'] = in_array($slug, $customSlugs);
+        }
+
+        return response()->json(['data' => $providers]);
     }
 
     public function update(Request $request, string $provider): JsonResponse
     {
-        if (!in_array($provider, self::ALLOWED_PROVIDERS, true)) {
+        $customSlugs = $this->getCustomGateways();
+        $isAllowed = in_array($provider, self::ALLOWED_PROVIDERS, true) || in_array($provider, $customSlugs, true);
+
+        if (!$isAllowed) {
             return response()->json(['message' => 'Invalid payment provider.'], 422);
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Models\ForumConfig;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -61,10 +62,8 @@ class PaymentService
         return match ($provider) {
             'stripe' => $this->createStripeCheckout($params),
             'paypal' => $this->createPaypalCheckout($params),
-            'coinbase' => $this->createCoinbaseCheckout($params),
-            'lemonsqueezy' => $this->createLemonsqueezyCheckout($params),
             'plisio' => $this->createPlisioCheckout($params),
-            default => throw new RuntimeException("Unknown payment provider: {$provider}"),
+            default => $this->createCustomCheckout($provider, $params),
         };
     }
 
@@ -76,10 +75,8 @@ class PaymentService
         return match ($provider) {
             'stripe' => $this->verifyStripePayment($sessionId),
             'paypal' => $this->verifyPaypalPayment($sessionId),
-            'coinbase' => $this->verifyCoinbasePayment($sessionId),
-            'lemonsqueezy' => $this->verifyLemonsqueezyPayment($sessionId),
             'plisio' => $this->verifyPlisioPayment($sessionId),
-            default => false,
+            default => $this->verifyCustomPayment($provider, $sessionId),
         };
     }
 
@@ -229,124 +226,9 @@ class PaymentService
         return in_array($status, ['COMPLETED', 'APPROVED']);
     }
 
-    // ── Coinbase Commerce ────────────────────────────────────────────────
-
-    private function createCoinbaseCheckout(array $params): array
-    {
-        $config = $this->providers['coinbase'] ?? [];
-
-        $response = Http::withHeaders([
-            'X-CC-Api-Key' => $config['api_key'] ?? '',
-            'X-CC-Version' => '2018-03-22',
-        ])->post('https://api.commerce.coinbase.com/charges', [
-            'name' => $params['name'],
-            'description' => $params['description'] ?? '',
-            'pricing_type' => 'fixed_price',
-            'local_price' => [
-                'amount' => number_format($params['amount'], 2, '.', ''),
-                'currency' => 'USD',
-            ],
-            'metadata' => $params['metadata'] ?? [],
-            'redirect_url' => $params['success_url'],
-            'cancel_url' => $params['cancel_url'],
-        ]);
-
-        if (!$response->successful()) {
-            throw new RuntimeException('Failed to create Coinbase charge: ' . $response->body());
-        }
-
-        $charge = $response->json('data');
-
-        return [
-            'url' => $charge['hosted_url'],
-            'session_id' => $charge['code'],
-        ];
-    }
-
-    private function verifyCoinbasePayment(string $sessionId): bool
-    {
-        $config = $this->providers['coinbase'] ?? [];
-
-        $response = Http::withHeaders([
-            'X-CC-Api-Key' => $config['api_key'] ?? '',
-            'X-CC-Version' => '2018-03-22',
-        ])->get("https://api.commerce.coinbase.com/charges/{$sessionId}");
-
-        if (!$response->successful()) {
-            return false;
-        }
-
-        $timeline = $response->json('data.timeline', []);
-        $lastStatus = end($timeline)['status'] ?? null;
-
-        return $lastStatus === 'COMPLETED';
-    }
-
-    // ── LemonSqueezy ─────────────────────────────────────────────────────
-
-    private function createLemonsqueezyCheckout(array $params): array
-    {
-        $config = $this->providers['lemonsqueezy'] ?? [];
-
-        $response = Http::withToken($config['api_key'] ?? '')
-            ->withHeaders(['Accept' => 'application/vnd.api+json', 'Content-Type' => 'application/vnd.api+json'])
-            ->post('https://api.lemonsqueezy.com/v1/checkouts', [
-                'data' => [
-                    'type' => 'checkouts',
-                    'attributes' => [
-                        'custom_price' => (int) ($params['amount'] * 100),
-                        'product_options' => [
-                            'name' => $params['name'],
-                            'description' => $params['description'] ?? '',
-                            'redirect_url' => $params['success_url'],
-                        ],
-                        'checkout_data' => [
-                            'email' => $params['customer_email'] ?? null,
-                            'custom' => $params['metadata'] ?? [],
-                        ],
-                    ],
-                    'relationships' => [
-                        'store' => [
-                            'data' => [
-                                'type' => 'stores',
-                                'id' => $config['store_id'] ?? '',
-                            ],
-                        ],
-                    ],
-                ],
-            ]);
-
-        if (!$response->successful()) {
-            throw new RuntimeException('Failed to create LemonSqueezy checkout: ' . $response->body());
-        }
-
-        $checkout = $response->json('data');
-
-        return [
-            'url' => $checkout['attributes']['url'],
-            'session_id' => (string) $checkout['id'],
-        ];
-    }
-
-    private function verifyLemonsqueezyPayment(string $sessionId): bool
-    {
-        $config = $this->providers['lemonsqueezy'] ?? [];
-
-        $response = Http::withToken($config['api_key'] ?? '')
-            ->withHeaders(['Accept' => 'application/vnd.api+json'])
-            ->get("https://api.lemonsqueezy.com/v1/orders/{$sessionId}");
-
-        if (!$response->successful()) {
-            return false;
-        }
-
-        $status = $response->json('data.attributes.status');
-        return $status === 'paid';
-    }
-
     // ── Plisio ───────────────────────────────────────────────────────────
 
-    private function getProviderConfig(string $slug): array
+    public function getProviderConfig(string $slug): array
     {
         return $this->providers[$slug] ?? [];
     }
@@ -394,5 +276,40 @@ class PaymentService
         $data = $response->json();
 
         return isset($data['data']['status']) && in_array($data['data']['status'], ['completed', 'mismatch']);
+    }
+
+    // ── Custom Gateways ──────────────────────────────────────────────────
+
+    private function loadCustomGateway(string $provider): PaymentGatewayInterface
+    {
+        $gatewayPath = storage_path("app/payment-gateways/{$provider}.php");
+        if (!file_exists($gatewayPath)) {
+            throw new RuntimeException("Payment provider not available: {$provider}");
+        }
+
+        require_once $gatewayPath;
+
+        $classes = get_declared_classes();
+        $config = $this->getProviderConfig($provider);
+
+        foreach (array_reverse($classes) as $class) {
+            if (in_array(PaymentGatewayInterface::class, class_implements($class) ?: [])) {
+                return new $class($config);
+            }
+        }
+
+        throw new RuntimeException("Custom gateway class not found for: {$provider}");
+    }
+
+    private function createCustomCheckout(string $provider, array $params): array
+    {
+        $gateway = $this->loadCustomGateway($provider);
+        return $gateway->createCheckout($params);
+    }
+
+    private function verifyCustomPayment(string $provider, string $sessionId): bool
+    {
+        $gateway = $this->loadCustomGateway($provider);
+        return $gateway->verifyPayment($sessionId);
     }
 }

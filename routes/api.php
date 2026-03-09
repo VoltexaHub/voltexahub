@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
+use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
 use App\Http\Controllers\Api\Admin\AdminPaymentProvidersController;
 use App\Http\Controllers\Api\Admin\AdminPluginController;
 use App\Http\Controllers\Api\Admin\AdminThreadPrefixController;
@@ -336,6 +337,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Payment Providers
     Route::get('/payment-providers', [AdminPaymentProvidersController::class, 'index']);
     Route::put('/payment-providers/{provider}', [AdminPaymentProvidersController::class, 'update']);
+    Route::post('/payment-gateways/upload', [AdminCustomGatewayController::class, 'upload']);
+    Route::delete('/payment-gateways/{slug}', [AdminCustomGatewayController::class, 'destroy']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);
