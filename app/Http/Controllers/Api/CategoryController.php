@@ -45,6 +45,11 @@ class CategoryController extends Controller
             }
         }
 
+        foreach ($categories as $category) {
+            $category->total_threads = $category->forums->sum('thread_count');
+            $category->total_posts = $category->forums->sum('post_count');
+        }
+
         return response()->json([
             'data' => $categories,
         ]);
