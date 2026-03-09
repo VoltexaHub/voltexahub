@@ -242,8 +242,9 @@ class PaymentService
 
         $response = Http::get('https://api.plisio.net/api/v1/invoices/new', [
             'api_key'              => $apiKey,
-            'currency'             => 'USD',
-            'amount'               => number_format($params['amount'], 2, '.', ''),
+            'currency'             => 'BTC',          // settlement crypto (customer can switch on Plisio's page)
+            'source_currency'      => 'USD',          // fiat pricing currency
+            'source_amount'        => number_format($params['amount'], 2, '.', ''),
             'order_number'         => $orderId,
             'order_name'           => $params['name'],
             'callback_url'         => url('/api/webhooks/plisio'),
