@@ -232,6 +232,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/users/{id}/ban', [AdminUserController::class, 'ban']);
     Route::delete('/users/{id}/ban', [AdminUserController::class, 'unban']);
     Route::post('/users/{id}/credits', [AdminUserController::class, 'adjustCredits']);
+            Route::post('/users/{id}/xp', [AdminUserController::class, 'adjustXp']);
     Route::post('/users/{id}/awards', [AdminUserController::class, 'grantAward']);
     Route::delete('/users/{id}/awards/{awardId}', [AdminUserController::class, 'revokeAward']);
 

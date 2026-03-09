@@ -146,6 +146,26 @@ class AdminUserController extends Controller
         ]);
     }
 
+    public function adjustXp(Request $request, int $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'amount' => ['required', 'integer'],
+        ]);
+
+        $amount = $validated['amount'];
+        $user->increment('xp', $amount);
+        if ($user->fresh()->xp < 0) {
+            $user->update(['xp' => 0]);
+        }
+
+        return response()->json([
+            'data' => ['xp' => $user->fresh()->xp],
+            'message' => 'XP adjusted successfully.',
+        ]);
+    }
+
     public function grantAward(Request $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
