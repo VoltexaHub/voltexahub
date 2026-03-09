@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
 use App\Http\Controllers\Api\Admin\AdminPaymentProvidersController;
 use App\Http\Controllers\Api\Admin\AdminPluginController;
+use App\Http\Controllers\Api\Admin\AdminThemeController;
 use App\Http\Controllers\Api\Admin\AdminThreadPrefixController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUnlockRequirementsController;
@@ -58,6 +59,7 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
+Route::get('/themes/active-css', [AdminThemeController::class, 'activeCss']);
 Route::get('/forum/config', [ForumConfigController::class, 'index']);
 Route::get('/roles', function () {
     $roles = \App\Models\Role::orderByDesc('priority')->get();
@@ -342,6 +344,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/store/currency', [AdminPaymentProvidersController::class, 'updateStoreCurrency']);
     Route::post('/payment-gateways/upload', [AdminCustomGatewayController::class, 'upload']);
     Route::delete('/payment-gateways/{slug}', [AdminCustomGatewayController::class, 'destroy']);
+
+    // Themes
+    Route::get('/themes', [AdminThemeController::class, 'index']);
+    Route::post('/themes/upload', [AdminThemeController::class, 'upload']);
+    Route::post('/themes/{slug}/activate', [AdminThemeController::class, 'activate']);
+    Route::delete('/themes/{slug}', [AdminThemeController::class, 'destroy']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);
