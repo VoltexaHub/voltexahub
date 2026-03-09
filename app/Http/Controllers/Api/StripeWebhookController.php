@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\DeliverPurchase;
 use App\Mail\PurchaseConfirmation;
 use App\Models\StorePurchase;
+use App\Models\UpgradePurchase;
 use App\Notifications\PurchaseConfirmedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,13 +46,27 @@ class StripeWebhookController extends Controller
 
     private function handleCheckoutSessionCompleted(object $session): void
     {
+        // Try store purchase first
         $purchase = StorePurchase::where('stripe_payment_intent', $session->id)->first();
 
-        if (! $purchase) {
-            Log::warning("Stripe webhook: no purchase found for checkout session {$session->id}");
+        if ($purchase) {
+            $this->fulfillStorePurchase($purchase);
             return;
         }
 
+        // Try upgrade purchase
+        $upgradePurchase = UpgradePurchase::where('stripe_session_id', $session->id)->first();
+
+        if ($upgradePurchase) {
+            $this->fulfillUpgradePurchase($upgradePurchase);
+            return;
+        }
+
+        Log::warning("Stripe webhook: no purchase found for checkout session {$session->id}");
+    }
+
+    private function fulfillStorePurchase(StorePurchase $purchase): void
+    {
         if ($purchase->status !== 'pending') {
             Log::info("Stripe webhook: purchase #{$purchase->id} already processed (status: {$purchase->status})");
             return;
@@ -75,6 +90,43 @@ class StripeWebhookController extends Controller
         ]));
 
         Log::info("Stripe checkout session completed for purchase #{$purchase->id}");
+    }
+
+    private function fulfillUpgradePurchase(UpgradePurchase $upgradePurchase): void
+    {
+        if ($upgradePurchase->status !== 'pending') {
+            Log::info("Stripe webhook: upgrade #{$upgradePurchase->id} already processed (status: {$upgradePurchase->status})");
+            return;
+        }
+
+        $upgradePurchase->update([
+            'status' => 'completed',
+            'delivered_at' => now(),
+        ]);
+
+        $upgradePurchase->load(['user', 'upgradePlan']);
+        $user = $upgradePurchase->user;
+        $plan = $upgradePurchase->upgradePlan;
+
+        // Assign role
+        if ($plan->role_name) {
+            $user->assignRole($plan->role_name);
+        }
+
+        // Apply one-time bonus credits
+        $bonus = $plan->one_time_bonus;
+        if ($bonus && !empty($bonus['credits'])) {
+            $user->addCredits((int) $bonus['credits'], "Upgrade bonus: {$plan->name}", \App\Models\UpgradePlan::class, $plan->id);
+        }
+
+        broadcast(new NewNotification($user->id, [
+            'type' => 'upgrade_confirmed',
+            'title' => 'Upgrade confirmed',
+            'body' => 'Your "' . $plan->name . '" upgrade is now active!',
+            'url' => '/upgrade',
+        ]));
+
+        Log::info("Stripe upgrade completed for upgrade purchase #{$upgradePurchase->id}");
     }
 
     private function handlePaymentSucceeded(object $paymentIntent): void

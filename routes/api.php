@@ -170,6 +170,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/store/purchase', [StoreController::class, 'purchaseWithCredits']);
     Route::post('/store/checkout', [StoreController::class, 'createCheckout']);
 
+    // Upgrade plans
+    Route::post("/upgrade-plans/{id}/checkout", [UpgradePlanController::class, "checkout"]);
+    Route::post("/upgrade-plans/{id}/activate", [UpgradePlanController::class, "activate"]);
+
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
