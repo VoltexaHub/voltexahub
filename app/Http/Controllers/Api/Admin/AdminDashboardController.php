@@ -79,7 +79,14 @@ class AdminDashboardController extends Controller
 
         $recentRegistrations = User::latest()
             ->take(5)
-            ->get(['id', 'username', 'created_at', 'avatar_color', 'avatar_path']);
+            ->get(['id', 'username', 'created_at', 'avatar_color', 'avatar_path'])
+            ->map(fn ($u) => [
+                'id'         => $u->id,
+                'username'   => $u->username,
+                'created_at' => $u->created_at,
+                'avatar_color' => $u->avatar_color,
+                'avatar_url' => $u->avatar_url,
+            ]);
 
         $recentPurchases = StorePurchase::with(['user:id,username', 'storeItem:id,name'])
             ->where('status', 'completed')
