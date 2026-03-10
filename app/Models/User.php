@@ -65,6 +65,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'pinned_thread_id',
         'known_ips',
         'pending_email',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     protected $hidden = [
