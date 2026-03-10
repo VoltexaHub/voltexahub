@@ -89,12 +89,20 @@ class AuthController extends Controller
         $user = User::where('email', $validated['email'])->first();
         $user->update(['is_online' => true, 'last_active_at' => now()]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $tokenResult = $user->createToken('auth-token');
+        $token = $tokenResult->plainTextToken;
+
+        // Store IP + location on the token
+        $ip = $request->ip();
+        $location = $this->resolveLocation($ip);
+        $tokenResult->accessToken->update([
+            'ip_address' => $ip,
+            'location'   => $location,
+        ]);
 
         AuditLog::log('login.success', $user);
 
         // Login notification for new IPs
-        $ip = $request->ip();
         $knownIps = $user->known_ips ?? [];
 
         if (!in_array($ip, $knownIps)) {
@@ -217,6 +225,31 @@ class AuthController extends Controller
         ]);
     }
 
+    private function resolveLocation(string $ip): ?string
+    {
+        // Skip private/loopback IPs
+        if (in_array($ip, ['127.0.0.1', '::1']) || str_starts_with($ip, '192.168.') || str_starts_with($ip, '10.')) {
+            return 'Local';
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->get("http://ip-api.com/json/{$ip}?fields=city,regionName,country,status");
+
+            if ($response->ok()) {
+                $data = $response->json();
+                if (($data['status'] ?? '') === 'success') {
+                    $parts = array_filter([$data['city'] ?? null, $data['regionName'] ?? null, $data['country'] ?? null]);
+                    return implode(', ', array_unique($parts)) ?: null;
+                }
+            }
+        } catch (\Throwable) {
+            // GeoIP lookup failed — return null silently
+        }
+
+        return null;
+    }
+
     public function sessions(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -232,6 +265,8 @@ class AuthController extends Controller
                 'last_used_at' => $token->last_used_at,
                 'created_at' => $token->created_at,
                 'is_current' => $currentTokenId !== null && $token->id === $currentTokenId,
+                'ip_address' => $token->ip_address,
+                'location' => $token->location,
             ]);
 
         return response()->json(['data' => $tokens]);
