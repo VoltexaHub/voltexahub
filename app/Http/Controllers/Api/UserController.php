@@ -319,7 +319,7 @@ class UserController extends Controller
             if (empty($validated['current_password']) || !Hash::check($validated['current_password'], $user->password)) {
                 // Admin alert on wrong current password
                 if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
-                    $ip = $request->ip();
+                    $ip = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
                     AuditLog::log('admin.password.change_failed', $user, ['ip' => $ip]);
                     Mail::to($user->email)->send(new AdminSecurityAlert('password.change_failed', $ip, null, now()));
                 }
@@ -349,7 +349,7 @@ class UserController extends Controller
 
             // Admin alert on email change request
             if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
-                $ip = $request->ip();
+                $ip = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
                 AuditLog::log('admin.email.change_requested', $user, ['ip' => $ip, 'new_email' => $validated['email']]);
                 Mail::to($user->email)->send(new AdminSecurityAlert('email.change_requested', $ip, null, now()));
             }
@@ -365,7 +365,7 @@ class UserController extends Controller
 
             // Admin alert on password change
             if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
-                $ip = $request->ip();
+                $ip = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
                 AuditLog::log('admin.password.changed', $user, ['ip' => $ip]);
                 Mail::to($user->email)->send(new AdminSecurityAlert('password.changed', $ip, null, now()));
             }

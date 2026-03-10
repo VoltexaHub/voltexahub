@@ -122,7 +122,7 @@ class AuthController extends Controller
             // Admin failed login alert
             $failedUser = User::where('email', $validated['email'])->first();
             if ($failedUser && ($failedUser->is_staff || $failedUser->hasRole(['admin', 'super-admin']))) {
-                $ip = $request->ip();
+                $ip = $this->getRealIp($request);
                 $location = $this->resolveLocation($ip);
                 AuditLog::log('admin.login.failure', $failedUser, ['ip' => $ip, 'location' => $location]);
                 Mail::to($failedUser->email)->send(new AdminSecurityAlert('login.failure', $ip, $location, now()));
@@ -143,7 +143,7 @@ class AuthController extends Controller
         $token = $tokenResult->plainTextToken;
 
         // Store IP + location on the token
-        $ip = $request->ip();
+        $ip = $this->getRealIp($request);
         $location = $this->resolveLocation($ip);
         $tokenResult->accessToken->update([
             'ip_address' => $ip,
@@ -298,6 +298,14 @@ class AuthController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Email address updated successfully.']);
+    }
+
+    private function getRealIp(Request $request): string
+    {
+        // Cloudflare passes the real client IP in CF-Connecting-IP
+        return $request->header('CF-Connecting-IP')
+            ?? $request->header('X-Forwarded-For')
+            ?? $request->ip();
     }
 
     private function resolveLocation(string $ip): ?string
