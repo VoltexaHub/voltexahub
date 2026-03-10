@@ -24,7 +24,7 @@ class MfaController extends Controller
         $google2fa = new Google2FA();
 
         $secret = $google2fa->generateSecretKey();
-        $user->two_factor_secret = Crypt::encryptString($secret);
+        $user->two_factor_secret = $secret;
         $user->save();
 
         $qrCodeUrl = $google2fa->getQRCodeUrl(
@@ -52,7 +52,7 @@ class MfaController extends Controller
         }
 
         $google2fa = new Google2FA();
-        $secret = Crypt::decryptString($user->two_factor_secret);
+        $secret = $user->two_factor_secret;
 
         if (!$google2fa->verifyKey($secret, $request->code)) {
             return response()->json(['message' => 'Invalid code.'], 422);
@@ -182,7 +182,7 @@ class MfaController extends Controller
         switch ($request->type) {
             case 'totp':
                 $google2fa = new Google2FA();
-                $secret = Crypt::decryptString($user->two_factor_secret);
+                $secret = $user->two_factor_secret;
                 $valid = $google2fa->verifyKey($secret, $request->code, 1);
                 break;
 
