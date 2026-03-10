@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PendingEmailChange;
 use App\Models\User;
 use App\Services\PerkService;
 use App\Services\XpService;
@@ -10,6 +11,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -305,24 +308,43 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'current_password' => ['required_with:new_password', 'string'],
+            'current_password' => ['required_with:new_password,email', 'string'],
             'new_password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
+
+        // Current password is required for email or password changes
+        if (isset($validated['email']) || !empty($validated['new_password'])) {
+            if (empty($validated['current_password']) || !Hash::check($validated['current_password'], $user->password)) {
+                return response()->json([
+                    'message' => 'Current password is incorrect.',
+                ], 422);
+            }
+        }
 
         if (isset($validated['name'])) {
             $user->name = $validated['name'];
         }
 
-        if (isset($validated['email'])) {
-            $user->email = $validated['email'];
+        if (isset($validated['email']) && $validated['email'] !== $user->email) {
+            // Save to pending_email and send verification to OLD address
+            $user->pending_email = $validated['email'];
+            $user->save();
+
+            $signedUrl = URL::temporarySignedRoute(
+                'confirm-email-change',
+                now()->addHours(24),
+                ['user' => $user->id]
+            );
+
+            Mail::to($user->email)->send(new PendingEmailChange($user, $signedUrl));
+
+            return response()->json([
+                'data' => $user->fresh(),
+                'message' => 'A confirmation link has been sent to your current email address.',
+            ]);
         }
 
-        if (! empty($validated['new_password'])) {
-            if (! Hash::check($validated['current_password'], $user->password)) {
-                return response()->json([
-                    'message' => 'Current password is incorrect.',
-                ], 422);
-            }
+        if (!empty($validated['new_password'])) {
             $user->password = $validated['new_password'];
         }
 

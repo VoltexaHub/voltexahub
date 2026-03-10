@@ -17,16 +17,56 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     public function register(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', PasswordRule::defaults()],
-        ]);
+        try {
+            $validated = $request->validate([
+                'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'password' => ['required', 'confirmed', PasswordRule::defaults()],
+            ]);
+        } catch (ValidationException $e) {
+            $errorKeys = array_keys($e->errors());
+            $hasEnumFields = array_intersect($errorKeys, ['username', 'email']);
+
+            if (!empty($hasEnumFields)) {
+                // Check if the errors are specifically unique constraint failures
+                $isUniqueFailure = false;
+                foreach ($hasEnumFields as $field) {
+                    foreach ($e->errors()[$field] as $msg) {
+                        if (str_contains($msg, 'already been taken')) {
+                            $isUniqueFailure = true;
+                            break 2;
+                        }
+                    }
+                }
+
+                if ($isUniqueFailure) {
+                    // Remove unique-related errors and replace with generic message
+                    $remainingErrors = [];
+                    foreach ($e->errors() as $field => $messages) {
+                        if (in_array($field, ['username', 'email'])) {
+                            $filtered = array_filter($messages, fn($m) => !str_contains($m, 'already been taken'));
+                            if (!empty($filtered)) {
+                                $remainingErrors[$field] = array_values($filtered);
+                            }
+                        } else {
+                            $remainingErrors[$field] = $messages;
+                        }
+                    }
+
+                    $remainingErrors['account'] = ['An account with those details already exists.'];
+
+                    throw ValidationException::withMessages($remainingErrors);
+                }
+            }
+
+            throw $e;
+        }
 
         $user = User::create([
             'name' => $validated['username'],
@@ -223,6 +263,25 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Verification email sent.',
         ]);
+    }
+
+    public function confirmEmailChange(Request $request): JsonResponse
+    {
+        if (!$request->hasValidSignature()) {
+            return response()->json(['message' => 'Invalid or expired link.'], 403);
+        }
+
+        $user = User::findOrFail($request->query('user'));
+
+        if (!$user->pending_email) {
+            return response()->json(['message' => 'No pending email change.'], 422);
+        }
+
+        $user->email = $user->pending_email;
+        $user->pending_email = null;
+        $user->save();
+
+        return response()->json(['message' => 'Email address updated successfully.']);
     }
 
     private function resolveLocation(string $ip): ?string

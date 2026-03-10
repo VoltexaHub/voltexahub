@@ -88,7 +88,7 @@ Route::get('/users/online', [UserController::class, 'online']);
 Route::get('/members', [UserController::class, 'members']);
 Route::get('/staff', [UserController::class, 'staff']);
 Route::get('/users/{username}/profile', [UserController::class, 'profile']);
-Route::get('/search', [SearchController::class, 'search']);
+Route::middleware('throttle:30,1')->get('/search', [SearchController::class, 'search']);
 Route::get('/upgrade-plans', [UpgradePlanController::class, 'index']);
 Route::get('/credits/earning-info', [CreditsController::class, 'earningInfo']);
 Route::get('/public/custom-code', [PublicConfigController::class, 'customCode']);
@@ -122,6 +122,10 @@ Route::post('/content/preview', [ContentController::class, 'preview']);
 // Email verification (signed URL — no auth needed)
 Route::post('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
+
+// Email change confirmation (signed URL — no auth needed)
+Route::get('/auth/confirm-email-change', [AuthController::class, 'confirmEmailChange'])
+    ->name('confirm-email-change');
 
 // Stripe webhook (no auth — verified by signature)
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
@@ -179,9 +183,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/locked-content/{hash}/status', [LockedContentReportController::class, 'status']);
     Route::post('/locked-content/{hash}/report', [LockedContentReportController::class, 'report']);
 
-    // Forum actions
-    Route::post('/threads', [ThreadController::class, 'store']);
-    Route::post('/threads/{id}/posts', [PostController::class, 'store']);
+    // Forum actions (rate limited)
+    Route::middleware('throttle:10,1')->post('/threads', [ThreadController::class, 'store']);
+    Route::middleware('throttle:20,1')->post('/threads/{id}/posts', [PostController::class, 'store']);
     Route::post('/posts/{id}/react', [PostController::class, 'react']);
     Route::post('/posts/{id}/like', [PostController::class, 'likePost']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
