@@ -11,6 +11,7 @@ use App\Services\PluginManager;
 use App\Services\TextFormatterService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Post::observe(PostObserver::class);
         Thread::observe(ThreadObserver::class);
+
+        // Password policy: min 8 chars, mixed case, number, symbol, not in breach lists
+        Password::defaults(fn () =>
+            Password::min(8)
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised()
+        );
 
         // Apply mail config from forum_config table at runtime
         // This allows mail settings to be configured via the admin panel

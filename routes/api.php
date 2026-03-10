@@ -105,12 +105,18 @@ Route::get('/content/pages/{page}', [AdminContentController::class, 'getPage']);
 Route::get('/content/help', [AdminContentController::class, 'helpIndex']);
 Route::get('/content/help/{slug}', [AdminContentController::class, 'helpShow']);
 
-// Auth routes
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+// Auth routes (rate limited)
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+});
+
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/auth/login', [AuthController::class, 'login']);
+});
+
 Route::post('/content/preview', [ContentController::class, 'preview']);
-Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 // Email verification (signed URL — no auth needed)
 Route::post('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
