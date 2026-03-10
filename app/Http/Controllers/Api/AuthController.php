@@ -220,7 +220,8 @@ class AuthController extends Controller
     public function sessions(Request $request): JsonResponse
     {
         $user = $request->user();
-        $currentTokenId = $user->currentAccessToken()->id;
+        $currentToken = $user->currentAccessToken();
+        $currentTokenId = $currentToken?->id ?? null;
 
         $tokens = $user->tokens()
             ->orderByDesc('last_used_at')
@@ -230,7 +231,7 @@ class AuthController extends Controller
                 'name' => $token->name,
                 'last_used_at' => $token->last_used_at,
                 'created_at' => $token->created_at,
-                'is_current' => $token->id === $currentTokenId,
+                'is_current' => $currentTokenId !== null && $token->id === $currentTokenId,
             ]);
 
         return response()->json(['data' => $tokens]);
