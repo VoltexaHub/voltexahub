@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\WelcomeEmail;
+use App\Models\AuditLog;
 use App\Models\User;
+use App\Notifications\NewLoginNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -59,16 +62,48 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $lockoutKey = 'auth.lockout.' . md5(strtolower($validated['email']));
+        $attempts = Cache::get($lockoutKey, 0);
+
+        if ($attempts >= 10) {
+            AuditLog::log('login.lockout', null, ['email' => $validated['email']]);
+
+            return response()->json([
+                'message' => 'Too many failed login attempts. Please try again later.',
+            ], 429);
+        }
+
         if (! Auth::attempt($validated)) {
+            Cache::put($lockoutKey, $attempts + 1, 900);
+
+            AuditLog::log('login.failure', null, ['email' => $validated['email']]);
+
             return response()->json([
                 'message' => 'Invalid credentials.',
             ], 401);
         }
 
+        // Clear lockout on success
+        Cache::forget($lockoutKey);
+
         $user = User::where('email', $validated['email'])->first();
         $user->update(['is_online' => true, 'last_active_at' => now()]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::log('login.success', $user);
+
+        // Login notification for new IPs
+        $ip = $request->ip();
+        $knownIps = $user->known_ips ?? [];
+
+        if (!in_array($ip, $knownIps)) {
+            $user->notify(new NewLoginNotification($ip, now()->toDateTimeString()));
+
+            $knownIps[] = $ip;
+            $user->known_ips = array_slice($knownIps, -10);
+            $user->save();
+        }
 
         return response()->json([
             'data' => [
@@ -131,6 +166,8 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        AuditLog::log('password.reset', $user);
+
         return response()->json([
             'data' => [
                 'user' => $user->load('roles'),
@@ -178,5 +215,52 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Verification email sent.',
         ]);
+    }
+
+    public function sessions(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $currentTokenId = $user->currentAccessToken()->id;
+
+        $tokens = $user->tokens()
+            ->orderByDesc('last_used_at')
+            ->get()
+            ->map(fn ($token) => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'last_used_at' => $token->last_used_at,
+                'created_at' => $token->created_at,
+                'is_current' => $token->id === $currentTokenId,
+            ]);
+
+        return response()->json(['data' => $tokens]);
+    }
+
+    public function destroySession(Request $request, int $tokenId): JsonResponse
+    {
+        $user = $request->user();
+        $token = $user->tokens()->where('id', $tokenId)->first();
+
+        if (!$token) {
+            return response()->json(['message' => 'Session not found.'], 404);
+        }
+
+        if ($token->id === $user->currentAccessToken()->id) {
+            return response()->json(['message' => 'Cannot revoke current session. Use logout instead.'], 422);
+        }
+
+        $token->delete();
+
+        return response()->json(['message' => 'Session revoked.']);
+    }
+
+    public function destroyAllSessions(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $currentTokenId = $user->currentAccessToken()->id;
+
+        $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json(['message' => 'All other sessions revoked.']);
     }
 }

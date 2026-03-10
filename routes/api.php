@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\AdminLogoController;
 use App\Http\Controllers\Api\Admin\AdminGroupController;
 use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
+use App\Http\Controllers\Api\Admin\AdminAuditController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
@@ -132,6 +133,11 @@ Route::post('/webhooks/plisio', [PlisioWebhookController::class, 'handle']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/email/resend', [AuthController::class, 'resendVerification']);
+
+    // Active sessions
+    Route::get('/auth/sessions', [AuthController::class, 'sessions']);
+    Route::delete('/auth/sessions', [AuthController::class, 'destroyAllSessions']);
+    Route::delete('/auth/sessions/{tokenId}', [AuthController::class, 'destroySession']);
 
     // Current user
     Route::get('/user', [UserController::class, 'me']);
@@ -367,6 +373,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/themes/upload', [AdminThemeController::class, 'upload']);
     Route::post('/themes/{slug}/activate', [AdminThemeController::class, 'activate']);
     Route::delete('/themes/{slug}', [AdminThemeController::class, 'destroy']);
+
+    // Audit logs
+    Route::get('/audit-logs', [AdminAuditController::class, 'index']);
 
     // Plugins
     Route::get('/plugins', [AdminPluginController::class, 'index']);

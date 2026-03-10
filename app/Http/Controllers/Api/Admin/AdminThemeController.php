@@ -48,8 +48,13 @@ class AdminThemeController extends Controller
             'file' => ['required', 'file', 'mimes:zip', 'max:2048'],
         ]);
 
+        $uploadedFile = $request->file('file');
+        if ($uploadedFile->getMimeType() !== 'application/zip') {
+            return response()->json(['message' => 'Invalid file type. Only ZIP files are allowed.'], 422);
+        }
+
         $zip = new \ZipArchive();
-        $tmpPath = $request->file('file')->getRealPath();
+        $tmpPath = $uploadedFile->getRealPath();
 
         if ($zip->open($tmpPath) !== true) {
             return response()->json(['message' => 'Invalid zip file.'], 422);

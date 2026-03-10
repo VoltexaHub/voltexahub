@@ -63,6 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'awards_sort_order',
         'status',
         'pinned_thread_id',
+        'known_ips',
     ];
 
     protected $hidden = [
@@ -90,6 +91,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'awards_sort_order' => 'array',
             'is_sponsor' => 'boolean',
             'sponsor_since' => 'datetime',
+            'known_ips' => 'array',
         ];
     }
 

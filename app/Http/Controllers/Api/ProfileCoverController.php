@@ -13,8 +13,14 @@ class ProfileCoverController extends Controller
     public function store(Request $request, ImageUploadService $imageService): JsonResponse
     {
         $request->validate([
-            'image' => ['required', 'file', 'max:10240'],
+            'image' => ['required', 'file', 'max:2048'],
         ]);
+
+        $file = $request->file('image');
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            return response()->json(['message' => 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'], 422);
+        }
 
         $user = $request->user();
 

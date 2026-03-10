@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\UpdateLastSeen::class,
             \App\Http\Middleware\EnforceBan::class,
+            \App\Http\Middleware\SecureHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
