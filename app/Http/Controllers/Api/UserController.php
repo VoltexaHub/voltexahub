@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminSecurityAlert;
 use App\Mail\PendingEmailChange;
+use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\PerkService;
 use App\Services\XpService;
@@ -315,6 +317,13 @@ class UserController extends Controller
         // Current password is required for email or password changes
         if (isset($validated['email']) || !empty($validated['new_password'])) {
             if (empty($validated['current_password']) || !Hash::check($validated['current_password'], $user->password)) {
+                // Admin alert on wrong current password
+                if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
+                    $ip = $request->ip();
+                    AuditLog::log('admin.password.change_failed', $user, ['ip' => $ip]);
+                    Mail::to($user->email)->send(new AdminSecurityAlert('password.change_failed', $ip, null, now()));
+                }
+
                 return response()->json([
                     'message' => 'Current password is incorrect.',
                 ], 422);
@@ -338,6 +347,13 @@ class UserController extends Controller
 
             Mail::to($user->email)->send(new PendingEmailChange($user, $signedUrl));
 
+            // Admin alert on email change request
+            if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
+                $ip = $request->ip();
+                AuditLog::log('admin.email.change_requested', $user, ['ip' => $ip, 'new_email' => $validated['email']]);
+                Mail::to($user->email)->send(new AdminSecurityAlert('email.change_requested', $ip, null, now()));
+            }
+
             return response()->json([
                 'data' => $user->fresh(),
                 'message' => 'A confirmation link has been sent to your current email address.',
@@ -346,6 +362,13 @@ class UserController extends Controller
 
         if (!empty($validated['new_password'])) {
             $user->password = $validated['new_password'];
+
+            // Admin alert on password change
+            if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
+                $ip = $request->ip();
+                AuditLog::log('admin.password.changed', $user, ['ip' => $ip]);
+                Mail::to($user->email)->send(new AdminSecurityAlert('password.changed', $ip, null, now()));
+            }
         }
 
         $user->save();

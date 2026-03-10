@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminSecurityAlert;
 use App\Mail\WelcomeEmail;
 use App\Models\AuditLog;
 use App\Models\User;
@@ -118,6 +119,15 @@ class AuthController extends Controller
 
             AuditLog::log('login.failure', null, ['email' => $validated['email']]);
 
+            // Admin failed login alert
+            $failedUser = User::where('email', $validated['email'])->first();
+            if ($failedUser && ($failedUser->is_staff || $failedUser->hasRole(['admin', 'super-admin']))) {
+                $ip = $request->ip();
+                $location = $this->resolveLocation($ip);
+                AuditLog::log('admin.login.failure', $failedUser, ['ip' => $ip, 'location' => $location]);
+                Mail::to($failedUser->email)->send(new AdminSecurityAlert('login.failure', $ip, $location, now()));
+            }
+
             return response()->json([
                 'message' => 'Invalid credentials.',
             ], 401);
@@ -141,6 +151,12 @@ class AuthController extends Controller
         ]);
 
         AuditLog::log('login.success', $user);
+
+        // Admin login alert (every login)
+        if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
+            AuditLog::log('admin.login.success', $user, ['ip' => $ip, 'location' => $location]);
+            Mail::to($user->email)->send(new AdminSecurityAlert('login.success', $ip, $location, now()));
+        }
 
         // Login notification for new IPs
         $knownIps = $user->known_ips ?? [];
