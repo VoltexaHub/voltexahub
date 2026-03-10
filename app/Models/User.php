@@ -70,6 +70,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $appends = ['avatar_url', 'group_color', 'group_label', 'cover_url'];
@@ -93,6 +95,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_sponsor' => 'boolean',
             'sponsor_since' => 'datetime',
             'known_ips' => 'array',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 

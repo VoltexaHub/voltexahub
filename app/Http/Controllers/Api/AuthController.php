@@ -137,14 +137,32 @@ class AuthController extends Controller
         Cache::forget($lockoutKey);
 
         $user = User::where('email', $validated['email'])->first();
+        $ip = $this->getRealIp($request);
+        $location = $this->resolveLocation($ip);
+
+        // MFA check: if user has confirmed MFA, redirect to MFA verification
+        if ($user->two_factor_confirmed_at) {
+            $tempToken = Str::uuid()->toString();
+            Cache::put("mfa.pending.{$tempToken}", [
+                'user_id'  => $user->id,
+                'ip'       => $ip,
+                'location' => $location,
+            ], 300);
+
+            return response()->json([
+                'requires_mfa' => true,
+                'temp_token' => $tempToken,
+                'has_totp' => true,
+                'has_email' => true,
+            ]);
+        }
+
         $user->update(['is_online' => true, 'last_active_at' => now()]);
 
         $tokenResult = $user->createToken('auth-token');
         $token = $tokenResult->plainTextToken;
 
         // Store IP + location on the token
-        $ip = $this->getRealIp($request);
-        $location = $this->resolveLocation($ip);
         $tokenResult->accessToken->update([
             'ip_address' => $ip,
             'location'   => $location,

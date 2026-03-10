@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MfaController;
 use App\Http\Controllers\Api\LockedContentController;
 use App\Http\Controllers\Api\LockedContentReportController;
 use App\Http\Controllers\Api\ProfileCoverController;
@@ -127,6 +128,10 @@ Route::post('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEma
 Route::get('/auth/confirm-email-change', [AuthController::class, 'confirmEmailChange'])
     ->name('confirm-email-change');
 
+// MFA routes (no auth — used during login flow)
+Route::post('/auth/mfa/email', [MfaController::class, 'sendEmailOtp']);
+Route::post('/auth/mfa/verify', [MfaController::class, 'verify']);
+
 // Stripe webhook (no auth — verified by signature)
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
 
@@ -137,6 +142,13 @@ Route::post('/webhooks/plisio', [PlisioWebhookController::class, 'handle']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/email/resend', [AuthController::class, 'resendVerification']);
+
+    // MFA management
+    Route::post('/auth/mfa/enable', [MfaController::class, 'enable']);
+    Route::post('/auth/mfa/confirm', [MfaController::class, 'confirm']);
+    Route::delete('/auth/mfa/disable', [MfaController::class, 'disable']);
+    Route::post('/auth/mfa/recovery-codes', [MfaController::class, 'regenerateRecoveryCodes']);
+    Route::get('/auth/mfa/status', [MfaController::class, 'status']);
 
     // Active sessions
     Route::get('/auth/sessions', [AuthController::class, 'sessions']);
