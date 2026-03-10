@@ -162,7 +162,10 @@ class AuthController extends Controller
         $knownIps = $user->known_ips ?? [];
 
         if (!in_array($ip, $knownIps)) {
-            $user->notify(new NewLoginNotification($ip, now()->toDateTimeString()));
+            // Admin/staff get AdminSecurityAlert on every login — skip the duplicate new-IP email
+            if (!$user->is_staff && !$user->hasRole(['admin', 'super-admin'])) {
+                $user->notify(new NewLoginNotification($ip, now()->toDateTimeString()));
+            }
 
             $knownIps[] = $ip;
             $user->known_ips = array_slice($knownIps, -10);
