@@ -212,6 +212,15 @@ class MfaController extends Controller
             return response()->json(['message' => 'Invalid code.'], 422);
         }
 
+        if ($request->type === 'recovery') {
+            AuditLog::log('mfa.recovery_code_used', $user);
+
+            if ($user->is_staff || $user->hasRole(['admin', 'super-admin'])) {
+                $ip = $request->header('CF-Connecting-IP') ?? $request->header('X-Forwarded-For') ?? $request->ip();
+                Mail::to($user->email)->send(new AdminSecurityAlert('recovery_code.used', $ip, null, now()));
+            }
+        }
+
         Cache::forget("mfa.pending.{$request->temp_token}");
 
         $user->update(['is_online' => true, 'last_active_at' => now()]);

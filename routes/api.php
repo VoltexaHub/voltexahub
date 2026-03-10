@@ -59,6 +59,7 @@ use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\ThreadController;
 use App\Http\Controllers\Api\ThreadPrefixController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -102,6 +103,18 @@ Route::get('/payment-providers', [StoreController::class, 'providers']);
 Route::get('/store/currency', [StoreController::class, 'currency']);
 Route::get('/payment-providers/plisio/currencies', [StoreController::class, 'plisioCurrencies']);
 
+// Queue health check (public)
+Route::get('/health/queue', function () {
+    $stuckJobs = DB::table('jobs')
+        ->where('created_at', '<', now()->subMinutes(5)->getTimestamp())
+        ->count();
+
+    return response()->json([
+        'status' => $stuckJobs > 0 ? 'warning' : 'ok',
+        'stuck_jobs' => $stuckJobs,
+    ]);
+});
+
 // Content pages (public)
 Route::get('/content/pages/{page}', [AdminContentController::class, 'getPage']);
 Route::get('/content/help', [AdminContentController::class, 'helpIndex']);
@@ -129,8 +142,8 @@ Route::get('/auth/confirm-email-change', [AuthController::class, 'confirmEmailCh
     ->name('confirm-email-change');
 
 // MFA routes (no auth — used during login flow)
-Route::post('/auth/mfa/email', [MfaController::class, 'sendEmailOtp']);
-Route::post('/auth/mfa/verify', [MfaController::class, 'verify']);
+Route::middleware('throttle:5,1')->post('/auth/mfa/email', [MfaController::class, 'sendEmailOtp']);
+Route::middleware('throttle:10,1')->post('/auth/mfa/verify', [MfaController::class, 'verify']);
 
 // Stripe webhook (no auth — verified by signature)
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
@@ -195,9 +208,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/locked-content/{hash}/status', [LockedContentReportController::class, 'status']);
     Route::post('/locked-content/{hash}/report', [LockedContentReportController::class, 'report']);
 
-    // Forum actions (rate limited)
-    Route::middleware('throttle:10,1')->post('/threads', [ThreadController::class, 'store']);
-    Route::middleware('throttle:20,1')->post('/threads/{id}/posts', [PostController::class, 'store']);
+    // Forum actions (rate limited, require verified email)
+    Route::middleware(['throttle:10,1', 'verified'])->post('/threads', [ThreadController::class, 'store']);
+    Route::middleware(['throttle:20,1', 'verified'])->post('/threads/{id}/posts', [PostController::class, 'store']);
     Route::post('/posts/{id}/react', [PostController::class, 'react']);
     Route::post('/posts/{id}/like', [PostController::class, 'likePost']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
@@ -209,13 +222,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/threads/{thread}/solved', [SolvedController::class, 'markSolved']);
     Route::delete('/threads/{thread}/solved', [SolvedController::class, 'unmarkSolved']);
 
-    // Store
-    Route::post('/store/purchase', [StoreController::class, 'purchaseWithCredits']);
-    Route::post('/store/checkout', [StoreController::class, 'createCheckout']);
+    // Store (require verified email)
+    Route::middleware('verified')->group(function () {
+        Route::post('/store/purchase', [StoreController::class, 'purchaseWithCredits']);
+        Route::post('/store/checkout', [StoreController::class, 'createCheckout']);
+    });
 
-    // Upgrade plans
-    Route::post("/upgrade-plans/{id}/checkout", [UpgradePlanController::class, "checkout"]);
-    Route::post("/upgrade-plans/{id}/activate", [UpgradePlanController::class, "activate"]);
+    // Upgrade plans (require verified email)
+    Route::middleware('verified')->group(function () {
+        Route::post("/upgrade-plans/{id}/checkout", [UpgradePlanController::class, "checkout"]);
+        Route::post("/upgrade-plans/{id}/activate", [UpgradePlanController::class, "activate"]);
+    });
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -268,6 +285,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
             Route::post('/users/{id}/xp', [AdminUserController::class, 'adjustXp']);
     Route::post('/users/{id}/awards', [AdminUserController::class, 'grantAward']);
     Route::delete('/users/{id}/awards/{awardId}', [AdminUserController::class, 'revokeAward']);
+    Route::delete('/users/{id}/mfa', [AdminUserController::class, 'resetMfa']);
 
     // Forums (list, tree + CRUD for games, categories, forums)
     Route::get('/forums', [AdminForumController::class, 'index']);

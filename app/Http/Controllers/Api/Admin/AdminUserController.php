@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Award;
 use App\Models\User;
 use App\Models\UserAward;
@@ -208,6 +209,19 @@ class AdminUserController extends Controller
         return response()->json([
             'message' => 'Award revoked successfully.',
         ]);
+    }
+
+    public function resetMfa(Request $request, int $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        $user->two_factor_secret = null;
+        $user->two_factor_recovery_codes = null;
+        $user->two_factor_confirmed_at = null;
+        $user->save();
+
+        AuditLog::log('admin.mfa_reset', $request->user(), ['target_user_id' => $id]);
+
+        return response()->json(['message' => 'MFA has been reset for this user.']);
     }
 
     public function banned(Request $request): JsonResponse

@@ -14,9 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role'  => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'ban'   => \App\Http\Middleware\EnforceBan::class,
-            'staff' => \App\Http\Middleware\IsStaffMiddleware::class,
+            'role'     => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'ban'      => \App\Http\Middleware\EnforceBan::class,
+            'staff'    => \App\Http\Middleware\IsStaffMiddleware::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\UpdateLastSeen::class,

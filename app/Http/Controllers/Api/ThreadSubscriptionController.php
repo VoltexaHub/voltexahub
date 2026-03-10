@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 
 class ThreadSubscriptionController extends Controller
 {
-    public function toggle(Request $request, int $id): JsonResponse
+    public function toggle(Request $request, string $id): JsonResponse
     {
-        $thread = Thread::findOrFail($id);
+        $thread = Thread::where('id', $id)->orWhere('slug', $id)->firstOrFail();
         $user = $request->user();
 
         $existing = ThreadSubscription::where('user_id', $user->id)
@@ -39,9 +39,9 @@ class ThreadSubscriptionController extends Controller
         ]);
     }
 
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $thread = Thread::findOrFail($id);
+        $thread = Thread::where('id', $id)->orWhere('slug', $id)->firstOrFail();
         $user = $request->user();
 
         $subscribed = ThreadSubscription::where('user_id', $user->id)

@@ -16,6 +16,7 @@ class AdminSecurityAlert extends Mailable
         'password.change_failed' => 'Admin password change attempt failed',
         'email.change_requested' => 'Admin email change requested',
         'mfa.disabled'           => 'Admin MFA disabled',
+        'recovery_code.used'     => 'Admin recovery code used for login',
     ];
 
     public function __construct(
