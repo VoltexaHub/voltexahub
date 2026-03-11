@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AdminGroupController;
 use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
+use App\Http\Controllers\Api\Admin\AdminDatabaseController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
@@ -416,4 +417,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/plugins/install', [AdminPluginController::class, 'install']);
     Route::post('/plugins/{slug}/toggle', [AdminPluginController::class, 'toggle']);
     Route::delete('/plugins/{slug}', [AdminPluginController::class, 'uninstall']);
+
+    // Database
+    Route::post('/database/export', [AdminDatabaseController::class, 'export']);
+    Route::post('/database/import', [AdminDatabaseController::class, 'import']);
 });
