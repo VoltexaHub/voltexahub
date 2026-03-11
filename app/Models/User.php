@@ -77,7 +77,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_recovery_codes',
     ];
 
-    protected $appends = ['avatar_url', 'group_color', 'group_label', 'cover_url'];
+    protected $appends = ['avatar_url', 'group_color', 'group_label', 'cover_url', 'email_verified'];
 
     protected function casts(): array
     {
@@ -109,6 +109,11 @@ class User extends Authenticatable implements MustVerifyEmail
             ? '/storage/' . $this->avatar_path
             : 'https://cdn.discordapp.com/embed/avatars/0.png'
         );
+    }
+
+    protected function emailVerified(): Attribute
+    {
+        return Attribute::get(fn () => !is_null($this->email_verified_at));
     }
 
     protected function coverUrl(): Attribute
