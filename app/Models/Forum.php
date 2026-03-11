@@ -10,7 +10,7 @@ class Forum extends Model
 {
     protected $fillable = [
         'category_id', 'parent_forum_id', 'name', 'slug', 'description', 'icon',
-        'display_order', 'is_active', 'thread_count', 'post_count',
+        'display_order', 'is_active', 'noindex', 'thread_count', 'post_count',
         'last_post_at', 'last_post_user_id',
     ];
 
@@ -18,6 +18,7 @@ class Forum extends Model
     {
         return [
             'is_active' => 'boolean',
+            'noindex' => 'boolean',
             'last_post_at' => 'datetime',
         ];
     }

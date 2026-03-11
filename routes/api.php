@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\AdminDatabaseController;
 use App\Http\Controllers\Api\Admin\AdminErrorLogController;
 use App\Http\Controllers\Api\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Api\Admin\AdminSecurityController;
+use App\Http\Controllers\Api\Admin\AdminSeoController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
@@ -439,4 +440,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Maintenance Tools
     Route::post('/maintenance/{tool}', [AdminMaintenanceController::class, 'run']);
+
+    // SEO Settings
+    Route::get('/settings/seo', [AdminSeoController::class, 'getSettings']);
+    Route::put('/settings/seo', [AdminSeoController::class, 'updateSettings']);
 });

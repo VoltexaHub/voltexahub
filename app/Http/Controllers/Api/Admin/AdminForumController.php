@@ -35,6 +35,7 @@ class AdminForumController extends Controller
                 'parent_forum_name' => $f->parentForum?->name,
                 'display_order' => $f->display_order,
                 'is_active' => $f->is_active,
+                'noindex' => $f->noindex,
             ]);
 
         return response()->json(['data' => $forums]);
@@ -182,11 +183,13 @@ class AdminForumController extends Controller
             'icon' => ['nullable', 'string', 'max:255'],
             'display_order' => ['nullable', 'integer'],
             'is_active' => ['nullable', 'boolean'],
+            'noindex' => ['nullable', 'boolean'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['icon'] = $validated['icon'] ?? 'fa-solid fa-comment';
         $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['noindex'] = $validated['noindex'] ?? false;
 
         $forum = Forum::create($validated);
 
@@ -209,6 +212,7 @@ class AdminForumController extends Controller
             'icon' => ['nullable', 'string', 'max:255'],
             'display_order' => ['nullable', 'integer'],
             'is_active' => ['nullable', 'boolean'],
+            'noindex' => ['nullable', 'boolean'],
         ]);
 
         // If slug sent but empty, regenerate from name
