@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
 use App\Http\Controllers\Api\Admin\AdminDatabaseController;
+use App\Http\Controllers\Api\Admin\AdminSystemStatsController;
 use App\Http\Controllers\Api\Admin\AdminErrorLogController;
 use App\Http\Controllers\Api\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Api\Admin\AdminSecurityController;
@@ -425,6 +426,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Database
     Route::post('/database/export', [AdminDatabaseController::class, 'export']);
     Route::post('/database/import', [AdminDatabaseController::class, 'import']);
+    Route::get('/system/stats', [AdminSystemStatsController::class, 'index']);
 
     // Security Settings & Re-auth
     Route::get('/settings/security', [AdminSecurityController::class, 'getSettings']);
