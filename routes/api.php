@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
 use App\Http\Controllers\Api\Admin\AdminDatabaseController;
+use App\Http\Controllers\Api\Admin\AdminSecurityController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCustomGatewayController;
@@ -421,4 +422,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Database
     Route::post('/database/export', [AdminDatabaseController::class, 'export']);
     Route::post('/database/import', [AdminDatabaseController::class, 'import']);
+
+    // Security Settings & Re-auth
+    Route::get('/settings/security', [AdminSecurityController::class, 'getSettings']);
+    Route::put('/settings/security', [AdminSecurityController::class, 'updateSettings']);
+    Route::post('/reauth', [AdminSecurityController::class, 'verify'])->middleware('throttle:5,1');
 });
