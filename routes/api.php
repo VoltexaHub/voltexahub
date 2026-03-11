@@ -136,7 +136,7 @@ Route::middleware('throttle:5,1')->group(function () {
 Route::post('/content/preview', [ContentController::class, 'preview']);
 
 // Email verification (signed URL — no auth needed)
-Route::post('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+Route::get('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
 
 // Email change confirmation (signed URL — no auth needed)
