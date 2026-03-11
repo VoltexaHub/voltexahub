@@ -14,8 +14,8 @@ class PaymentService
 
     public function __construct()
     {
-        $raw = ForumConfig::where('key', 'payment_providers')->value('value');
-        $this->providers = $raw ? json_decode($raw, true) : [];
+        $raw = ForumConfig::get('payment_providers');
+        $this->providers = $raw ? (is_array($raw) ? $raw : json_decode($raw, true)) : [];
     }
 
     /**
