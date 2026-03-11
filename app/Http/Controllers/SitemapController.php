@@ -31,13 +31,42 @@ class SitemapController extends Controller
             ->limit(1000)
             ->get();
 
-        $content = view('sitemap', [
-            'frontendUrl' => $frontendUrl,
-            'forums' => $forums,
-            'threads' => $threads,
-        ])->render();
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        return response($content, 200)
+        // Home
+        $xml .= "  <url>\n";
+        $xml .= "    <loc>" . e($frontendUrl) . "/</loc>\n";
+        $xml .= "    <changefreq>daily</changefreq>\n";
+        $xml .= "    <priority>1.0</priority>\n";
+        $xml .= "  </url>\n";
+
+        // Forums
+        foreach ($forums as $forum) {
+            $lastmod = $forum->updated_at?->toW3cString() ?? now()->toW3cString();
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>" . e($frontendUrl) . "/forum/" . e($forum->slug) . "</loc>\n";
+            $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
+            $xml .= "    <changefreq>daily</changefreq>\n";
+            $xml .= "    <priority>0.8</priority>\n";
+            $xml .= "  </url>\n";
+        }
+
+        // Threads
+        foreach ($threads as $thread) {
+            $slug = $thread->slug ?? $thread->id;
+            $lastmod = $thread->updated_at?->toW3cString() ?? $thread->created_at->toW3cString();
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>" . e($frontendUrl) . "/thread/" . e($slug) . "</loc>\n";
+            $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
+            $xml .= "    <changefreq>weekly</changefreq>\n";
+            $xml .= "    <priority>0.6</priority>\n";
+            $xml .= "  </url>\n";
+        }
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)
             ->header('Content-Type', 'application/xml');
     }
 }
