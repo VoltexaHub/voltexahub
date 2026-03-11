@@ -101,7 +101,14 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 
 ---
 
-## v0.5.0 — in progress
+## v0.5.0 — March 11, 2026
 
-- [ ] DB automated backups
-- [ ] Admin re-auth (password confirm before destructive actions)
+- [feat] ACP database export — download full compressed backup (.sql.gz) from admin panel
+- [feat] ACP database import — upload and restore a backup with confirmation modal
+- [feat] Admin re-auth — configurable setting to require password or MFA code before destructive actions
+- [feat] Default avatar for new users (Discord blurple)
+- [security] Sensitive forum_config values encrypted at rest (mail credentials, payment API keys)
+- [security] users.two_factor_secret encrypted via Laravel cast
+- [fix] PaymentService reading encrypted payment_providers correctly
+- [fix] Laravel scheduler running inside Docker container via supervisord
+- [fix] mysqldump available in PHP container for DB exports
