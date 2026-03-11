@@ -101,6 +101,29 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 
 ---
 
+## v0.6.0 — March 11, 2026
+
+### Admin Tools
+- [feat] Error Log — ACP → System → Error Log; captures all exceptions with stack traces, configurable enable/disable, auto-prune, clear all
+- [feat] Maintenance Tools — ACP → System → Maintenance; rebuild forum stats, rebuild user post counts, prune sessions, prune audit log, clear cache
+
+### Security
+- [security] Replaced regex HTML sanitizers with DOMPurify across all v-html render sites
+- [security] Search results no longer expose raw post body; plain-text excerpt returned instead (strips BBCode + HTML)
+- [security] Nginx: PHP execution blocked in /storage/ directory
+
+### Email Verification
+- [feat] Email verification banner in UserCP — amber prompt with resend button when email is unverified
+- [fix] Resend verification email — correct API path /auth/email/resend
+- [fix] Verify email route changed from POST to GET (email links are browser GETs)
+- [fix] Email verify link now redirects to a proper success page with 5s auto-redirect to forum
+
+### Other Fixes
+- [fix] Default avatar now self-hosted via APP_URL (no longer relying on Discord CDN)
+- [fix] Certbot auto-renewal verified healthy; all certs valid 80+ days
+
+---
+
 ## v0.5.0 — March 11, 2026
 
 - [feat] ACP database export — download full compressed backup (.sql.gz) from admin panel
