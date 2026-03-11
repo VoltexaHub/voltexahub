@@ -107,7 +107,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Attribute::get(fn () => $this->avatar_path
             ? '/storage/' . $this->avatar_path
-            : 'https://cdn.discordapp.com/embed/avatars/0.png'
+            : rtrim(env('FRONTEND_URL', env('APP_URL', 'https://community.voltexahub.com')), '/') . '/default-avatar.png'
         );
     }
 
