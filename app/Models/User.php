@@ -107,7 +107,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Attribute::get(fn () => $this->avatar_path
             ? '/storage/' . $this->avatar_path
-            : null
+            : '/default-avatar.png'
         );
     }
 
