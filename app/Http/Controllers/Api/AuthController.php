@@ -262,27 +262,22 @@ class AuthController extends Controller
         ]);
     }
 
-    public function verifyEmail(Request $request, int $id, string $hash): JsonResponse
+    public function verifyEmail(Request $request, int $id, string $hash)
     {
+        $frontendUrl = rtrim(env('FRONTEND_URL', 'https://community.voltexahub.com'), '/');
         $user = User::findOrFail($id);
 
         if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
-            return response()->json([
-                'message' => 'Invalid verification link.',
-            ], 403);
+            return redirect("{$frontendUrl}/verify-email?status=error&message=Invalid+verification+link.");
         }
 
         if ($user->hasVerifiedEmail()) {
-            return response()->json([
-                'message' => 'Email already verified.',
-            ]);
+            return redirect("{$frontendUrl}/verify-email?status=already_verified");
         }
 
         $user->markEmailAsVerified();
 
-        return response()->json([
-            'message' => 'Email verified successfully.',
-        ]);
+        return redirect("{$frontendUrl}/verify-email?status=success");
     }
 
     public function resendVerification(Request $request): JsonResponse
