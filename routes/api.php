@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
 use App\Http\Controllers\Api\Admin\AdminDatabaseController;
+use App\Http\Controllers\Api\Admin\AdminErrorLogController;
+use App\Http\Controllers\Api\Admin\AdminMaintenanceController;
 use App\Http\Controllers\Api\Admin\AdminSecurityController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
@@ -427,4 +429,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/settings/security', [AdminSecurityController::class, 'getSettings']);
     Route::put('/settings/security', [AdminSecurityController::class, 'updateSettings']);
     Route::post('/reauth', [AdminSecurityController::class, 'verify'])->middleware('throttle:5,1');
+
+    // Error Log
+    Route::get('/error-log/settings', [AdminErrorLogController::class, 'getSettings']);
+    Route::put('/error-log/settings', [AdminErrorLogController::class, 'updateSettings']);
+    Route::get('/error-log', [AdminErrorLogController::class, 'index']);
+    Route::delete('/error-log/clear', [AdminErrorLogController::class, 'clear']);
+    Route::delete('/error-log/{id}', [AdminErrorLogController::class, 'destroy']);
+
+    // Maintenance Tools
+    Route::post('/maintenance/{tool}', [AdminMaintenanceController::class, 'run']);
 });

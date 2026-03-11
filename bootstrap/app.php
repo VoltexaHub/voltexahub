@@ -26,6 +26,28 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->report(function (\Throwable $e) {
+            try {
+                if (\App\Models\ForumConfig::get('error_log_enabled') === 'true') {
+                    \App\Models\ErrorLog::create([
+                        'type' => 'exception',
+                        'message' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                        'url' => request()->fullUrl(),
+                        'method' => request()->method(),
+                        'user_id' => auth()->id(),
+                        'ip_address' => request()->ip(),
+                    ]);
+                }
+            } catch (\Throwable) {
+                // Never let logging crash the app
+            }
+
+            return false; // Continue to default reporting
+        });
+
         $exceptions->shouldRenderJsonWhen(fn ($req, $e) => $req->is('api/*') || $req->expectsJson());
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {

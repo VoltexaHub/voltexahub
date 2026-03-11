@@ -9,3 +9,10 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('sanctum:prune-expired --hours=720')->daily();
+
+Schedule::call(function () {
+    if (\App\Models\ForumConfig::get('error_log_enabled') === 'true') {
+        $days = (int) (\App\Models\ForumConfig::get('error_log_prune_days', '30'));
+        \App\Models\ErrorLog::where('created_at', '<', now()->subDays($days))->delete();
+    }
+})->daily();
