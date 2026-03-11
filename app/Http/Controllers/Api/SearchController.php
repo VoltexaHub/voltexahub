@@ -50,7 +50,11 @@ class SearchController extends Controller
                 ->paginate(10, ['*'], 'page', $request->input('page', 1));
 
             $results['posts'] = [
-                'data' => $posts->items(),
+                'data' => $posts->through(function ($post) {
+                    $post->excerpt = mb_substr(strip_tags(preg_replace('/\[.*?\]/', '', $post->body)), 0, 200);
+                    unset($post->body);
+                    return $post;
+                })->items(),
                 'total' => $posts->total(),
             ];
         }
