@@ -1,7 +1,0 @@
-{
-    "slug": "code-paste",
-    "name": "Code Paste",
-    "version": "1.0.0",
-    "author": "VoltexaHub",
-    "description": "Enhance code blocks with syntax highlighting, copy button, language labels, and line numbers."
-}
