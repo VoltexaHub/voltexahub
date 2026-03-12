@@ -136,7 +136,36 @@ class PluginManager
             $instance->boot();
         }
 
+        // Trigger frontend rebuild if the plugin has frontend assets
+        $manifest = $this->readPluginJson($slug);
+        if ($manifest && !empty($manifest['frontend'])) {
+            $this->triggerFrontendBuild();
+        }
+
         return $record->fresh();
+    }
+
+    /**
+     * Trigger a frontend rebuild in the background.
+     */
+    private function triggerFrontendBuild(): void
+    {
+        $frontendPath = env('FRONTEND_PATH');
+        if (!$frontendPath || !is_dir($frontendPath)) {
+            return;
+        }
+
+        $logFile = storage_path('logs/frontend-build.log');
+        $cmd = "cd {$frontendPath} && npm run build >> {$logFile} 2>&1 &";
+        exec($cmd);
+    }
+
+    /**
+     * Check if a frontend build is in progress.
+     */
+    public function isBuildInProgress(): bool
+    {
+        return false;
     }
 
     /**

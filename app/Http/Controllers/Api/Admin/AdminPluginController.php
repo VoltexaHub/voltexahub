@@ -46,6 +46,7 @@ class AdminPluginController extends Controller
     public function toggle(string $slug): JsonResponse
     {
         $record = \App\Models\InstalledPlugin::where('slug', $slug)->firstOrFail();
+        $wasDisabled = !$record->enabled;
 
         if ($record->enabled) {
             $record = $this->pluginManager->disable($slug);
@@ -53,9 +54,16 @@ class AdminPluginController extends Controller
             $record = $this->pluginManager->enable($slug);
         }
 
+        $building = false;
+        if ($wasDisabled && $record->enabled) {
+            $manifest = $this->pluginManager->readPluginJson($slug);
+            $building = !empty($manifest['frontend']);
+        }
+
         return response()->json([
             'data' => $record,
-            'message' => $record->enabled ? 'Plugin enabled.' : 'Plugin disabled.',
+            'message' => $record->enabled ? 'Plugin activated successfully.' : 'Plugin disabled.',
+            'building' => $building,
         ]);
     }
 
