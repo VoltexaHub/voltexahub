@@ -29,9 +29,13 @@ class ImageUploadService
         bool $cover = false
     ): string {
         // GIFs (especially animated) don't survive WebP conversion via GD.
-        // Store them directly without processing to preserve animation.
+        // Validate the GIF is a real image before storing directly to catch polyglot files.
         if (in_array(strtolower($file->getClientOriginalExtension()), ['gif'])
             || $file->getMimeType() === 'image/gif') {
+            $imageInfo = @getimagesize($file->getRealPath());
+            if (!$imageInfo || $imageInfo[2] !== IMAGETYPE_GIF) {
+                throw new \InvalidArgumentException('Invalid GIF file.');
+            }
             return $file->storeAs($directory, Str::random(40) . '.gif', 'public');
         }
 
