@@ -18,6 +18,7 @@ use App\Services\PerkService;
 use App\Services\XpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Plugins\PluginHook;
 
 class PostController extends Controller
 {
@@ -166,6 +167,10 @@ class PostController extends Controller
                 ]));
             }
         }
+
+        try {
+            PluginHook::fire('post.created', $post);
+        } catch (\Throwable) {}
 
         $postData = $post->load([
             'user' => fn ($q) => $q->select(

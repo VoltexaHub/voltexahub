@@ -8,6 +8,7 @@ use App\Models\Report;
 use App\Models\Thread;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Plugins\PluginHook;
 
 class AdminModerationController extends Controller
 {
@@ -118,6 +119,10 @@ class AdminModerationController extends Controller
     {
         $thread = Thread::findOrFail($id);
         $forum = $thread->forum;
+
+        try {
+            PluginHook::fire('thread.deleted', $thread);
+        } catch (\Throwable) {}
 
         $postCount = $thread->posts()->count();
         $thread->posts()->forceDelete();

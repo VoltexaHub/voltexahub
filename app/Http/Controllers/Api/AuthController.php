@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
+use App\Plugins\PluginHook;
 
 class AuthController extends Controller
 {
@@ -84,6 +85,10 @@ class AuthController extends Controller
 
         // Send welcome email
         Mail::to($user)->send(new WelcomeEmail($user));
+
+        try {
+            PluginHook::fire('user.registered', $user);
+        } catch (\Throwable) {}
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -158,6 +163,10 @@ class AuthController extends Controller
         }
 
         $user->update(['is_online' => true, 'last_active_at' => now()]);
+
+        try {
+            PluginHook::fire('user.login', $user);
+        } catch (\Throwable) {}
 
         $tokenResult = $user->createToken('auth-token');
         $token = $tokenResult->plainTextToken;

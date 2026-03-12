@@ -1,7 +1,9 @@
 {
-  "slug": "bug-reports",
-  "name": "Bug Reports",
-  "version": "1.0.0",
-  "author": "VoltexaHub",
-  "description": "Let users submit bug reports with screenshots and reproduction steps. Staff can track, triage, and resolve issues."
+    "name": "Bug Reports",
+    "slug": "bug-reports",
+    "version": "1.0.0",
+    "author": "VoltexaHub",
+    "description": "Let users submit bug reports with screenshots and reproduction steps. Staff can track, triage, and resolve issues.",
+    "requires": "0.7.0",
+    "frontend": true
 }

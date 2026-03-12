@@ -11,6 +11,7 @@ use App\Models\ThreadLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Plugins\PluginHook;
 
 class ThreadController extends Controller
 {
@@ -277,6 +278,10 @@ class ThreadController extends Controller
         $user->addCredits((int) ForumConfig::get('credits_per_thread', 10), 'Created a thread', Thread::class, $thread->id);
         $user->increment('post_count');
         $user->checkAchievements();
+
+        try {
+            PluginHook::fire('thread.created', $thread);
+        } catch (\Throwable) {}
 
         return response()->json([
             'data' => $thread->load(['user', 'prefix:id,name,color,bg_color,text_color', 'tags:id,name,slug']),

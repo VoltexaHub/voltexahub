@@ -1,7 +1,9 @@
 {
-    "slug": "announcements",
     "name": "Announcements",
+    "slug": "announcements",
     "version": "1.0.0",
     "author": "VoltexaHub",
-    "description": "Display site-wide announcement banners to your community."
+    "description": "Site-wide announcement banners with admin CRUD management.",
+    "requires": "0.7.0",
+    "frontend": true
 }

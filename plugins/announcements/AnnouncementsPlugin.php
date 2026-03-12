@@ -1,32 +1,21 @@
 <?php
 
-use App\Plugins\Plugin;
+use App\Plugins\BasePlugin;
+use App\Plugins\PluginHook;
 
-class AnnouncementsPlugin extends Plugin
+class AnnouncementsPlugin extends BasePlugin
 {
-    public function slug(): string
+    protected function getSlug(): string
     {
         return 'announcements';
     }
 
-    public function name(): string
+    public function boot(): void
     {
-        return 'Announcements';
-    }
-
-    public function version(): string
-    {
-        return '1.0.0';
-    }
-
-    public function description(): string
-    {
-        return 'Display site-wide announcement banners.';
-    }
-
-    public function author(): string
-    {
-        return 'VoltexaHub';
+        // Example hook: fire when thread is created in announcement forums
+        PluginHook::on('thread.created', function ($thread) {
+            // Announcements logic if needed
+        });
     }
 
     public function register(): void
@@ -36,5 +25,13 @@ class AnnouncementsPlugin extends Plugin
             ->group(base_path('plugins/announcements/routes.php'));
     }
 
-    public function boot(): void {}
+    public function install(): void
+    {
+        $this->runMigrations();
+    }
+
+    public function uninstall(): void
+    {
+        $this->rollbackMigrations();
+    }
 }

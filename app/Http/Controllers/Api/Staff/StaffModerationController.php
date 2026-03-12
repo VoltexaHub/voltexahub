@@ -13,6 +13,7 @@ use App\Models\UserAward;
 use App\Notifications\AwardReceivedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Plugins\PluginHook;
 
 class StaffModerationController extends Controller
 {
@@ -167,6 +168,10 @@ class StaffModerationController extends Controller
 
         $thread = Thread::findOrFail($id);
         $forum = $thread->forum;
+
+        try {
+            PluginHook::fire('thread.deleted', $thread);
+        } catch (\Throwable) {}
 
         $postCount = $thread->posts()->count();
         $thread->posts()->forceDelete();

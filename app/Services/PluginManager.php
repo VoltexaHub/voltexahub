@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\InstalledPlugin;
+use App\Plugins\BasePlugin;
 use App\Plugins\Plugin;
+use App\Plugins\PluginHook;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -23,7 +25,7 @@ class PluginManager
     /**
      * Load a plugin class by slug and return the instance.
      */
-    public function loadPlugin(string $slug): ?Plugin
+    public function loadPlugin(string $slug): ?BasePlugin
     {
         if (isset($this->loaded[$slug])) {
             return $this->loaded[$slug];
@@ -45,7 +47,7 @@ class PluginManager
 
         $instance = new $className();
 
-        if (! $instance instanceof Plugin) {
+        if (! $instance instanceof BasePlugin) {
             return null;
         }
 
@@ -84,6 +86,7 @@ class PluginManager
 
     /**
      * Install a plugin from disk by slug.
+     * Runs migrations and calls the plugin's install() method.
      */
     public function install(string $slug): InstalledPlugin
     {
@@ -95,6 +98,16 @@ class PluginManager
 
         // Run plugin migrations if present
         $this->runPluginMigrations($slug);
+
+        // Call plugin's install() lifecycle hook
+        $instance = $this->loadPlugin($slug);
+        if ($instance) {
+            try {
+                $instance->install();
+            } catch (\Throwable) {
+                // Don't fail install if the hook throws
+            }
+        }
 
         return InstalledPlugin::updateOrCreate(
             ['slug' => $slug],
@@ -139,9 +152,27 @@ class PluginManager
 
     /**
      * Uninstall a plugin.
+     * Calls the plugin's uninstall() method and rolls back migrations.
      */
     public function uninstall(string $slug): void
     {
+        // Call plugin's uninstall() lifecycle hook
+        $instance = $this->loadPlugin($slug);
+        if ($instance) {
+            try {
+                $instance->uninstall();
+            } catch (\Throwable) {
+                // Don't fail uninstall if the hook throws
+            }
+
+            // Rollback plugin migrations
+            try {
+                $instance->rollbackMigrations();
+            } catch (\Throwable) {
+                // Don't fail uninstall if rollback throws
+            }
+        }
+
         InstalledPlugin::where('slug', $slug)->delete();
     }
 
@@ -180,6 +211,8 @@ class PluginManager
                 'version' => $json['version'] ?? '0.0.0',
                 'author' => $json['author'] ?? 'Unknown',
                 'description' => $json['description'] ?? '',
+                'requires' => $json['requires'] ?? null,
+                'frontend' => $json['frontend'] ?? false,
                 'installed' => $dbRecord !== null,
                 'enabled' => $dbRecord['enabled'] ?? false,
                 'installed_at' => $dbRecord['installed_at'] ?? null,
@@ -209,7 +242,7 @@ class PluginManager
     /**
      * Read and decode a plugin's plugin.json.
      */
-    protected function readPluginJson(string $slug): ?array
+    public function readPluginJson(string $slug): ?array
     {
         $path = $this->pluginsPath($slug . '/plugin.json');
 
@@ -225,7 +258,7 @@ class PluginManager
     /**
      * Run migrations from a plugin's migrations/ directory.
      */
-    protected function runPluginMigrations(string $slug): void
+    public function runPluginMigrations(string $slug): void
     {
         $migrationsPath = $this->pluginsPath($slug . '/migrations');
 
