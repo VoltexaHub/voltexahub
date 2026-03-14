@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Award;
+use App\Services\ImageUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,7 @@ class AdminAwardController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ImageUploadService $imageService): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -31,7 +32,7 @@ class AdminAwardController extends Controller
         unset($validated['icon_file']);
 
         if ($request->hasFile('icon_file')) {
-            $validated['icon_path'] = Storage::disk('public')->put('awards', $request->file('icon_file'));
+            $validated['icon_path'] = $imageService->store($request->file('icon_file'), 'awards', 256, 256, 90, true);
         }
 
         $award = Award::create($validated);
@@ -42,7 +43,7 @@ class AdminAwardController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id, ImageUploadService $imageService): JsonResponse
     {
         $award = Award::findOrFail($id);
 
@@ -59,7 +60,7 @@ class AdminAwardController extends Controller
             if ($award->icon_path) {
                 Storage::disk('public')->delete($award->icon_path);
             }
-            $validated['icon_path'] = Storage::disk('public')->put('awards', $request->file('icon_file'));
+            $validated['icon_path'] = $imageService->store($request->file('icon_file'), 'awards', 256, 256, 90, true);
         }
 
         $award->update($validated);

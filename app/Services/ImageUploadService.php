@@ -9,6 +9,13 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class ImageUploadService
 {
+    private const ALLOWED_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
+
     /**
      * Resize and save an uploaded image.
      *
@@ -28,15 +35,29 @@ class ImageUploadService
         int $quality = 85,
         bool $cover = false
     ): string {
-        // GIFs (especially animated) don't survive WebP conversion via GD.
-        // Validate the GIF is a real image before storing directly to catch polyglot files.
+        $this->validateMagicBytes($file);
+
+        // GIFs: re-encode frame 0 through GD to strip metadata and embedded data.
         if (in_array(strtolower($file->getClientOriginalExtension()), ['gif'])
             || $file->getMimeType() === 'image/gif') {
-            $imageInfo = @getimagesize($file->getRealPath());
-            if (!$imageInfo || $imageInfo[2] !== IMAGETYPE_GIF) {
+            $gdImage = @imagecreatefromgif($file->getRealPath());
+            if (!$gdImage) {
                 throw new \InvalidArgumentException('Invalid GIF file.');
             }
-            return $file->storeAs($directory, Str::random(40) . '.gif', 'public');
+
+            $tempPath = tempnam(sys_get_temp_dir(), 'gif_');
+            try {
+                imagegif($gdImage, $tempPath);
+                imagedestroy($gdImage);
+
+                $filename = Str::random(40) . '.gif';
+                $path = $directory . '/' . $filename;
+                Storage::disk('public')->put($path, file_get_contents($tempPath));
+
+                return $path;
+            } finally {
+                @unlink($tempPath);
+            }
         }
 
         $filename = Str::random(40) . '.webp';
@@ -57,5 +78,18 @@ class ImageUploadService
         Storage::disk('public')->put($path, (string) $encoded);
 
         return $path;
+    }
+
+    private function validateMagicBytes(UploadedFile $file): void
+    {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $detectedMime = finfo_file($finfo, $file->getRealPath());
+        finfo_close($finfo);
+
+        if (!in_array($detectedMime, self::ALLOWED_MIME_TYPES, true)) {
+            throw new \InvalidArgumentException(
+                'File is not a valid image (detected: ' . $detectedMime . ').'
+            );
+        }
     }
 }

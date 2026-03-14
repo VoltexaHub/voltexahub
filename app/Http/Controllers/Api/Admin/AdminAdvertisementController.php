@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
+use App\Services\ImageUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class AdminAdvertisementController extends Controller
         return response()->json(['data' => $ads]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ImageUploadService $imageService): JsonResponse
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -28,7 +29,7 @@ class AdminAdvertisementController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')->store('ads', 'public');
+            $validated['image_path'] = $imageService->store($request->file('image'), 'ads', 1200, null, 85);
         }
 
         unset($validated['image']);
@@ -38,7 +39,7 @@ class AdminAdvertisementController extends Controller
         return response()->json(['data' => $ad, 'message' => 'Advertisement created.'], 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id, ImageUploadService $imageService): JsonResponse
     {
         $ad = Advertisement::findOrFail($id);
 
@@ -54,7 +55,7 @@ class AdminAdvertisementController extends Controller
             if ($ad->image_path) {
                 Storage::disk('public')->delete($ad->image_path);
             }
-            $validated['image_path'] = $request->file('image')->store('ads', 'public');
+            $validated['image_path'] = $imageService->store($request->file('image'), 'ads', 1200, null, 85);
         }
 
         unset($validated['image']);
