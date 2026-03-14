@@ -26,13 +26,16 @@ class AdminAwardController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'icon_file' => ['nullable', 'image', 'max:2048'],
+            'icon_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
         ]);
 
         unset($validated['icon_file']);
 
         if ($request->hasFile('icon_file')) {
             $validated['icon_path'] = $imageService->store($request->file('icon_file'), 'awards', 256, 256, 90, true);
+            $validated['icon'] = null; // clear text icon when file uploaded
+        } else {
+            $validated['icon_path'] = null; // ensure no stale path
         }
 
         $award = Award::create($validated);
@@ -51,7 +54,7 @@ class AdminAwardController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'icon_file' => ['nullable', 'image', 'max:2048'],
+            'icon_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
         ]);
 
         unset($validated['icon_file']);
@@ -61,6 +64,13 @@ class AdminAwardController extends Controller
                 Storage::disk('public')->delete($award->icon_path);
             }
             $validated['icon_path'] = $imageService->store($request->file('icon_file'), 'awards', 256, 256, 90, true);
+            $validated['icon'] = null; // clear text icon when file uploaded
+        } elseif (isset($validated['icon']) && $validated['icon']) {
+            // switching back to text icon — clear any old uploaded file
+            if ($award->icon_path) {
+                Storage::disk('public')->delete($award->icon_path);
+            }
+            $validated['icon_path'] = null;
         }
 
         $award->update($validated);
