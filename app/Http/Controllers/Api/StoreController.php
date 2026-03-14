@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
-use App\Jobs\DeliverPurchase;
 use App\Mail\PurchaseConfirmation;
 use App\Models\StoreItem;
 use App\Models\StorePurchase;
@@ -20,8 +19,7 @@ class StoreController extends Controller
 {
     public function index(): JsonResponse
     {
-        $items = StoreItem::with('game')
-            ->where('is_active', true)
+        $items = StoreItem::where('is_active', true)
             ->orderBy('display_order')
             ->get();
 
@@ -118,7 +116,6 @@ class StoreController extends Controller
         Mail::to($user)->send(new PurchaseConfirmation($purchase));
 
         // Dispatch delivery job for RCON items
-        dispatch(new DeliverPurchase($purchase));
 
         $user->notify(new PurchaseConfirmedNotification($purchase));
         broadcast(new NewNotification($user->id, [

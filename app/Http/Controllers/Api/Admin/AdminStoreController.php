@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\DeliverPurchase;
 use App\Models\StoreItem;
 use App\Models\StorePurchase;
 use Illuminate\Http\JsonResponse;
@@ -14,8 +13,7 @@ class AdminStoreController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $items = StoreItem::with('game')
-            ->orderBy('display_order')
+        $items = StoreItem::orderBy('display_order')
             ->paginate(20);
 
         return response()->json([
@@ -42,7 +40,6 @@ class AdminStoreController extends Controller
             'supports_both' => ['nullable', 'boolean'],
             'item_type' => ['required', 'string', 'max:50'],
             'item_value' => ['nullable', 'string', 'max:255'],
-            'game_id' => ['nullable', 'exists:games,id'],
             'is_active' => ['nullable', 'boolean'],
             'display_order' => ['nullable', 'integer'],
         ]);
@@ -53,7 +50,7 @@ class AdminStoreController extends Controller
         $item = StoreItem::create($validated);
 
         return response()->json([
-            'data' => $item->load('game'),
+            'data' => $item,
             'message' => 'Store item created successfully.',
         ], 201);
     }
@@ -73,7 +70,6 @@ class AdminStoreController extends Controller
             'supports_both' => ['nullable', 'boolean'],
             'item_type' => ['sometimes', 'string', 'max:50'],
             'item_value' => ['nullable', 'string', 'max:255'],
-            'game_id' => ['nullable', 'exists:games,id'],
             'is_active' => ['nullable', 'boolean'],
             'display_order' => ['nullable', 'integer'],
         ]);
@@ -81,7 +77,7 @@ class AdminStoreController extends Controller
         $item->update($validated);
 
         return response()->json([
-            'data' => $item->fresh()->load('game'),
+            'data' => $item->fresh(),
             'message' => 'Store item updated successfully.',
         ]);
     }
@@ -130,11 +126,9 @@ class AdminStoreController extends Controller
             'delivered_at' => now(),
         ]);
 
-        dispatch(new DeliverPurchase($purchase));
-
         return response()->json([
             'data' => $purchase->fresh()->load(['user:id,username', 'storeItem:id,name']),
-            'message' => 'Purchase marked as delivered. Delivery job dispatched.',
+            'message' => 'Purchase marked as delivered.',
         ]);
     }
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Forum;
-use App\Models\Game;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -58,67 +57,11 @@ class AdminForumController extends Controller
         return response()->json(['data' => $categories]);
     }
 
-    // ── Game CRUD (kept for backwards compat, games table not dropped) ──
-
-    public function createGame(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:games,slug'],
-            'icon' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'display_order' => ['nullable', 'integer'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
-        $validated['is_active'] = $validated['is_active'] ?? true;
-
-        $game = Game::create($validated);
-
-        return response()->json([
-            'data' => $game,
-            'message' => 'Game created successfully.',
-        ], 201);
-    }
-
-    public function updateGame(Request $request, int $id): JsonResponse
-    {
-        $game = Game::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:games,slug,' . $id],
-            'icon' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'display_order' => ['nullable', 'integer'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-
-        $game->update($validated);
-
-        return response()->json([
-            'data' => $game->fresh(),
-            'message' => 'Game updated successfully.',
-        ]);
-    }
-
-    public function deleteGame(int $id): JsonResponse
-    {
-        $game = Game::findOrFail($id);
-        $game->delete();
-
-        return response()->json([
-            'message' => 'Game deleted successfully.',
-        ]);
-    }
-
     // ── Category CRUD ──
 
     public function createCategory(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'game_id' => ['nullable', 'exists:games,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug'],
             'description' => ['nullable', 'string'],
@@ -143,7 +86,6 @@ class AdminForumController extends Controller
         $category = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'game_id' => ['nullable', 'exists:games,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'unique:categories,slug,' . $id],
             'description' => ['nullable', 'string'],
@@ -239,21 +181,6 @@ class AdminForumController extends Controller
     }
 
     // ── Reordering ──
-
-    public function reorderGames(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'items' => ['required', 'array'],
-            'items.*.id' => ['required', 'exists:games,id'],
-            'items.*.display_order' => ['required', 'integer'],
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            Game::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
-        }
-
-        return response()->json(['message' => 'Reordered successfully']);
-    }
 
     public function reorderCategories(Request $request): JsonResponse
     {

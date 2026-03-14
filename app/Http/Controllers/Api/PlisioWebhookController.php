@@ -39,7 +39,6 @@ class PlisioWebhookController extends Controller
 
         if ($purchase) {
             $purchase->update(['status' => 'completed', 'delivered_at' => now()]);
-            dispatch(new \App\Jobs\DeliverPurchase($purchase));
             return response()->json(['ok' => true]);
         }
 

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
-use App\Jobs\DeliverPurchase;
 use App\Mail\PurchaseConfirmation;
 use App\Models\StorePurchase;
 use App\Models\UpgradePurchase;
@@ -77,7 +76,6 @@ class StripeWebhookController extends Controller
             'delivered_at' => now(),
         ]);
 
-        dispatch(new DeliverPurchase($purchase));
 
         $purchase->load(['user', 'storeItem']);
         Mail::to($purchase->user)->send(new PurchaseConfirmation($purchase));
@@ -144,7 +142,6 @@ class StripeWebhookController extends Controller
         ]);
 
         // Dispatch delivery job
-        dispatch(new DeliverPurchase($purchase));
 
         // Send confirmation email and notification
         $purchase->load(['user', 'storeItem']);
