@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
             DefaultContentSeeder::class,
             RoleSeeder::class,
             ForumConfigSeeder::class,
-            GameSeeder::class,
             CategorySeeder::class,
             ForumSeeder::class,
             AchievementSeeder::class,

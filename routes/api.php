@@ -47,7 +47,6 @@ use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\CreditsController;
 use App\Http\Controllers\Api\ForumConfigController;
 use App\Http\Controllers\Api\ForumController;
-use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\NotificationController;
 
@@ -84,7 +83,6 @@ Route::get('/roles', function () {
         ]),
     ]);
 });
-Route::get('/games', [GameController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/forums', [ForumController::class, 'index']);
 Route::get('/forums/{slug}/threads', [ThreadController::class, 'index']);
@@ -296,16 +294,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Forums (list, tree + CRUD for games, categories, forums)
     Route::get('/forums', [AdminForumController::class, 'index']);
     Route::get('/forums/tree', [AdminForumController::class, 'tree']);
-    Route::post('/games', [AdminForumController::class, 'createGame']);
-    Route::put('/games/{id}', [AdminForumController::class, 'updateGame']);
-    Route::delete('/games/{id}', [AdminForumController::class, 'deleteGame']);
     Route::post('/categories', [AdminForumController::class, 'createCategory']);
     Route::put('/categories/{id}', [AdminForumController::class, 'updateCategory']);
     Route::delete('/categories/{id}', [AdminForumController::class, 'deleteCategory']);
     Route::post('/forums', [AdminForumController::class, 'createForum']);
     Route::put('/forums/{id}', [AdminForumController::class, 'updateForum']);
     Route::delete('/forums/{id}', [AdminForumController::class, 'deleteForum']);
-    Route::post('/games/reorder', [AdminForumController::class, 'reorderGames']);
     Route::post('/categories/reorder', [AdminForumController::class, 'reorderCategories']);
     Route::post('/forums/reorder', [AdminForumController::class, 'reorderForums']);
 
