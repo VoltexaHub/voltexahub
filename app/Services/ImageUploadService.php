@@ -31,7 +31,7 @@ class ImageUploadService
         UploadedFile $file,
         string $directory,
         int $width,
-        int $height = null,
+        ?int $height = null,
         int $quality = 85,
         bool $cover = false
     ): string {
