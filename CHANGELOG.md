@@ -119,12 +119,11 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 - [security] Nginx PHP execution block in /storage/ directory
 - [security] Award icon uploads restricted to jpg/jpeg/png/gif only
 
-### Code Quality
-- [fix] Removed dead code — Game model/controller/routes/seeders, GithubSponsors, StatusCheck command, RconService, DeliveryService, DeliverPurchase job, multi-game frontend toggle
-- [fix] Residual Game/DeliverPurchase references removed from StoreItem, Category, StoreController, AdminForumController, webhooks
+### Fixes
 - [fix] Error log toggle flicker on page load — settings render after API response
 - [fix] Awards description and icon columns made nullable (were NOT NULL with no default)
 - [fix] Awards icon/icon_file mutual exclusivity — uploading a file clears text icon and vice versa
+- [fix] Last poster group color not rendering on home page
 
 ---
 
