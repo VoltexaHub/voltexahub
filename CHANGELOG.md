@@ -101,6 +101,33 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 
 ---
 
+## v0.7.0 — March 2026 (unreleased)
+
+### Awards System
+- [feat] Awards catalog page — public /awards page with card grid, type badges (manual/achievement/purchasable), holder counts, pricing display
+- [feat] Award detail modal — full description, how-to-get instructions based on type, paginated member holders list
+- [feat] Award types — manual (staff-granted), achievement (auto-granted on achievement unlock), purchasable (credits or real money via store)
+- [feat] Achievement-linked awards — one-to-one link between an award and an achievement; award auto-granted when achievement is earned
+- [feat] Purchasable awards — price_credits and/or price_money fields; integrated into store purchase flow
+- [feat] Awards reorder perk wired up — users with awards_reorder perk can drag/reorder their profile awards; profile respects sort order
+- [feat] Awards nav link added to main header
+- [feat] Admin award form expanded — type selector, achievement picker, pricing fields (shown conditionally by type)
+- [feat] Admin awards reorder endpoint — PUT /admin/awards/reorder
+
+### Security
+- [security] Image upload hardening — magic byte validation via finfo on all upload paths, GIF re-encoding through GD (strips metadata/embedded payloads), all uploads re-encoded via Intervention Image
+- [security] Nginx PHP execution block in /storage/ directory
+- [security] Award icon uploads restricted to jpg/jpeg/png/gif only
+
+### Code Quality
+- [fix] Removed dead code — Game model/controller/routes/seeders, GithubSponsors, StatusCheck command, RconService, DeliveryService, DeliverPurchase job, multi-game frontend toggle
+- [fix] Residual Game/DeliverPurchase references removed from StoreItem, Category, StoreController, AdminForumController, webhooks
+- [fix] Error log toggle flicker on page load — settings render after API response
+- [fix] Awards description and icon columns made nullable (were NOT NULL with no default)
+- [fix] Awards icon/icon_file mutual exclusivity — uploading a file clears text icon and vice versa
+
+---
+
 ## v0.6.0 — March 11, 2026
 
 ### Admin Tools
