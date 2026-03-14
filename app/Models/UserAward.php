@@ -9,6 +9,10 @@ class UserAward extends Model
 {
     protected $fillable = ['user_id', 'award_id', 'granted_by', 'reason'];
 
+    protected $casts = [
+        'granted_by' => 'integer',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
 use App\Mail\PurchaseConfirmation;
+use App\Models\Award;
 use App\Models\StoreItem;
 use App\Models\StorePurchase;
+use App\Models\UserAward;
 use App\Models\UserCosmetic;
 use App\Notifications\PurchaseConfirmedNotification;
 use App\Models\ForumConfig;
@@ -90,6 +92,23 @@ class StoreController extends Controller
             ]);
         }
 
+        // If it's an award, grant it to the user
+        if ($item->item_type === 'award') {
+            $award = Award::find($item->item_value);
+            if (! $award) {
+                return response()->json(['message' => 'Award not found.'], 422);
+            }
+            if (UserAward::where('user_id', $user->id)->where('award_id', $award->id)->exists()) {
+                return response()->json(['message' => 'You already have this award.'], 422);
+            }
+            UserAward::create([
+                'user_id' => $user->id,
+                'award_id' => $award->id,
+                'granted_by' => null,
+                'reason' => 'Purchased from store',
+            ]);
+        }
+
         // If it's an XP boost, create or extend boost
         if ($item->item_type === 'xp_boost') {
             $config = json_decode($item->item_value, true);
@@ -166,7 +185,12 @@ class StoreController extends Controller
             'mode' => 'payment',
             'success_url' => $frontendUrl . '/store/success?session_id={CHECKOUT_SESSION_ID}&provider=' . $provider,
             'cancel_url' => $frontendUrl . '/store/cancel',
-            'metadata' => ['user_id' => $user->id, 'item_id' => $item->id, 'type' => 'store'],
+            'metadata' => array_filter([
+                'user_id' => $user->id,
+                'item_id' => $item->id,
+                'type' => 'store',
+                'award_id' => $item->item_type === 'award' ? $item->item_value : null,
+            ]),
             'customer_email' => $user->email,
         ];
 

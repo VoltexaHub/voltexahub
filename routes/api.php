@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\Admin\AdminModerationController;
 use App\Http\Controllers\Api\Admin\AdminStoreController;
 use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
+use App\Http\Controllers\Api\AwardController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MfaController;
@@ -90,6 +91,8 @@ Route::get('/threads/{id}', [ThreadController::class, 'show']);
 Route::get('/threads/{id}/posts', [PostController::class, 'index']);
 Route::get('/store/items', [StoreController::class, 'index']);
 Route::get('/achievements', [AchievementController::class, 'index']);
+Route::get('/awards', [AwardController::class, 'index']);
+Route::get('/awards/{id}', [AwardController::class, 'show']);
 Route::get('/users/online', [UserController::class, 'online']);
 Route::get('/members', [UserController::class, 'members']);
 Route::get('/staff', [UserController::class, 'staff']);
@@ -330,6 +333,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Awards
     Route::get('/awards', [AdminAwardController::class, 'index']);
     Route::post('/awards', [AdminAwardController::class, 'store']);
+    Route::put('/awards/reorder', [AdminAwardController::class, 'reorder']);
     Route::put('/awards/{id}', [AdminAwardController::class, 'update']);
     Route::delete('/awards/{id}', [AdminAwardController::class, 'destroy']);
 

@@ -13,7 +13,9 @@ class AdminAwardController extends Controller
 {
     public function index(): JsonResponse
     {
-        $awards = Award::all();
+        $awards = Award::orderBy('display_order')
+            ->with('achievement:id,name')
+            ->get();
 
         return response()->json([
             'data' => $awards,
@@ -27,6 +29,11 @@ class AdminAwardController extends Controller
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'icon_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
+            'type' => ['sometimes', 'in:manual,achievement,purchasable'],
+            'achievement_id' => ['nullable', 'exists:achievements,id'],
+            'price_credits' => ['nullable', 'integer', 'min:0'],
+            'price_money' => ['nullable', 'numeric', 'min:0'],
+            'display_order' => ['sometimes', 'integer', 'min:0'],
         ]);
 
         unset($validated['icon_file']);
@@ -55,6 +62,11 @@ class AdminAwardController extends Controller
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'icon_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
+            'type' => ['sometimes', 'in:manual,achievement,purchasable'],
+            'achievement_id' => ['nullable', 'exists:achievements,id'],
+            'price_credits' => ['nullable', 'integer', 'min:0'],
+            'price_money' => ['nullable', 'numeric', 'min:0'],
+            'display_order' => ['sometimes', 'integer', 'min:0'],
         ]);
 
         unset($validated['icon_file']);
@@ -79,6 +91,21 @@ class AdminAwardController extends Controller
             'data' => $award->fresh(),
             'message' => 'Award updated successfully.',
         ]);
+    }
+
+    public function reorder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'awards' => ['required', 'array'],
+            'awards.*.id' => ['required', 'exists:awards,id'],
+            'awards.*.display_order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        foreach ($validated['awards'] as $item) {
+            Award::where('id', $item['id'])->update(['display_order' => $item['display_order']]);
+        }
+
+        return response()->json(['message' => 'Awards reordered successfully.']);
     }
 
     public function destroy(int $id): JsonResponse

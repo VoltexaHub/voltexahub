@@ -305,6 +305,17 @@ class User extends Authenticatable implements MustVerifyEmail
                     'body' => 'You unlocked "' . $achievement->name . '"',
                     'url' => '/achievements',
                 ]));
+
+                // Auto-grant linked award if one exists
+                $linkedAward = Award::where('achievement_id', $achievement->id)->first();
+                if ($linkedAward && ! UserAward::where('user_id', $this->id)->where('award_id', $linkedAward->id)->exists()) {
+                    UserAward::create([
+                        'user_id' => $this->id,
+                        'award_id' => $linkedAward->id,
+                        'granted_by' => null,
+                        'reason' => 'Achievement: ' . $achievement->name,
+                    ]);
+                }
             }
 
             $userAchievement->save();
