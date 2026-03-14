@@ -36,7 +36,7 @@ class PostController extends Controller
                 ),
                 'user.roles',
                 'user.activeBoost',
-                'user.userAwards' => fn ($q) => $q->with('award')->take(4),
+                'user.userAwards' => fn ($q) => $q->with('award')->take(6),
                 'reactions',
             ])
             ->orderBy('created_at')
