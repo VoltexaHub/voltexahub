@@ -43,7 +43,7 @@ class ForumController extends Controller
                     'username'     => $lpu->username,
                     'avatar_url'   => $lpu->avatar_url,
                     'avatar_color' => $lpu->avatar_color,
-                    'group_color'  => $lpu->primary_role['color'] ?? null,
+                    'group_color'  => ($lpu->roles->first(fn($r) => $r->name !== 'banned') ?? $lpu->roles->first())?->color ?? null,
                 ] : null;
                 $lastPostThread = \App\Models\Thread::where('forum_id', $latestForum->id)
                     ->latest('created_at')->select('id', 'title', 'slug')->first();
@@ -73,7 +73,7 @@ class ForumController extends Controller
                             'username' => $forum->lastPostUser->username,
                             'avatar_url' => $forum->lastPostUser->avatar_url,
                             'avatar_color' => $forum->lastPostUser->avatar_color,
-                            'group_color' => $forum->lastPostUser->primary_role['color'] ?? null,
+                            'group_color' => ($forum->lastPostUser->roles->first(fn($r) => $r->name !== 'banned') ?? $forum->lastPostUser->roles->first())?->color ?? null,
                         ] : null,
                         'last_thread' => $forum->threads()->latest('created_at')->select('id','title','slug')->first(),
                         'subforums' => $forum->subforums->filter(function ($sf) use ($role) {
