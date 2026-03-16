@@ -17,7 +17,7 @@ class AdminSecurityController extends Controller
 
         return response()->json([
             'admin_reauth_required' => $value === 'true' || $value === true,
-            'turnstile_site_key' => ForumConfig::get('turnstile_site_key', ''),
+            'turnstile_site' => ForumConfig::get('turnstile_site', ''),
             'turnstile_secret_key' => '',
         ]);
     }
@@ -26,12 +26,12 @@ class AdminSecurityController extends Controller
     {
         $request->validate([
             'admin_reauth_required' => 'required|boolean',
-            'turnstile_site_key' => 'nullable|string|max:255',
+            'turnstile_site' => 'nullable|string|max:255',
             'turnstile_secret_key' => 'nullable|string|max:255',
         ]);
 
         ForumConfig::set('admin_reauth_required', $request->boolean('admin_reauth_required') ? 'true' : 'false');
-        ForumConfig::set('turnstile_site_key', $request->input('turnstile_site_key', ''));
+        ForumConfig::set('turnstile_site', $request->input('turnstile_site', ''));
 
         if ($request->filled('turnstile_secret_key')) {
             ForumConfig::set('turnstile_secret_key', $request->input('turnstile_secret_key'));
@@ -40,7 +40,7 @@ class AdminSecurityController extends Controller
         return response()->json([
             'message' => 'Security settings updated.',
             'admin_reauth_required' => $request->boolean('admin_reauth_required'),
-            'turnstile_site_key' => $request->input('turnstile_site_key', ''),
+            'turnstile_site' => $request->input('turnstile_site', ''),
             'turnstile_secret_key' => '',
         ]);
     }
