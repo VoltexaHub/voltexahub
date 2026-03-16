@@ -121,6 +121,8 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 - [security] Spam registration protection — Cloudflare Turnstile CAPTCHA (invisible, managed widget), honeypot field, rate limiting (3 attempts/IP/hour), disposable email domain blocklist (50+ domains)
 - [security] Turnstile keys configurable via Admin → Settings → Security — site key public, secret key write-only, both stored in forum_config DB (no hardcoded credentials)
 - [security] Sensitive keys stripped from public config API (turnstile secret, mail password, payment credentials)
+- [security] Disposable email blocklist configurable via Admin → Settings → Security — textarea UI, one domain per line, comment support, changes take effect immediately
+- [security] Default blocklist of 46 disposable domains seeded on fresh install via ForumConfigSeeder
 
 ### Fixes
 - [fix] Error log toggle flicker on page load — settings render after API response
