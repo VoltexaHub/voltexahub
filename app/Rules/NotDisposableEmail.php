@@ -2,73 +2,47 @@
 
 namespace App\Rules;
 
+use App\Models\ForumConfig;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 class NotDisposableEmail implements ValidationRule
 {
-    protected array $blocklist = [
-        'mailinator.com',
-        'guerrillamail.com',
-        'guerrillamail.info',
-        'guerrillamail.biz',
-        'guerrillamail.de',
-        'guerrillamail.net',
-        'guerrillamail.org',
-        'throwam.com',
-        'throwam.net',
-        'yopmail.com',
-        'yopmail.fr',
-        'cool.fr.nf',
-        'jetable.fr.nf',
-        'nospam.ze.tc',
-        'nomail.xl.cx',
-        'mega.zik.dj',
-        'speed.1s.fr',
-        'courriel.fr.nf',
-        'moncourrier.fr.nf',
-        'monemail.fr.nf',
-        'monmail.fr.nf',
-        'dispostable.com',
-        'mailnull.com',
-        'spamgourmet.com',
-        'trashmail.at',
-        'trashmail.io',
-        'trashmail.me',
-        'trashmail.net',
-        'trashmail.org',
-        'sharklasers.com',
-        'guerrillamailblock.com',
-        'grr.la',
-        'spam4.me',
-        'trbvm.com',
-        'tempr.email',
-        'discard.email',
-        'mailtemp.net',
-        'tempmail.com',
-        'tempmail.net',
-        'temp-mail.org',
-        'fakeinbox.com',
-        'mailnesia.com',
-        'maildrop.cc',
-        'spamspot.com',
-        'spamtrap.ro',
-        '10minutemail.com',
-        '10minutemail.net',
-        '20minutemail.com',
-        'mytemp.email',
-        'tempinbox.com',
-        'airmail.cc',
-        'getairmail.com',
-    ];
+    protected static ?array $cachedBlocklist = null;
+
+    protected static function getBlocklist(): array
+    {
+        if (static::$cachedBlocklist !== null) {
+            return static::$cachedBlocklist;
+        }
+
+        $raw = ForumConfig::get("email_blocklist", "");
+        if (empty(trim($raw))) {
+            static::$cachedBlocklist = [];
+            return [];
+        }
+
+        static::$cachedBlocklist = array_filter(
+            array_map("trim", explode("\n", strtolower($raw))),
+            fn($d) => !empty($d) && !str_starts_with($d, "#")
+        );
+
+        return static::$cachedBlocklist;
+    }
+
+    public static function clearCache(): void
+    {
+        static::$cachedBlocklist = null;
+    }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $domain = strtolower(substr(strrchr($value, '@'), 1));
+        $domain = strtolower(substr(strrchr($value, "@"), 1));
+        $blocklist = static::getBlocklist();
 
-        foreach ($this->blocklist as $blocked) {
-            if ($domain === $blocked || str_ends_with($domain, '.' . $blocked)) {
-                $fail('Disposable email addresses are not allowed.');
+        foreach ($blocklist as $blocked) {
+            if ($domain === $blocked || str_ends_with($domain, "." . $blocked)) {
+                $fail("Disposable email addresses are not allowed.");
                 return;
             }
         }

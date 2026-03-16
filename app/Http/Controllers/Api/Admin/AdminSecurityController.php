@@ -19,6 +19,7 @@ class AdminSecurityController extends Controller
             'admin_reauth_required' => $value === 'true' || $value === true,
             'turnstile_site' => ForumConfig::get('turnstile_site', ''),
             'turnstile_secret_key' => '',
+            'email_blocklist' => ForumConfig::get('email_blocklist', ''),
         ]);
     }
 
@@ -28,6 +29,7 @@ class AdminSecurityController extends Controller
             'admin_reauth_required' => 'required|boolean',
             'turnstile_site' => 'nullable|string|max:255',
             'turnstile_secret_key' => 'nullable|string|max:255',
+            'email_blocklist' => 'nullable|string',
         ]);
 
         ForumConfig::set('admin_reauth_required', $request->boolean('admin_reauth_required') ? 'true' : 'false');
@@ -37,11 +39,15 @@ class AdminSecurityController extends Controller
             ForumConfig::set('turnstile_secret_key', $request->input('turnstile_secret_key'));
         }
 
+        ForumConfig::set('email_blocklist', $request->input('email_blocklist', ''));
+        \App\Rules\NotDisposableEmail::clearCache();
+
         return response()->json([
             'message' => 'Security settings updated.',
             'admin_reauth_required' => $request->boolean('admin_reauth_required'),
             'turnstile_site' => $request->input('turnstile_site', ''),
             'turnstile_secret_key' => '',
+            'email_blocklist' => $request->input('email_blocklist', ''),
         ]);
     }
 
