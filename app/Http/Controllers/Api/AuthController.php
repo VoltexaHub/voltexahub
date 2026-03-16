@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use App\Plugins\PluginHook;
+use App\Models\ForumConfig;
 use App\Rules\NotDisposableEmail;
 
 class AuthController extends Controller
@@ -45,7 +46,7 @@ class AuthController extends Controller
 
         // Turnstile verification
         $turnstileToken = $request->input("cf_turnstile_response");
-        $turnstileSecret = config("turnstile.secret");
+        $turnstileSecret = ForumConfig::get("turnstile_secret_key", "");
         if (!empty($turnstileSecret)) {
             if (empty($turnstileToken)) {
                 return response()->json([
@@ -53,7 +54,7 @@ class AuthController extends Controller
                     "errors" => ["captcha" => ["Please complete the CAPTCHA verification."]]
                 ], 422);
             }
-            $turnstileResponse = Http::asForm()->post(config("turnstile.verify_url"), [
+            $turnstileResponse = Http::asForm()->post("https://challenges.cloudflare.com/turnstile/v0/siteverify", [
                 "secret" => $turnstileSecret,
                 "response" => $turnstileToken,
                 "remoteip" => $request->ip(),

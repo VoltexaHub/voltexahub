@@ -12,6 +12,12 @@ class ForumConfigController extends Controller
     {
         $configs = ForumConfig::all()->pluck('value', 'key')->toArray();
 
+        // Strip sensitive keys from public response
+        $sensitiveKeys = ['turnstile_secret_key', 'mail_password', 'stripe_secret', 'paypal_secret', 'plisio_secret'];
+        foreach ($sensitiveKeys as $key) {
+            unset($configs[$key]);
+        }
+
         // Add SEO fields with proper defaults
         $configs['seo_description'] = $configs['seo_description'] ?? '';
         $configs['seo_title_format'] = $configs['seo_title_format'] ?? '{page} | {site}';
