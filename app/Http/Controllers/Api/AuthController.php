@@ -14,21 +14,62 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use App\Plugins\PluginHook;
+use App\Rules\NotDisposableEmail;
 
 class AuthController extends Controller
 {
     public function register(Request $request): JsonResponse
     {
+        // Rate limiting
+        $key = "register_attempts:" . $request->ip();
+        $attempts = Cache::get($key, 0);
+        if ($attempts >= 3) {
+            return response()->json([
+                "message" => "Too many registration attempts. Please try again later.",
+                "errors" => ["register" => ["Too many attempts from this IP. Please wait before trying again."]]
+            ], 429);
+        }
+        Cache::put($key, $attempts + 1, now()->addHour());
+
+        // Honeypot check
+        if ($request->filled("website")) {
+            return response()->json(["message" => "Registration failed."], 422);
+        }
+
+        // Turnstile verification
+        $turnstileToken = $request->input("cf_turnstile_response");
+        $turnstileSecret = config("turnstile.secret");
+        if (!empty($turnstileSecret)) {
+            if (empty($turnstileToken)) {
+                return response()->json([
+                    "message" => "CAPTCHA verification required.",
+                    "errors" => ["captcha" => ["Please complete the CAPTCHA verification."]]
+                ], 422);
+            }
+            $turnstileResponse = Http::asForm()->post(config("turnstile.verify_url"), [
+                "secret" => $turnstileSecret,
+                "response" => $turnstileToken,
+                "remoteip" => $request->ip(),
+            ]);
+            if (!$turnstileResponse->successful() || !$turnstileResponse->json("success")) {
+                return response()->json([
+                    "message" => "CAPTCHA verification failed.",
+                    "errors" => ["captcha" => ["CAPTCHA verification failed. Please try again."]]
+                ], 422);
+            }
+        }
+
         try {
             $validated = $request->validate([
                 'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users', new NotDisposableEmail()],
                 'password' => ['required', 'confirmed', PasswordRule::defaults()],
             ]);
         } catch (ValidationException $e) {
@@ -91,6 +132,8 @@ class AuthController extends Controller
         } catch (\Throwable) {}
 
         $token = $user->createToken('auth-token')->plainTextToken;
+
+        Cache::forget("register_attempts:" . $request->ip());
 
         return response()->json([
             'data' => [
