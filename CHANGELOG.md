@@ -118,6 +118,9 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 - [security] Image upload hardening — magic byte validation via finfo on all upload paths, GIF re-encoding through GD (strips metadata/embedded payloads), all uploads re-encoded via Intervention Image
 - [security] Nginx PHP execution block in /storage/ directory
 - [security] Award icon uploads restricted to jpg/jpeg/png/gif only
+- [security] Spam registration protection — Cloudflare Turnstile CAPTCHA (invisible, managed widget), honeypot field, rate limiting (3 attempts/IP/hour), disposable email domain blocklist (50+ domains)
+- [security] Turnstile keys configurable via Admin → Settings → Security — site key public, secret key write-only, both stored in forum_config DB (no hardcoded credentials)
+- [security] Sensitive keys stripped from public config API (turnstile secret, mail password, payment credentials)
 
 ### Fixes
 - [fix] Error log toggle flicker on page load — settings render after API response
