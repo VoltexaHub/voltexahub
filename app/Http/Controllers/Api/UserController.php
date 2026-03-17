@@ -156,9 +156,19 @@ class UserController extends Controller
             elseif ($days >= 1095) $yearsOfService = '3 years';
             elseif ($days >= 730) $yearsOfService = '2 years';
             elseif ($days >= 365) $yearsOfService = '1 year';
+            elseif ($days >= 335) $yearsOfService = '11 months';
+            elseif ($days >= 305) $yearsOfService = '10 months';
+            elseif ($days >= 274) $yearsOfService = '9 months';
+            elseif ($days >= 244) $yearsOfService = '8 months';
+            elseif ($days >= 213) $yearsOfService = '7 months';
             elseif ($days >= 180) $yearsOfService = '6 months';
+            elseif ($days >= 152) $yearsOfService = '5 months';
+            elseif ($days >= 121) $yearsOfService = '4 months';
             elseif ($days >= 90) $yearsOfService = '3 months';
+            elseif ($days >= 60) $yearsOfService = '2 months';
             elseif ($days >= 30) $yearsOfService = '1 month';
+            elseif ($days >= 21) $yearsOfService = '3 weeks';
+            elseif ($days >= 14) $yearsOfService = '2 weeks';
             elseif ($days >= 7) $yearsOfService = '1 week';
         }
 

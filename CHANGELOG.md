@@ -125,6 +125,7 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 - [security] Default blocklist of 46 disposable domains seeded on fresh install via ForumConfigSeeder
 
 ### Fixes
+- [fix] Years of service badge granularity — now shows 1–4 weeks, 1–12 months, then yearly
 - [fix] Error log toggle flicker on page load — settings render after API response
 - [fix] Awards description and icon columns made nullable (were NOT NULL with no default)
 - [fix] Awards icon/icon_file mutual exclusivity — uploading a file clears text icon and vice versa
