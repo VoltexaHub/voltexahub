@@ -101,7 +101,7 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 
 ---
 
-## v0.7.0 — March 2026 (unreleased)
+## v0.7.0 — March 22, 2026
 
 ### Awards System
 - [feat] Awards catalog page — public /awards page with card grid, type badges (manual/achievement/purchasable), holder counts, pricing display
