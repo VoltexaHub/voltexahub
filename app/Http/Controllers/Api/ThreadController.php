@@ -8,6 +8,7 @@ use App\Models\ForumConfig;
 use App\Models\Tag;
 use App\Models\Thread;
 use App\Models\ThreadLike;
+use App\Models\ThreadRead;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -75,6 +76,24 @@ class ThreadController extends Controller
 
         $threads = $query->paginate(15);
 
+        // Attach new_replies count for authenticated users
+        if (auth()->check()) {
+            $userId = auth()->id();
+            $threadIds = collect($threads->items())->pluck('id');
+
+            $reads = ThreadRead::where('user_id', $userId)
+                ->whereIn('thread_id', $threadIds)
+                ->pluck('read_post_count', 'thread_id');
+
+            foreach ($threads->items() as $thread) {
+                if ($reads->has($thread->id)) {
+                    $thread->new_replies = max(0, $thread->reply_count - $reads[$thread->id]);
+                } else {
+                    $thread->new_replies = null;
+                }
+            }
+        }
+
         $forumData = $forum->toArray();
         $forumData['breadcrumb'] = [
             'category' => ['id' => $forum->category->id, 'name' => $forum->category->name],
@@ -109,6 +128,14 @@ class ThreadController extends Controller
             ->firstOrFail();
 
         $thread->increment('view_count');
+
+        // Track thread read for authenticated users
+        if (auth()->check()) {
+            ThreadRead::updateOrCreate(
+                ['user_id' => auth()->id(), 'thread_id' => $thread->id],
+                ['last_read_at' => now(), 'read_post_count' => $thread->reply_count],
+            );
+        }
 
         $threadData = $thread->toArray();
         $forum = $thread->forum;

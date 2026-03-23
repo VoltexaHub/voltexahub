@@ -97,4 +97,9 @@ class Thread extends Model
     {
         return $this->hasOne(Poll::class);
     }
+
+    public function reads(): HasMany
+    {
+        return $this->hasMany(ThreadRead::class);
+    }
 }
