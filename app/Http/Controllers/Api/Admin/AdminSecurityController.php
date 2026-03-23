@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ForumConfig;
+use App\Services\BruteForceProtection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -115,6 +116,22 @@ class AdminSecurityController extends Controller
                 'stale' => $stale,
                 'last_purge' => Cache::get('sessions:last_purge'),
             ],
+        ]);
+    }
+
+    public function blockedIps(BruteForceProtection $bf): JsonResponse
+    {
+        return response()->json([
+            'data' => $bf->getBlockedIps(),
+        ]);
+    }
+
+    public function unblockIp(BruteForceProtection $bf, string $ip): JsonResponse
+    {
+        $bf->unblock($ip);
+
+        return response()->json([
+            'message' => "IP {$ip} has been unblocked.",
         ]);
     }
 

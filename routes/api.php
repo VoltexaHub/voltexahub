@@ -437,8 +437,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::put('/settings/security', [AdminSecurityController::class, 'updateSettings']);
     Route::post('/reauth', [AdminSecurityController::class, 'verify'])->middleware('throttle:5,1');
 
-    // Security — Session Stats
+    // Security — Session Stats & Brute Force
     Route::get('/security/sessions-stats', [AdminSecurityController::class, 'sessionsStats']);
+    Route::get('/security/blocked-ips', [AdminSecurityController::class, 'blockedIps']);
+    Route::delete('/security/blocked-ips/{ip}', [AdminSecurityController::class, 'unblockIp'])->where('ip', '[0-9a-f.:]+');
 
     // Error Log
     Route::get('/error-log/settings', [AdminErrorLogController::class, 'getSettings']);

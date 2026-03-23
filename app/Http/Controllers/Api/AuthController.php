@@ -23,6 +23,7 @@ use Illuminate\Validation\ValidationException;
 use App\Plugins\PluginHook;
 use App\Models\ForumConfig;
 use App\Rules\NotDisposableEmail;
+use App\Services\BruteForceProtection;
 
 class AuthController extends Controller
 {
@@ -145,8 +146,16 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, BruteForceProtection $bruteForce): JsonResponse
     {
+        // IP-level brute force check
+        $ip = $this->getRealIp($request);
+        if ($bruteForce->isBlocked($ip)) {
+            return response()->json([
+                'message' => 'Too many failed login attempts from this IP. Please try again later.',
+            ], 429)->withHeaders(['Retry-After' => '3600']);
+        }
+
         $validated = $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -165,13 +174,13 @@ class AuthController extends Controller
 
         if (! Auth::attempt($validated)) {
             Cache::put($lockoutKey, $attempts + 1, 900);
+            $bruteForce->recordFailedAttempt($ip);
 
             AuditLog::log('login.failure', null, ['email' => $validated['email']]);
 
             // Admin failed login alert
             $failedUser = User::where('email', $validated['email'])->first();
             if ($failedUser && ($failedUser->is_staff || $failedUser->hasRole(['admin', 'super-admin']))) {
-                $ip = $this->getRealIp($request);
                 $location = $this->resolveLocation($ip);
                 AuditLog::log('admin.login.failure', $failedUser, ['ip' => $ip, 'location' => $location]);
                 Mail::to($failedUser->email)->send(new AdminSecurityAlert('login.failure', $ip, $location, now()));
@@ -186,7 +195,6 @@ class AuthController extends Controller
         Cache::forget($lockoutKey);
 
         $user = User::where('email', $validated['email'])->first();
-        $ip = $this->getRealIp($request);
         $location = $this->resolveLocation($ip);
 
         // MFA check: if user has confirmed MFA, redirect to MFA verification
