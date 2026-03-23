@@ -1,0 +1,9 @@
+{
+  "id": "daylight",
+  "name": "Daylight",
+  "version": "1.0.0",
+  "author": "VoltexaHub",
+  "description": "A clean, bright light theme with a blue accent. Easy on the eyes for daytime browsing.",
+  "tags": ["light", "clean", "blue"],
+  "mode": "light"
+}

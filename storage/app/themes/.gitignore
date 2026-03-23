@@ -1,4 +1,8 @@
 *
 !default/
 !default/**
+!daylight/
+!daylight/**
+!midnight/
+!midnight/**
 !.gitignore
