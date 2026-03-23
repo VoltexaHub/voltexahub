@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AdminGroupController;
 use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
+use App\Http\Controllers\Api\Admin\AdminBackupController;
 use App\Http\Controllers\Api\Admin\AdminDatabaseController;
 use App\Http\Controllers\Api\Admin\AdminSystemStatsController;
 use App\Http\Controllers\Api\Admin\AdminErrorLogController;
@@ -426,6 +427,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Database
     Route::post('/database/export', [AdminDatabaseController::class, 'export']);
     Route::post('/database/import', [AdminDatabaseController::class, 'import']);
+
+    // Backups
+    Route::get('/backups', [AdminBackupController::class, 'index']);
+    Route::post('/backups/create', [AdminBackupController::class, 'create']);
+    Route::get('/backups/{filename}/download', [AdminBackupController::class, 'download']);
+    Route::delete('/backups/{filename}', [AdminBackupController::class, 'destroy']);
     Route::get('/system/stats', [AdminSystemStatsController::class, 'index']);
 
     // Security Settings & Re-auth
