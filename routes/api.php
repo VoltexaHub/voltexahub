@@ -412,7 +412,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Themes
     Route::get('/themes', [AdminThemeController::class, 'index']);
     Route::post('/themes/upload', [AdminThemeController::class, 'upload']);
+    Route::post('/themes/export', [AdminThemeController::class, 'export']);
     Route::post('/themes/{slug}/activate', [AdminThemeController::class, 'activate']);
+    Route::get('/themes/{slug}/preview', [AdminThemeController::class, 'preview']);
+    Route::get('/themes/{slug}/css', [AdminThemeController::class, 'css']);
     Route::delete('/themes/{slug}', [AdminThemeController::class, 'destroy']);
 
     // Audit logs
