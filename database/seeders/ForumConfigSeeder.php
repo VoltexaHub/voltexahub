@@ -38,6 +38,7 @@ class ForumConfigSeeder extends Seeder
             'logo_image'      => '',
 
             // Theme
+            'active_theme' => 'default',
             'default_theme_mode' => 'dark',
 
             // Custom CSS/JS

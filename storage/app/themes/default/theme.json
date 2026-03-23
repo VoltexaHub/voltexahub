@@ -1,0 +1,9 @@
+{
+    "id": "default",
+    "name": "Default Dark",
+    "version": "1.0.0",
+    "author": "VoltexaHub",
+    "description": "The default dark theme",
+    "tags": ["dark"],
+    "mode": "dark"
+}
