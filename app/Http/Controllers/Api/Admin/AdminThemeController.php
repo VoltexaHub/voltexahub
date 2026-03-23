@@ -39,6 +39,7 @@ class AdminThemeController extends Controller
 
                 $themes[] = [
                     'id' => $meta['id'] ?? $dir,
+                    'slug' => $dir,
                     'name' => $meta['name'] ?? $dir,
                     'version' => $meta['version'] ?? '1.0.0',
                     'author' => $meta['author'] ?? 'Unknown',
