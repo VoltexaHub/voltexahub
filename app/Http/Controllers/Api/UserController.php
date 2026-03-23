@@ -246,6 +246,7 @@ class UserController extends Controller
                 "custom_css" => $user->custom_css,
                 "username_color" => $user->username_color,
                 "userbar_hue" => $user->userbar_hue,
+                "theme_mode" => $user->theme_mode,
                 "xp_boost_active" => $boost ? true : false,
                 "xp_boost_multiplier" => $boost?->multiplier,
                 "xp_boost_expires_at" => $boost?->expires_at?->toIso8601String(),
@@ -474,6 +475,21 @@ class UserController extends Controller
         return response()->json([
             'data' => $cosmetic->fresh(),
             'message' => 'Cosmetic toggled.',
+        ]);
+    }
+
+    public function updatePreferences(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'theme_mode' => ['required', 'string', Rule::in(['dark', 'light', 'system'])],
+        ]);
+
+        $user = $request->user();
+        $user->update($validated);
+
+        return response()->json([
+            'data' => $user->fresh(),
+            'message' => 'Preferences updated successfully.',
         ]);
     }
 

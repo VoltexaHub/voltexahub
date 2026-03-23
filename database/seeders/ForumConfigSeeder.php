@@ -37,6 +37,9 @@ class ForumConfigSeeder extends Seeder
             'logo_icon_color' => '#7c3aed',
             'logo_image'      => '',
 
+            // Theme
+            'default_theme_mode' => 'dark',
+
             // Custom CSS/JS
             'custom_css' => '',
             'custom_js' => '',
