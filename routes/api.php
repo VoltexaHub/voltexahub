@@ -294,7 +294,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
             Route::post('/users/{id}/xp', [AdminUserController::class, 'adjustXp']);
     Route::post('/users/{id}/awards', [AdminUserController::class, 'grantAward']);
     Route::delete('/users/{id}/awards/{awardId}', [AdminUserController::class, 'revokeAward']);
-    Route::delete('/users/{id}/mfa', [AdminUserController::class, 'resetMfa']);
+    Route::delete('/users/{id}/mfa', [AdminUserController::class, 'resetMfa'])->middleware('reauth');
 
     // Forums (list, tree + CRUD for games, categories, forums)
     Route::get('/forums', [AdminForumController::class, 'index']);
@@ -350,8 +350,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Groups
     Route::get('/groups', [AdminGroupController::class, 'index']);
-    Route::post('/groups', [AdminGroupController::class, 'store']);
-    Route::put('/groups/{id}', [AdminGroupController::class, 'update']);
+    Route::post('/groups', [AdminGroupController::class, 'store'])->middleware('reauth');
+    Route::put('/groups/{id}', [AdminGroupController::class, 'update'])->middleware('reauth');
     Route::delete('/groups/{id}', [AdminGroupController::class, 'destroy']);
 
     // Config
@@ -365,7 +365,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'index']);
     Route::put('/forums/{forum}/permissions', [AdminForumPermissionController::class, 'update']);
     Route::get('/group-permissions', [AdminGroupPermissionController::class, 'index']);
-    Route::put('/group-permissions', [AdminGroupPermissionController::class, 'update']);
+    Route::put('/group-permissions', [AdminGroupPermissionController::class, 'update'])->middleware('reauth');
     Route::get('/upgrade-plans', [AdminUpgradePlanController::class, 'index']);
     Route::post('/upgrade-plans', [AdminUpgradePlanController::class, 'store']);
     Route::put('/upgrade-plans/{id}', [AdminUpgradePlanController::class, 'update']);
@@ -428,14 +428,17 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/backups/create', [AdminBackupController::class, 'create']);
     Route::get('/backups/{filename}/download', [AdminBackupController::class, 'download']);
     Route::delete('/backups/{filename}', [AdminBackupController::class, 'destroy']);
-    Route::post('/backups/restore', [AdminBackupController::class, 'restore']);
-    Route::post('/backups/{filename}/restore', [AdminBackupController::class, 'restoreFromBackup']);
+    Route::post('/backups/restore', [AdminBackupController::class, 'restore'])->middleware('reauth');
+    Route::post('/backups/{filename}/restore', [AdminBackupController::class, 'restoreFromBackup'])->middleware('reauth');
     Route::get('/system/stats', [AdminSystemStatsController::class, 'index']);
 
     // Security Settings & Re-auth
     Route::get('/settings/security', [AdminSecurityController::class, 'getSettings']);
     Route::put('/settings/security', [AdminSecurityController::class, 'updateSettings']);
     Route::post('/reauth', [AdminSecurityController::class, 'verify'])->middleware('throttle:5,1');
+
+    // Security — Session Stats
+    Route::get('/security/sessions-stats', [AdminSecurityController::class, 'sessionsStats']);
 
     // Error Log
     Route::get('/error-log/settings', [AdminErrorLogController::class, 'getSettings']);

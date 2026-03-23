@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ForumConfig;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use PragmaRX\Google2FA\Google2FA;
 
 class AdminSecurityController extends Controller
@@ -56,7 +59,7 @@ class AdminSecurityController extends Controller
         $reauthRequired = ForumConfig::get('admin_reauth_required', 'true');
 
         if ($reauthRequired === 'false' || $reauthRequired === false) {
-            return response()->json(['verified' => true]);
+            return $this->issueReauthToken($request->user());
         }
 
         $user = $request->user();
@@ -71,10 +74,10 @@ class AdminSecurityController extends Controller
 
         if ($password) {
             if (Hash::check($password, $user->password)) {
-                return response()->json(['verified' => true]);
+                return $this->issueReauthToken($user);
             }
 
-            return response()->json(['verified' => false, 'message' => 'Incorrect password.']);
+            return response()->json(['verified' => false, 'message' => 'Incorrect password.'], 422);
         }
 
         if ($mfaCode) {
@@ -87,12 +90,45 @@ class AdminSecurityController extends Controller
             $google2fa = new Google2FA();
 
             if ($google2fa->verifyKey($user->two_factor_secret, $mfaCode)) {
-                return response()->json(['verified' => true]);
+                return $this->issueReauthToken($user);
             }
 
-            return response()->json(['verified' => false, 'message' => 'Incorrect MFA code.']);
+            return response()->json(['verified' => false, 'message' => 'Incorrect MFA code.'], 422);
         }
 
         return response()->json(['verified' => false], 422);
+    }
+
+    public function sessionsStats(): JsonResponse
+    {
+        $cutoff = now()->subDays(30);
+
+        $total = PersonalAccessToken::count();
+        $stale = PersonalAccessToken::where(function ($query) use ($cutoff) {
+            $query->whereNull('last_used_at')
+                  ->orWhere('last_used_at', '<', $cutoff);
+        })->count();
+
+        return response()->json([
+            'data' => [
+                'total_active' => $total,
+                'stale' => $stale,
+                'last_purge' => Cache::get('sessions:last_purge'),
+            ],
+        ]);
+    }
+
+    private function issueReauthToken($user): JsonResponse
+    {
+        $token = Str::uuid()->toString();
+        $ttl = 300; // 5 minutes
+
+        Cache::put("reauth:{$user->id}:{$token}", true, $ttl);
+
+        return response()->json([
+            'verified' => true,
+            'token' => $token,
+            'expires_in' => $ttl,
+        ]);
     }
 }

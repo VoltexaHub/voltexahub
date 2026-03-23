@@ -10,6 +10,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('sanctum:prune-expired --hours=720')->daily();
 Schedule::command('backup:database')->dailyAt('03:00');
+Schedule::command('sessions:purge-inactive')->dailyAt('04:00');
 
 Schedule::call(function () {
     if (\App\Models\ForumConfig::get('error_log_enabled') === 'true') {

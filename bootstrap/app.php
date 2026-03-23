@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ban'      => \App\Http\Middleware\EnforceBan::class,
             'staff'    => \App\Http\Middleware\IsStaffMiddleware::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'reauth'   => \App\Http\Middleware\AdminReAuth::class,
         ]);
         $middleware->appendToGroup('api', [
             \App\Http\Middleware\UpdateLastSeen::class,
