@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -93,6 +94,88 @@ class AdminBackupController extends Controller
             'success' => true,
             'message' => 'Backup deleted.',
         ]);
+    }
+
+    /**
+     * Restore from an uploaded .sql.gz file.
+     */
+    public function restore(Request $request): JsonResponse
+    {
+        $request->validate([
+            'backup_file' => ['required', 'file', 'mimes:gz', 'max:51200'],
+        ]);
+
+        $file = $request->file('backup_file');
+
+        return $this->performRestore($file->getRealPath());
+    }
+
+    /**
+     * Restore from an existing server-side backup.
+     */
+    public function restoreFromBackup(string $filename): JsonResponse
+    {
+        if (!$this->isValidFilename($filename)) {
+            return response()->json(['message' => 'Invalid filename.'], 400);
+        }
+
+        $path = $this->backupPath($filename);
+
+        if (!file_exists($path)) {
+            return response()->json(['message' => 'Backup not found.'], 404);
+        }
+
+        return $this->performRestore($path);
+    }
+
+    protected function performRestore(string $filePath): JsonResponse
+    {
+        try {
+            $host = config('database.connections.mysql.host', '127.0.0.1');
+            $port = config('database.connections.mysql.port', '3306');
+            $database = config('database.connections.mysql.database');
+            $username = config('database.connections.mysql.username');
+            $password = config('database.connections.mysql.password');
+
+            $cmd = sprintf(
+                'gunzip -c %s | mysql -h%s -P%s -u%s -p%s %s',
+                escapeshellarg($filePath),
+                escapeshellarg($host),
+                escapeshellarg($port),
+                escapeshellarg($username),
+                escapeshellarg($password),
+                escapeshellarg($database)
+            );
+
+            $descriptors = [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ];
+
+            $process = proc_open($cmd, $descriptors, $pipes);
+
+            if (!is_resource($process)) {
+                return response()->json(['message' => 'Failed to start restore process'], 500);
+            }
+
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            $errors = stream_get_contents($pipes[2]);
+            fclose($pipes[2]);
+            $exitCode = proc_close($process);
+
+            if ($exitCode !== 0) {
+                return response()->json(['message' => 'Database restore failed: ' . $errors], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Database restored successfully. Please refresh the page.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Database restore failed: ' . $e->getMessage()], 500);
+        }
     }
 
     /**

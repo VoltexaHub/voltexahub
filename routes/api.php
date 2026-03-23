@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\Admin\AdminUpgradePlanController;
 use App\Http\Controllers\Api\UpgradePlanController;
 use App\Http\Controllers\Api\Admin\AdminAuditController;
 use App\Http\Controllers\Api\Admin\AdminBackupController;
-use App\Http\Controllers\Api\Admin\AdminDatabaseController;
 use App\Http\Controllers\Api\Admin\AdminSystemStatsController;
 use App\Http\Controllers\Api\Admin\AdminErrorLogController;
 use App\Http\Controllers\Api\Admin\AdminMaintenanceController;
@@ -424,15 +423,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/plugins/{slug}/toggle', [AdminPluginController::class, 'toggle']);
     Route::delete('/plugins/{slug}', [AdminPluginController::class, 'uninstall']);
 
-    // Database
-    Route::post('/database/export', [AdminDatabaseController::class, 'export']);
-    Route::post('/database/import', [AdminDatabaseController::class, 'import']);
-
     // Backups
     Route::get('/backups', [AdminBackupController::class, 'index']);
     Route::post('/backups/create', [AdminBackupController::class, 'create']);
     Route::get('/backups/{filename}/download', [AdminBackupController::class, 'download']);
     Route::delete('/backups/{filename}', [AdminBackupController::class, 'destroy']);
+    Route::post('/backups/restore', [AdminBackupController::class, 'restore']);
+    Route::post('/backups/{filename}/restore', [AdminBackupController::class, 'restoreFromBackup']);
     Route::get('/system/stats', [AdminSystemStatsController::class, 'index']);
 
     // Security Settings & Re-auth
