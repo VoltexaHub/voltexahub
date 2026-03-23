@@ -101,6 +101,26 @@ Format: `[feat]` `[fix]` `[security]` `[perf]` `[breaking]`
 
 ---
 
+## v0.7.1 — March 22, 2026
+
+### Quality of Life
+- [feat] Skeleton loaders — pulse shimmer placeholders on thread list, profile, and awards pages (replaces spinners)
+- [feat] Thread read tracking — "X new" badge on thread list for unread replies, unread dot for never-visited threads
+- [feat] Admin dashboard backup widget — last backup info, quick create button
+
+### Security
+- [security] Admin re-auth — password/MFA confirmation before destructive actions (delete user, restore DB, reset MFA, role changes). Global 423 interceptor auto-prompts.
+- [security] IP-level brute force protection — 20 failed logins per IP = 1 hour block. Redis-backed. Admin panel to view/unblock IPs.
+- [security] Inactive session auto-cleanup — daily purge of Sanctum tokens unused for 30+ days
+- [security] Admin security panel — blocked IPs table with unblock, session stats with manual purge
+
+### Backups
+- [feat] Automated database backups — daily at 3 AM, compressed .sql.gz, 7-day retention, auto-prune
+- [feat] Admin backup management — list, create, download, delete, restore from server or upload
+- [refactor] Consolidated AdminDatabaseController into AdminBackupController (single source for all backup ops)
+
+---
+
 ## v0.7.0 — March 22, 2026
 
 ### Awards System
