@@ -1,0 +1,7 @@
+{
+    "slug": "welcome-banner",
+    "name": "Welcome Banner",
+    "version": "1.0.0",
+    "description": "Displays a welcome banner above the main content on the forum index.",
+    "author": "VoltexaHub"
+}
