@@ -9,6 +9,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ThreadController;
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/posts/{post}', [PostEditController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/report', [ReportController::class, 'store'])->middleware('throttle:posts.report')->name('posts.report');
+    Route::post('/posts/{post}/reactions', [ReactionController::class, 'toggle'])->name('posts.reactions.toggle');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

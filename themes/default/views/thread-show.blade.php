@@ -3,7 +3,7 @@
 @section('title', $thread->title.' · '.config('app.name'))
 
 @push('scripts')
-    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js'])
+    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js'])
 @endpush
 
 @section('content')
@@ -87,6 +87,9 @@
                 </header>
                 <div class="pl-[3.25rem] vx-prose">
                     {!! $post->body_html !!}
+                </div>
+                <div class="pl-[3.25rem]">
+                    @include('theme::partials.reactions', ['post' => $post])
                 </div>
                 @if($post->edited_at)
                     <div class="pl-[3.25rem] mt-3 vx-meta normal-case tracking-normal text-[0.7rem] italic">edited {{ $post->edited_at->diffForHumans() }}</div>

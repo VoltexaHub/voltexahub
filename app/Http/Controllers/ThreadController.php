@@ -18,7 +18,7 @@ class ThreadController extends Controller
         $thread->increment('views_count');
 
         $posts = $thread->posts()
-            ->with('author:id,name')
+            ->with(['author:id,name', 'reactions:id,post_id,user_id,emoji'])
             ->orderBy('created_at')
             ->paginate(20);
 

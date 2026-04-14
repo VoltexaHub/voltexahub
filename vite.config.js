@@ -18,6 +18,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/markdown-editor.js',
                 'resources/js/thread-live.js',
+                'resources/js/reactions.js',
             ],
             refresh: [
                 'app/Http/**',
