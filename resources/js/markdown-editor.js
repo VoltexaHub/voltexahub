@@ -5,7 +5,7 @@ const init = () => {
     document.querySelectorAll('textarea[data-markdown]').forEach((el) => {
         if (el.dataset.mdeReady) return;
         el.dataset.mdeReady = '1';
-        new EasyMDE({
+        const editor = new EasyMDE({
             element: el,
             spellChecker: false,
             status: ['lines', 'words'],
@@ -13,6 +13,8 @@ const init = () => {
             toolbar: ['bold', 'italic', 'strikethrough', '|', 'heading', 'quote', 'code', 'unordered-list', 'ordered-list', '|', 'link', 'image', '|', 'preview', 'guide'],
             minHeight: '180px',
         });
+        // Expose the instance so other scripts (quote, etc.) can interact with it.
+        el.__mde = editor;
     });
 };
 

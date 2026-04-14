@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostReactionUpdated;
 use App\Models\Post;
 use App\Models\Reaction;
 use Illuminate\Http\JsonResponse;
@@ -34,9 +35,10 @@ class ReactionController extends Controller
             ]);
         }
 
-        if ($request->expectsJson() || $request->wantsJson()) {
-            $post->load('reactions');
+        $post->load('reactions');
+        broadcast(new PostReactionUpdated($post))->toOthers();
 
+        if ($request->expectsJson() || $request->wantsJson()) {
             return response()->json([
                 'post_id' => $post->id,
                 'summary' => $post->reactionSummary($userId),

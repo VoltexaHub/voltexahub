@@ -3,7 +3,7 @@
 @section('title', $thread->title.' · '.config('app.name'))
 
 @push('scripts')
-    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js'])
+    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js', 'resources/js/quote.js'])
 @endpush
 
 @section('content')
@@ -80,6 +80,12 @@
                     </div>
                     <div class="flex items-center gap-3 text-[0.72rem] vx-subtle">
                         @auth
+                            @if(! $thread->is_locked)
+                                <button type="button" class="hover:text-[color:var(--accent)]"
+                                        data-quote
+                                        data-quote-author="{{ $post->author?->name }}"
+                                        data-quote-body="{{ $post->body }}">Quote</button>
+                            @endif
                             @if(auth()->user()->is_admin || auth()->id() === $post->user_id)
                                 <a href="{{ route('posts.edit', $post->id) }}" class="hover:text-[color:var(--accent)]">Edit</a>
                                 <form method="POST" action="{{ route('posts.destroy', $post->id) }}" class="inline" onsubmit="return confirm('Delete this post?')">
@@ -125,7 +131,7 @@
 
     @auth
         @if(!$thread->is_locked)
-            <section class="mt-10 pt-8 border-t vx-hairline">
+            <section class="mt-10 pt-8 border-t vx-hairline" data-reply-form>
                 <p class="vx-meta mb-3 text-[color:var(--accent)]">Add to the conversation</p>
                 <form method="POST" action="{{ route('posts.store', [$forum->slug, $thread->slug]) }}">
                     @csrf
