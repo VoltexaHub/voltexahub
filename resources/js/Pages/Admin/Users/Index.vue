@@ -3,87 +3,83 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
-const props = defineProps({
-    users: Object,
-    filters: Object,
-});
+const props = defineProps({ users: Object, filters: Object });
 
 const page = usePage();
 const q = ref(props.filters.q || '');
-
 let t;
 watch(q, (val) => {
     clearTimeout(t);
-    t = setTimeout(() => {
-        router.get(route('admin.users.index'), { q: val }, { preserveState: true, replace: true });
-    }, 300);
+    t = setTimeout(() => router.get(route('admin.users.index'), { q: val }, { preserveState: true, replace: true }), 300);
 });
 
 const toggleAdmin = (user) => router.put(route('admin.users.update', user.id), { is_admin: !user.is_admin }, { preserveScroll: true });
 const destroy = (user) => {
-    if (confirm(`Delete user "${user.name}"? This will delete their threads and posts.`)) {
+    if (confirm(`Delete user "${user.name}"? This deletes their threads and posts.`)) {
         router.delete(route('admin.users.destroy', user.id), { preserveScroll: true });
     }
 };
 </script>
 
 <template>
-    <Head title="Users" />
+    <Head title="Admin · Users" />
     <AdminLayout>
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900">Users</h1>
-            <input v-model="q" type="search" placeholder="Search name or email..." class="rounded border-gray-300 text-sm" />
-        </div>
+        <header class="flex items-end justify-between mb-8 pb-5 border-b" style="border-color:var(--border)">
+            <div>
+                <p class="vx-meta mb-2">Community</p>
+                <h1 class="font-serif text-4xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Users</h1>
+            </div>
+            <input v-model="q" type="search" placeholder="Search name or email…" class="vx-input text-sm max-w-xs" />
+        </header>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-left text-gray-600">
-                    <tr>
-                        <th class="px-4 py-2 w-12">ID</th>
-                        <th class="px-4 py-2">Name</th>
-                        <th class="px-4 py-2">Email</th>
-                        <th class="px-4 py-2 w-32">Admin</th>
-                        <th class="px-4 py-2 w-32">Joined</th>
-                        <th class="px-4 py-2 w-48 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <tr v-for="user in users.data" :key="user.id">
-                        <td class="px-4 py-3 text-gray-500">{{ user.id }}</td>
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ user.name }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ user.email }}</td>
-                        <td class="px-4 py-3">
-                            <span v-if="user.is_admin" class="inline-block px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700">Admin</span>
-                            <span v-else class="text-gray-400 text-xs">—</span>
-                        </td>
-                        <td class="px-4 py-3 text-gray-500 text-xs">{{ new Date(user.created_at).toLocaleDateString() }}</td>
-                        <td class="px-4 py-3 text-right space-x-2">
-                            <button
-                                @click="toggleAdmin(user)"
-                                :disabled="user.id === page.props.auth.user.id"
-                                class="text-xs px-2 py-1 rounded border border-gray-200 text-gray-700 disabled:opacity-40"
-                            >
-                                {{ user.is_admin ? 'Demote' : 'Promote' }}
-                            </button>
-                            <button
-                                @click="destroy(user)"
-                                :disabled="user.id === page.props.auth.user.id"
-                                class="text-xs px-2 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-40"
-                            >
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                    <tr v-if="users.data.length === 0">
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">No users found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left" style="color:var(--text-subtle)">
+                    <th class="py-2 vx-meta w-12">#</th>
+                    <th class="py-2 vx-meta">Name</th>
+                    <th class="py-2 vx-meta">Email</th>
+                    <th class="py-2 vx-meta w-24">Role</th>
+                    <th class="py-2 vx-meta w-32">Joined</th>
+                    <th class="py-2 vx-meta w-48 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="user in users.data" :key="user.id" class="border-t" :style="{ borderColor: 'var(--border)' }">
+                    <td class="py-4 font-mono text-xs tabular-nums" style="color:var(--text-subtle)">{{ user.id }}</td>
+                    <td class="py-4 font-serif text-base font-medium" style="font-family:'Fraunces',serif;color:var(--text)">{{ user.name }}</td>
+                    <td class="py-4 font-mono text-xs" style="color:var(--text-muted)">{{ user.email }}</td>
+                    <td class="py-4">
+                        <span v-if="user.is_admin" class="vx-chip">Admin</span>
+                        <span v-else class="vx-meta">Member</span>
+                    </td>
+                    <td class="py-4 font-mono text-xs" style="color:var(--text-subtle)">{{ new Date(user.created_at).toLocaleDateString() }}</td>
+                    <td class="py-4 text-right space-x-4 text-xs">
+                        <button @click="toggleAdmin(user)" :disabled="user.id === page.props.auth.user.id"
+                                class="hover:underline disabled:opacity-30 disabled:cursor-not-allowed"
+                                :style="{ color: user.is_admin ? 'var(--text-muted)' : 'var(--accent)' }">
+                            {{ user.is_admin ? 'Demote' : 'Promote' }}
+                        </button>
+                        <button @click="destroy(user)" :disabled="user.id === page.props.auth.user.id"
+                                class="hover:underline disabled:opacity-30 disabled:cursor-not-allowed text-red-600">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                <tr v-if="users.data.length === 0">
+                    <td colspan="6" class="py-16 text-center italic" style="color:var(--text-muted)">No users found.</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <div v-if="users.links" class="mt-4 flex flex-wrap gap-1">
+        <div v-if="users.links" class="mt-6 flex flex-wrap gap-1">
             <Link v-for="(link, i) in users.links" :key="i" :href="link.url || '#'" v-html="link.label"
-                :class="['px-3 py-1 text-sm border rounded', link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50', !link.url && 'opacity-50 pointer-events-none']" />
+                class="px-3 py-1 text-sm border rounded-md font-mono"
+                :class="[!link.url && 'opacity-40 pointer-events-none']"
+                :style="{
+                    background: link.active ? 'var(--accent)' : 'var(--surface)',
+                    borderColor: link.active ? 'var(--accent)' : 'var(--border)',
+                    color: link.active ? '#fff' : 'var(--text-muted)',
+                }" />
         </div>
     </AdminLayout>
 </template>

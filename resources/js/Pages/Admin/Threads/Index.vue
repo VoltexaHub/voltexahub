@@ -3,19 +3,13 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
-const props = defineProps({
-    threads: Object,
-    filters: Object,
-});
+const props = defineProps({ threads: Object, filters: Object });
 
 const q = ref(props.filters.q || '');
-
 let t;
 watch(q, (val) => {
     clearTimeout(t);
-    t = setTimeout(() => {
-        router.get(route('admin.threads.index'), { q: val }, { preserveState: true, replace: true });
-    }, 300);
+    t = setTimeout(() => router.get(route('admin.threads.index'), { q: val }, { preserveState: true, replace: true }), 300);
 });
 
 const togglePin = (thread) => router.put(route('admin.threads.update', thread.id), { is_pinned: !thread.is_pinned }, { preserveScroll: true });
@@ -28,60 +22,67 @@ const destroy = (thread) => {
 </script>
 
 <template>
-    <Head title="Threads" />
+    <Head title="Admin · Threads" />
     <AdminLayout>
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900">Threads</h1>
-            <input v-model="q" type="search" placeholder="Search titles..." class="rounded border-gray-300 text-sm" />
-        </div>
+        <header class="flex items-end justify-between mb-8 pb-5 border-b" style="border-color:var(--border)">
+            <div>
+                <p class="vx-meta mb-2">Moderation</p>
+                <h1 class="font-serif text-4xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Threads</h1>
+            </div>
+            <input v-model="q" type="search" placeholder="Search titles…" class="vx-input text-sm max-w-xs" />
+        </header>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-left text-gray-600">
-                    <tr>
-                        <th class="px-4 py-2">Title</th>
-                        <th class="px-4 py-2">Forum</th>
-                        <th class="px-4 py-2">Author</th>
-                        <th class="px-4 py-2 w-20">Posts</th>
-                        <th class="px-4 py-2 w-32">Last Post</th>
-                        <th class="px-4 py-2 w-64 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <tr v-for="thread in threads.data" :key="thread.id">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
-                                <span v-if="thread.is_pinned" class="text-xs text-amber-600">📌</span>
-                                <span v-if="thread.is_locked" class="text-xs text-red-600">🔒</span>
-                                <Link :href="route('threads.show', [thread.forum.slug, thread.slug])" class="font-medium text-indigo-600 hover:underline">
-                                    {{ thread.title }}
-                                </Link>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-gray-500">{{ thread.forum?.name }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ thread.author?.name }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ thread.posts_count }}</td>
-                        <td class="px-4 py-3 text-gray-500 text-xs">{{ thread.last_post_at ? new Date(thread.last_post_at).toLocaleDateString() : '—' }}</td>
-                        <td class="px-4 py-3 text-right space-x-2">
-                            <button @click="togglePin(thread)" class="text-xs px-2 py-1 rounded border" :class="thread.is_pinned ? 'bg-amber-50 border-amber-200 text-amber-700' : 'border-gray-200 text-gray-700'">
-                                {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
-                            </button>
-                            <button @click="toggleLock(thread)" class="text-xs px-2 py-1 rounded border" :class="thread.is_locked ? 'bg-red-50 border-red-200 text-red-700' : 'border-gray-200 text-gray-700'">
-                                {{ thread.is_locked ? 'Unlock' : 'Lock' }}
-                            </button>
-                            <button @click="destroy(thread)" class="text-xs px-2 py-1 rounded border border-red-200 text-red-600 hover:bg-red-50">Delete</button>
-                        </td>
-                    </tr>
-                    <tr v-if="threads.data.length === 0">
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">No threads found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left" style="color:var(--text-subtle)">
+                    <th class="py-2 vx-meta">Title</th>
+                    <th class="py-2 vx-meta">Forum</th>
+                    <th class="py-2 vx-meta">Author</th>
+                    <th class="py-2 vx-meta w-16 text-right">Posts</th>
+                    <th class="py-2 vx-meta w-28">Last Post</th>
+                    <th class="py-2 vx-meta w-56 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="thread in threads.data" :key="thread.id" class="border-t" :style="{ borderColor: 'var(--border)' }">
+                    <td class="py-4">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span v-if="thread.is_pinned" class="vx-chip">Pinned</span>
+                            <span v-if="thread.is_locked" class="vx-chip" style="color:#991b1b;background:#fee2e2;border-color:#fecaca;">Locked</span>
+                            <Link :href="route('threads.show', [thread.forum.slug, thread.slug])" class="font-serif font-medium hover:underline" style="font-family:'Fraunces',serif;color:var(--text)">
+                                {{ thread.title }}
+                            </Link>
+                        </div>
+                    </td>
+                    <td class="py-4" style="color:var(--text-muted)">{{ thread.forum?.name }}</td>
+                    <td class="py-4" style="color:var(--text-muted)">{{ thread.author?.name }}</td>
+                    <td class="py-4 text-right tabular-nums" style="color:var(--text-muted)">{{ thread.posts_count }}</td>
+                    <td class="py-4 font-mono text-xs" style="color:var(--text-subtle)">{{ thread.last_post_at ? new Date(thread.last_post_at).toLocaleDateString() : '—' }}</td>
+                    <td class="py-4 text-right space-x-3 text-xs">
+                        <button @click="togglePin(thread)" class="hover:underline" :style="{ color: thread.is_pinned ? 'var(--accent)' : 'var(--text-muted)' }">
+                            {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
+                        </button>
+                        <button @click="toggleLock(thread)" class="hover:underline" :style="{ color: thread.is_locked ? '#dc2626' : 'var(--text-muted)' }">
+                            {{ thread.is_locked ? 'Unlock' : 'Lock' }}
+                        </button>
+                        <button @click="destroy(thread)" class="hover:underline text-red-600">Delete</button>
+                    </td>
+                </tr>
+                <tr v-if="threads.data.length === 0">
+                    <td colspan="6" class="py-16 text-center italic" style="color:var(--text-muted)">No threads found.</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <div v-if="threads.links" class="mt-4 flex flex-wrap gap-1">
+        <div v-if="threads.links" class="mt-6 flex flex-wrap gap-1">
             <Link v-for="(link, i) in threads.links" :key="i" :href="link.url || '#'" v-html="link.label"
-                :class="['px-3 py-1 text-sm border rounded', link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50', !link.url && 'opacity-50 pointer-events-none']" />
+                class="px-3 py-1 text-sm border rounded-md font-mono"
+                :class="[link.active ? 'text-white' : '', !link.url && 'opacity-40 pointer-events-none']"
+                :style="{
+                    background: link.active ? 'var(--accent)' : 'var(--surface)',
+                    borderColor: link.active ? 'var(--accent)' : 'var(--border)',
+                    color: link.active ? '#fff' : 'var(--text-muted)',
+                }" />
         </div>
     </AdminLayout>
 </template>

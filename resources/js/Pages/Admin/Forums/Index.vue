@@ -2,58 +2,55 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
-defineProps({
-    forums: Array,
-});
+defineProps({ forums: Array });
 
 const destroy = (forum) => {
-    if (confirm(`Delete forum "${forum.name}"? This will also delete its threads and posts.`)) {
+    if (confirm(`Delete forum "${forum.name}"? This also deletes its threads and posts.`)) {
         router.delete(route('admin.forums.destroy', forum.id));
     }
 };
 </script>
 
 <template>
-    <Head title="Forums" />
+    <Head title="Admin · Forums" />
     <AdminLayout>
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900">Forums</h1>
-            <Link :href="route('admin.forums.create')" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">
-                New Forum
-            </Link>
-        </div>
+        <header class="flex items-end justify-between mb-8 pb-5 border-b" style="border-color:var(--border)">
+            <div>
+                <p class="vx-meta mb-2">Structure</p>
+                <h1 class="font-serif text-4xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Forums</h1>
+            </div>
+            <Link :href="route('admin.forums.create')" class="vx-btn-primary">New Forum</Link>
+        </header>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-left text-gray-600">
-                    <tr>
-                        <th class="px-4 py-2 w-16">Pos</th>
-                        <th class="px-4 py-2">Name</th>
-                        <th class="px-4 py-2">Category</th>
-                        <th class="px-4 py-2">Slug</th>
-                        <th class="px-4 py-2 w-24">Threads</th>
-                        <th class="px-4 py-2 w-24">Posts</th>
-                        <th class="px-4 py-2 w-40 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <tr v-for="forum in forums" :key="forum.id">
-                        <td class="px-4 py-3 text-gray-500">{{ forum.position }}</td>
-                        <td class="px-4 py-3 font-medium text-gray-900">{{ forum.name }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ forum.category?.name }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ forum.slug }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ forum.threads_count }}</td>
-                        <td class="px-4 py-3 text-gray-500">{{ forum.posts_count }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <Link :href="route('admin.forums.edit', forum.id)" class="text-indigo-600 hover:underline mr-3">Edit</Link>
-                            <button @click="destroy(forum)" class="text-red-600 hover:underline">Delete</button>
-                        </td>
-                    </tr>
-                    <tr v-if="forums.length === 0">
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">No forums yet.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left" style="color:var(--text-subtle)">
+                    <th class="py-2 vx-meta w-16">#</th>
+                    <th class="py-2 vx-meta">Name</th>
+                    <th class="py-2 vx-meta">Category</th>
+                    <th class="py-2 vx-meta">Slug</th>
+                    <th class="py-2 vx-meta w-20 text-right">Threads</th>
+                    <th class="py-2 vx-meta w-20 text-right">Posts</th>
+                    <th class="py-2 vx-meta w-40 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="forum in forums" :key="forum.id" class="border-t" :style="{ borderColor: 'var(--border)' }">
+                    <td class="py-4 tabular-nums" style="color:var(--text-subtle)">{{ String(forum.position).padStart(2,'0') }}</td>
+                    <td class="py-4 font-serif text-base font-medium" style="font-family:'Fraunces',serif;color:var(--text)">{{ forum.name }}</td>
+                    <td class="py-4" style="color:var(--text-muted)">{{ forum.category?.name }}</td>
+                    <td class="py-4 font-mono text-xs" style="color:var(--text-muted)">{{ forum.slug }}</td>
+                    <td class="py-4 text-right tabular-nums" style="color:var(--text-muted)">{{ forum.threads_count }}</td>
+                    <td class="py-4 text-right tabular-nums" style="color:var(--text-muted)">{{ forum.posts_count }}</td>
+                    <td class="py-4 text-right space-x-4 text-xs">
+                        <Link :href="route('admin.forums.edit', forum.id)" class="hover:underline" :style="{ color: 'var(--accent)' }">Edit</Link>
+                        <button @click="destroy(forum)" class="hover:underline text-red-600">Delete</button>
+                    </td>
+                </tr>
+                <tr v-if="forums.length === 0">
+                    <td colspan="7" class="py-16 text-center italic" style="color:var(--text-muted)">No forums yet.</td>
+                </tr>
+            </tbody>
+        </table>
     </AdminLayout>
 </template>

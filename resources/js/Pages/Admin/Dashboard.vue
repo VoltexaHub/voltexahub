@@ -8,14 +8,28 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Admin Dashboard" />
+    <Head title="Admin · Overview" />
     <AdminLayout>
-        <h1 class="text-2xl font-semibold text-gray-900 mb-6">Dashboard</h1>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div v-for="(value, key) in stats" :key="key" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div class="text-sm text-gray-500 capitalize">{{ key }}</div>
-                <div class="text-3xl font-semibold text-gray-900 mt-1">{{ value }}</div>
+        <header class="mb-10">
+            <p class="vx-meta mb-2">The Hub · Admin</p>
+            <h1 class="font-serif text-4xl font-semibold tracking-tight" style="font-family:'Fraunces',Georgia,serif;color:var(--text)">
+                Overview
+            </h1>
+        </header>
+
+        <dl class="grid grid-cols-2 md:grid-cols-5 border-t border-b" style="border-color:var(--border)">
+            <div
+                v-for="(value, key, i) in stats"
+                :key="key"
+                class="py-6 px-5"
+                :class="i > 0 ? 'border-l' : ''"
+                :style="{ borderColor: 'var(--border)' }"
+            >
+                <dt class="vx-meta mb-2">{{ key }}</dt>
+                <dd class="text-4xl font-semibold tabular-nums tracking-tight" style="font-family:'Fraunces',Georgia,serif;color:var(--text)">
+                    {{ value }}
+                </dd>
             </div>
-        </div>
+        </dl>
     </AdminLayout>
 </template>
