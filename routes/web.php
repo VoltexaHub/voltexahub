@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
+use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/report', [ReportController::class, 'store'])->middleware('throttle:posts.report')->name('posts.report');
     Route::post('/posts/{post}/reactions', [ReactionController::class, 'toggle'])->name('posts.reactions.toggle');
+    Route::post('/uploads/image', ImageUploadController::class)->middleware('throttle:uploads.image')->name('uploads.image');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

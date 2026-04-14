@@ -72,6 +72,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('avatar.update', function (Request $request) use ($byUser) {
             return Limit::perHour(20)->by($byUser($request));
         });
+        RateLimiter::for('uploads.image', function (Request $request) use ($byUser, $adminBypass) {
+            return $adminBypass($request) ?? Limit::perHour(40)->by($byUser($request));
+        });
         RateLimiter::for('search', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });

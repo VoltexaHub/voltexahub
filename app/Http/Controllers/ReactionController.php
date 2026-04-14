@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\PostReactionUpdated;
 use App\Models\Post;
 use App\Models\Reaction;
+use App\Notifications\PostReactionReceived;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,14 @@ class ReactionController extends Controller
                 'user_id' => $userId,
                 'emoji' => $data['emoji'],
             ]);
+
+            if ($post->user_id && $post->user_id !== $userId) {
+                $post->author?->notify(new PostReactionReceived(
+                    $post,
+                    $request->user(),
+                    $data['emoji'],
+                ));
+            }
         }
 
         $post->load('reactions');

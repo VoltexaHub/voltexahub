@@ -31,6 +31,14 @@
                             <span class="vx-muted">sent you a</span>
                             <a href="{{ route('messages.show', $d['conversation_id']) }}" class="vx-link">message</a>
                         </p>
+                    @elseif(($d['type'] ?? null) === 'post_reaction')
+                        <p class="text-sm vx-heading">
+                            <span class="vx-display font-medium">{{ $d['reactor_name'] ?? 'Someone' }}</span>
+                            <span class="vx-muted">reacted</span>
+                            <span class="text-base align-middle">{{ $d['emoji'] ?? '👍' }}</span>
+                            <span class="vx-muted">to your post in</span>
+                            <a href="{{ route('threads.show', [$d['forum_slug'], $d['thread_slug']]) }}#post-{{ $d['post_id'] }}" class="vx-link">{{ $d['thread_title'] }}</a>
+                        </p>
                     @else
                         <p class="text-sm vx-heading">{{ $d['type'] ?? 'Notification' }}</p>
                     @endif
