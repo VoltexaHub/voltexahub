@@ -33,39 +33,51 @@
                 <form method="GET" action="{{ route('search') }}" class="hidden md:block flex-1 max-w-md">
                     <input name="q" type="search" value="{{ request('q') }}" placeholder="Search the hub…" class="vx-input text-sm" />
                 </form>
-                <nav class="flex items-center gap-5 text-[0.875rem] ml-auto">
+                <nav class="flex items-center gap-4 text-[0.875rem] ml-auto">
                     @auth
-                        @if(auth()->user()->is_admin)
-                            <a href="{{ route('admin.dashboard') }}" class="vx-meta hover:vx-heading">Admin</a>
-                        @endif
-                        <a href="{{ route('notifications.index') }}" class="relative vx-muted hover:vx-heading" title="Notifications">
+                        <a href="{{ route('messages.index') }}" class="relative vx-muted hover:vx-heading" title="Messages" aria-label="Messages">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            @if(($unreadMessages ?? 0) > 0)
+                                <span class="absolute -top-1 -right-1.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">{{ $unreadMessages }}</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('notifications.index') }}" class="relative vx-muted hover:vx-heading" title="Notifications" aria-label="Notifications">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/>
                             </svg>
                             @if(($unreadNotifications ?? 0) > 0)
-                                <span class="absolute -top-1 -right-1.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">
-                                    {{ $unreadNotifications }}
-                                </span>
+                                <span class="absolute -top-1 -right-1.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">{{ $unreadNotifications }}</span>
                             @endif
                         </a>
-                        <a href="{{ route('bookmarks.index') }}" class="vx-muted hover:vx-heading" title="Bookmarks">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-                            </svg>
-                        </a>
-                        <a href="{{ route('messages.index') }}" class="relative vx-muted hover:vx-heading">
-                            Messages
-                            @if(($unreadMessages ?? 0) > 0)
-                                <span class="absolute -top-1 -right-2.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">
-                                    {{ $unreadMessages }}
-                                </span>
-                            @endif
-                        </a>
-                        <a href="{{ route('users.show', auth()->user()) }}" class="vx-muted hover:vx-heading">{{ auth()->user()->name }}</a>
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="vx-subtle hover:vx-heading">Log out</button>
-                        </form>
+
+                        <details class="relative vx-user-menu">
+                            <summary class="list-none cursor-pointer flex items-center gap-2 rounded-md py-1 pr-1.5 pl-1 hover:bg-[color:var(--surface-mute)] transition">
+                                <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-7 h-7 rounded-full border vx-hairline" />
+                                <span class="vx-muted hidden sm:inline">{{ auth()->user()->name }}</span>
+                                <svg class="w-3 h-3 vx-subtle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+                            </summary>
+                            <div class="absolute right-0 mt-2 w-56 vx-card shadow-sm overflow-hidden py-1 z-30">
+                                <a href="{{ route('users.show', auth()->user()) }}" class="block px-4 py-2 text-sm hover:bg-[color:var(--surface-mute)]">
+                                    <span class="vx-heading block">{{ auth()->user()->name }}</span>
+                                    <span class="vx-meta normal-case tracking-normal">View profile</span>
+                                </a>
+                                <div class="border-t vx-hairline my-1"></div>
+                                <a href="{{ route('bookmarks.index') }}" class="block px-4 py-1.5 text-sm vx-muted hover:bg-[color:var(--surface-mute)] hover:vx-heading">Bookmarks</a>
+                                <a href="{{ route('blocks.index') }}" class="block px-4 py-1.5 text-sm vx-muted hover:bg-[color:var(--surface-mute)] hover:vx-heading">Blocked users</a>
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-1.5 text-sm vx-muted hover:bg-[color:var(--surface-mute)] hover:vx-heading">Settings</a>
+                                @if(auth()->user()->is_admin)
+                                    <div class="border-t vx-hairline my-1"></div>
+                                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-1.5 text-sm hover:bg-[color:var(--surface-mute)]" style="color:var(--accent)">Admin panel</a>
+                                @endif
+                                <div class="border-t vx-hairline my-1"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left px-4 py-1.5 text-sm vx-muted hover:bg-[color:var(--surface-mute)] hover:vx-heading">Log out</button>
+                                </form>
+                            </div>
+                        </details>
                     @else
                         <a href="{{ route('login') }}" class="vx-muted hover:vx-heading">Log in</a>
                         <a href="{{ route('register') }}" class="vx-btn-primary text-xs py-1.5 px-3">Register</a>
@@ -140,6 +152,13 @@
                     try { localStorage.setItem('theme', next); } catch (e) {}
                 });
             }
+
+            // Close the user menu when clicking outside it.
+            document.addEventListener('click', function (e) {
+                document.querySelectorAll('details.vx-user-menu[open]').forEach(function (d) {
+                    if (!d.contains(e.target)) d.removeAttribute('open');
+                });
+            });
 
             // Announcement dismiss, keyed by version so new announcements re-appear.
             var bar = document.querySelector('.vx-announcement');
