@@ -61,7 +61,7 @@
                                 </span>
                             @endif
                         </a>
-                        <a href="{{ route('dashboard') }}" class="vx-muted hover:vx-heading">{{ auth()->user()->name }}</a>
+                        <a href="{{ route('users.show', auth()->user()) }}" class="vx-muted hover:vx-heading">{{ auth()->user()->name }}</a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="vx-subtle hover:vx-heading">Log out</button>

@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->middleware('throttle:messages.send')->name('messages.reply');
 
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->middleware('verified')->name('dashboard');
+    Route::get('/dashboard', fn () => redirect()->route('users.show', request()->user()))->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
