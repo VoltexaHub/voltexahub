@@ -27,12 +27,18 @@ class UserProfileController extends Controller
             ->get();
 
         $isBlocked = false;
+        $isFollowing = false;
         if ($viewer = request()->user()) {
             $isBlocked = \App\Models\UserBlock::where('blocker_id', $viewer->id)
                 ->where('blocked_id', $user->id)
                 ->exists();
+            $isFollowing = \App\Models\Follow::where('follower_id', $viewer->id)
+                ->where('followed_id', $user->id)
+                ->exists();
         }
 
-        return view('theme::user-profile', compact('user', 'threadsCount', 'postsCount', 'recentThreads', 'recentPosts', 'isBlocked'));
+        $followerCount = \App\Models\Follow::where('followed_id', $user->id)->count();
+
+        return view('theme::user-profile', compact('user', 'threadsCount', 'postsCount', 'recentThreads', 'recentPosts', 'isBlocked', 'isFollowing', 'followerCount'));
     }
 }

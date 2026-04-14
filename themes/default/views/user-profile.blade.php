@@ -19,7 +19,18 @@
             @auth
                 @if(auth()->id() !== $user->id)
                     <div class="mt-3 flex flex-wrap gap-2">
-                        <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="vx-btn-primary text-xs py-1.5 px-3">Send Message</a>
+                        @if($isFollowing ?? false)
+                            <form method="POST" action="{{ route('follows.destroy', $user) }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" style="color:var(--accent);border-color:var(--accent)">Following</button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('follows.store', $user) }}">
+                                @csrf
+                                <button type="submit" class="vx-btn-primary text-xs py-1.5 px-3">Follow</button>
+                            </form>
+                        @endif
+                        <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="vx-btn-secondary text-xs py-1.5 px-3">Message</a>
                         @if($isBlocked ?? false)
                             <form method="POST" action="{{ route('blocks.destroy', $user) }}">
                                 @csrf @method('DELETE')

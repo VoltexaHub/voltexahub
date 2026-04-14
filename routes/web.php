@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\ImageUploadController;
@@ -74,6 +75,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/polls/{poll}/vote', [PollController::class, 'vote'])->name('polls.vote');
     Route::delete('/polls/{poll}/vote', [PollController::class, 'clear'])->name('polls.clear');
+
+    Route::post('/users/{user}/follow', [FollowController::class, 'store'])->name('follows.store');
+    Route::delete('/users/{user}/follow', [FollowController::class, 'destroy'])->name('follows.destroy');
 });
 
 Route::get('/forums/{forum:slug}/threads/{thread:slug}/unread', [ThreadController::class, 'unread'])->name('threads.unread');

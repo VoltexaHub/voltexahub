@@ -3,18 +3,55 @@
 @section('title', 'Forums · '.config('app.name'))
 
 @section('content')
-    <header class="mb-10 flex items-baseline justify-between">
+    <header class="mb-10 flex items-end justify-between gap-4">
         <div>
             <p class="vx-meta mb-2">The Hub</p>
             <h1 class="vx-display text-4xl md:text-5xl font-semibold tracking-tight vx-heading">
-                Forums
+                @if($feed === 'following')Following @else Forums @endif
             </h1>
         </div>
-        <p class="vx-meta hidden md:block">
-            {{ $categories->sum(fn($c) => $c->forums->count()) }} forums · {{ $categories->count() }} categories
-        </p>
+        @auth
+            <nav class="flex gap-4 pb-2 text-sm">
+                <a href="{{ route('home') }}"
+                   class="pb-1 {{ $feed === 'hub' ? 'border-b-2' : 'vx-muted hover:vx-heading' }}"
+                   style="{{ $feed === 'hub' ? 'border-color: var(--accent); color: var(--text)' : '' }}">Hub</a>
+                <a href="{{ route('home', ['feed' => 'following']) }}"
+                   class="pb-1 {{ $feed === 'following' ? 'border-b-2' : 'vx-muted hover:vx-heading' }}"
+                   style="{{ $feed === 'following' ? 'border-color: var(--accent); color: var(--text)' : '' }}">Following</a>
+            </nav>
+        @endauth
     </header>
 
+    @if($feed === 'following')
+        @if($followingThreads->isEmpty())
+            <p class="vx-display text-xl vx-muted italic text-center py-16">
+                You aren't following anyone yet — visit a profile and click <strong>Follow</strong>.
+            </p>
+        @else
+            <ul class="vx-row-divide border-t vx-hairline">
+                @foreach($followingThreads as $thread)
+                    <li class="py-5 flex items-start gap-6">
+                        <div class="flex-1 min-w-0">
+                            <a href="{{ route('threads.show', [$thread->forum->slug, $thread->slug]) }}"
+                               class="vx-display text-lg font-medium vx-heading hover:text-[color:var(--accent)]">{{ $thread->title }}</a>
+                            <p class="vx-meta normal-case tracking-normal text-[0.72rem] mt-1">
+                                in {{ $thread->forum->name }}
+                                @if($thread->author) · by <a href="{{ route('users.show', $thread->author) }}" class="hover:text-[color:var(--accent)]">{{ $thread->author->name }}</a>@endif
+                                · {{ $thread->created_at->diffForHumans() }}
+                            </p>
+                        </div>
+                        <div class="hidden sm:block text-right vx-muted text-sm">
+                            <div class="vx-display tabular-nums">{{ $thread->posts_count }}</div>
+                            <div class="vx-meta">replies</div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+        @section('feed-done')@endsection
+    @endif
+
+    @if($feed === 'hub')
     <div class="space-y-12">
         @foreach($categories as $cat)
             <section>
@@ -65,4 +102,5 @@
             </section>
         @endforeach
     </div>
+    @endif
 @endsection
