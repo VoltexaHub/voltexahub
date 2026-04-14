@@ -5,6 +5,7 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
@@ -28,6 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/posts/{post}', [PostEditController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/report', [ReportController::class, 'store'])->middleware('throttle:posts.report')->name('posts.report');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/new', [MessageController::class, 'create'])->name('messages.create');

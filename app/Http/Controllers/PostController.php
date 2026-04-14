@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Events\PostCreated;
 use App\Models\Forum;
 use App\Models\Thread;
+use App\Models\User;
+use App\Notifications\NewThreadReply;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class PostController extends Controller
 {
@@ -37,6 +40,18 @@ class PostController extends Controller
         ]);
 
         broadcast(new PostCreated($post))->toOthers();
+
+        $recipientIds = $thread->posts()
+            ->where('user_id', '!=', $request->user()->id)
+            ->pluck('user_id')
+            ->push($thread->user_id)
+            ->filter(fn ($id) => $id && $id !== $request->user()->id)
+            ->unique()
+            ->values();
+
+        if ($recipientIds->isNotEmpty()) {
+            Notification::send(User::whereIn('id', $recipientIds)->get(), new NewThreadReply($post));
+        }
 
         return redirect()->route('threads.show', [$forum->slug, $thread->slug]);
     }

@@ -26,6 +26,16 @@
                         @if(auth()->user()->is_admin)
                             <a href="{{ route('admin.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">Admin</a>
                         @endif
+                        <a href="{{ route('notifications.index') }}" class="relative text-gray-700 hover:text-gray-900" title="Notifications">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
+                            </svg>
+                            @if(($unreadNotifications ?? 0) > 0)
+                                <span class="absolute -top-2 -right-2 min-w-[1.15rem] h-[1.15rem] px-1 text-[10px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
+                                    {{ $unreadNotifications }}
+                                </span>
+                            @endif
+                        </a>
                         <a href="{{ route('messages.index') }}" class="relative text-gray-700 hover:text-gray-900">
                             Messages
                             @if(($unreadMessages ?? 0) > 0)

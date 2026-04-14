@@ -42,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
                     ->count();
             }
             $view->with('unreadMessages', $unread);
+            $view->with('unreadNotifications', $user ? $user->unreadNotifications()->count() : 0);
         });
     }
 
