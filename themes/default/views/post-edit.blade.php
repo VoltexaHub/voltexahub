@@ -14,15 +14,16 @@
         ['label' => 'Edit Post'],
     ]])
 
-    <h1 class="text-2xl font-semibold vx-heading mb-5">Edit Post</h1>
+    <header class="mb-6">
+        <p class="vx-meta mb-2">Revising</p>
+        <h1 class="vx-display text-4xl font-semibold tracking-tight vx-heading">Edit post</h1>
+    </header>
 
-    <form method="POST" action="{{ route('posts.update', $post->id) }}" class="vx-card p-5 space-y-4">
+    <form method="POST" action="{{ route('posts.update', $post->id) }}" class="space-y-4 max-w-3xl">
         @csrf
         @method('PUT')
-        <div>
-            <textarea name="body" rows="10" required data-markdown class="vx-input">{{ old('body', $post->body) }}</textarea>
-            @error('body')<p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>@enderror
-        </div>
+        <textarea name="body" rows="12" required data-markdown class="vx-input">{{ old('body', $post->body) }}</textarea>
+        @error('body')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
         <div class="flex justify-end gap-2">
             <a href="{{ route('threads.show', [$post->thread->forum->slug, $post->thread->slug]) }}" class="vx-btn-secondary">Cancel</a>
             <button type="submit" class="vx-btn-primary">Save</button>

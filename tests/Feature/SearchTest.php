@@ -15,7 +15,7 @@ class SearchTest extends TestCase
 
     public function test_empty_query_shows_prompt(): void
     {
-        $this->get('/search')->assertOk()->assertSee('Enter a query');
+        $this->get('/search')->assertOk()->assertSee('What are you looking for?');
     }
 
     public function test_search_matches_thread_titles_and_post_bodies(): void

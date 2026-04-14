@@ -3,49 +3,52 @@
 @section('title', 'Messages · '.config('app.name'))
 
 @section('content')
-    <div class="flex items-center justify-between mb-5">
-        <h1 class="text-2xl font-semibold vx-heading">Messages</h1>
-        <a href="{{ route('messages.create') }}" class="vx-btn-primary">New Message</a>
-    </div>
+    <header class="mb-8 flex items-end justify-between pb-5 border-b vx-hairline">
+        <div>
+            <p class="vx-meta mb-2">Inbox</p>
+            <h1 class="vx-display text-4xl font-semibold tracking-tight vx-heading">Messages</h1>
+        </div>
+        <a href="{{ route('messages.create') }}" class="vx-btn-primary">Compose</a>
+    </header>
 
-    <div class="vx-card overflow-hidden">
-        <ul class="vx-row-divide">
-            @php $me = auth()->user(); @endphp
-            @forelse($conversations as $conversation)
-                @php
-                    $other = $conversation->participants->firstWhere('id', '!=', $me->id);
-                    $myPivot = $conversation->participants->firstWhere('id', $me->id)?->pivot;
-                    $lastRead = $myPivot?->last_read_at;
-                    $isUnread = $conversation->last_message_at && (! $lastRead || $conversation->last_message_at->gt($lastRead));
-                @endphp
-                <li>
-                    <a href="{{ route('messages.show', $conversation) }}"
-                       class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors {{ $isUnread ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : '' }}">
-                        @if($other)
-                            <img src="{{ $other->avatar_url }}" alt="" class="w-10 h-10 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-                        @endif
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-baseline justify-between gap-2">
-                                <span class="font-medium vx-heading truncate">{{ $other?->name ?? '[deleted user]' }}</span>
-                                <span class="text-xs vx-subtle shrink-0">{{ $conversation->last_message_at?->diffForHumans() }}</span>
-                            </div>
-                            @if($conversation->latestMessage)
-                                <p class="text-sm vx-muted truncate {{ $isUnread ? 'font-semibold text-slate-700 dark:text-slate-200' : '' }}">
-                                    @if($conversation->latestMessage->user_id === $me->id)<span class="vx-subtle">You:</span> @endif
-                                    {{ Str::limit($conversation->latestMessage->body, 120) }}
-                                </p>
-                            @endif
+    <ul class="vx-row-divide">
+        @php $me = auth()->user(); @endphp
+        @forelse($conversations as $conversation)
+            @php
+                $other = $conversation->participants->firstWhere('id', '!=', $me->id);
+                $myPivot = $conversation->participants->firstWhere('id', $me->id)?->pivot;
+                $lastRead = $myPivot?->last_read_at;
+                $isUnread = $conversation->last_message_at && (! $lastRead || $conversation->last_message_at->gt($lastRead));
+            @endphp
+            <li>
+                <a href="{{ route('messages.show', $conversation) }}" class="flex items-start gap-4 py-4 group">
+                    @if($other)
+                        <img src="{{ $other->avatar_url }}" alt="" class="w-11 h-11 rounded-full border vx-hairline shrink-0" />
+                    @endif
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline justify-between gap-2">
+                            <span class="vx-display font-medium vx-heading truncate">{{ $other?->name ?? '[deleted]' }}</span>
+                            <span class="vx-meta normal-case tracking-normal text-[0.7rem] shrink-0">{{ $conversation->last_message_at?->diffForHumans() }}</span>
                         </div>
-                        @if($isUnread)
-                            <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0" aria-label="unread"></span>
+                        @if($conversation->latestMessage)
+                            <p class="text-sm {{ $isUnread ? 'vx-heading font-medium' : 'vx-muted' }} truncate mt-0.5">
+                                @if($conversation->latestMessage->user_id === $me->id)<span class="vx-subtle">You ·</span> @endif
+                                {{ Str::limit($conversation->latestMessage->body, 140) }}
+                            </p>
                         @endif
-                    </a>
-                </li>
-            @empty
-                <li class="p-10 text-center vx-muted">No messages yet. Start a conversation.</li>
-            @endforelse
-        </ul>
-    </div>
+                    </div>
+                    @if($isUnread)
+                        <span class="mt-2 w-2 h-2 rounded-full bg-[color:var(--accent)] shrink-0" aria-label="unread"></span>
+                    @endif
+                </a>
+            </li>
+        @empty
+            <li class="py-16 text-center">
+                <p class="vx-display text-xl vx-muted italic">No conversations.</p>
+                <p class="vx-meta mt-3">Start one from any user's profile</p>
+            </li>
+        @endforelse
+    </ul>
 
-    <div class="mt-4">{{ $conversations->links() }}</div>
+    <div class="mt-6">{{ $conversations->links() }}</div>
 @endsection

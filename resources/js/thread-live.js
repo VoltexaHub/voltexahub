@@ -9,25 +9,29 @@ if (container) {
             if (document.getElementById(`post-${payload.id}`)) return;
 
             const article = document.createElement('article');
-            article.className = 'vx-card overflow-hidden ring-indigo-300/60 dark:ring-indigo-700/60';
+            article.className = 'border-b vx-hairline py-7';
             article.id = `post-${payload.id}`;
+            article.style.borderLeft = '2px solid var(--accent)';
+            article.style.paddingLeft = '1rem';
+            article.style.marginLeft = '-1rem';
 
             const authorHtml = payload.author
-                ? `<a href="${payload.author.profile_url}" class="flex items-center gap-2.5 hover:opacity-90">
-                       <img src="${payload.author.avatar_url}" alt="" class="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-                       <span class="font-medium vx-heading hover:text-indigo-500">${escapeHtml(payload.author.name)}</span>
-                   </a>`
-                : '<span class="vx-muted">[deleted]</span>';
+                ? `<a href="${payload.author.profile_url}" class="shrink-0">
+                       <img src="${payload.author.avatar_url}" alt="" class="w-10 h-10 rounded-full border vx-hairline" />
+                   </a>
+                   <div>
+                       <a href="${payload.author.profile_url}" class="vx-display text-[0.95rem] font-medium vx-heading hover:text-[color:var(--accent)]">${escapeHtml(payload.author.name)}</a>
+                       <p class="vx-meta normal-case tracking-normal text-[0.7rem] mt-0.5">
+                           <span style="color:var(--accent);">new</span>
+                           <span class="opacity-60 mx-1">·</span>
+                           <span>${escapeHtml(payload.created_at_formatted)}</span>
+                       </p>
+                   </div>`
+                : '<p class="vx-muted italic">[deleted]</p>';
 
             article.innerHTML = `
-                <header class="vx-card-header flex items-center justify-between text-sm">
-                    <div class="flex items-center gap-2.5">${authorHtml}</div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">New</span>
-                        <span class="vx-subtle tabular-nums">${escapeHtml(payload.created_at_formatted)}</span>
-                    </div>
-                </header>
-                <div class="px-5 py-5 prose prose-sm max-w-none prose-indigo dark:prose-invert">${payload.body_html}</div>
+                <header class="flex items-center gap-3 mb-4">${authorHtml}</header>
+                <div class="pl-[3.25rem] vx-prose">${payload.body_html}</div>
             `;
 
             container.appendChild(article);

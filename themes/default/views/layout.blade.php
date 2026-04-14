@@ -6,7 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name'))</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link href="https://fonts.bunny.net/css?family=fraunces:400,500,600,700|inter-tight:400,500,600|jetbrains-mono:400,500&display=swap" rel="stylesheet" />
     <script>
         (function () {
             try {
@@ -19,55 +20,56 @@
     @vite(['resources/css/app.css'])
     @hook('head')
 </head>
-<body class="font-sans bg-slate-50 dark:bg-slate-950">
+<body class="font-sans">
     <div class="min-h-screen flex flex-col">
-        <header class="bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800/70 sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-slate-900/80">
-            <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-                <a href="{{ route('home') }}" class="text-lg font-semibold vx-heading shrink-0">
-                    {{ $activeTheme['name'] ?? 'VoltexaHub' }}
+        <header class="sticky top-0 z-20 border-b vx-hairline bg-[color:var(--bg)]/85 backdrop-blur supports-[backdrop-filter]:bg-[color:var(--bg)]/70">
+            <div class="max-w-5xl mx-auto px-5 h-16 flex items-center gap-5">
+                <a href="{{ route('home') }}" class="vx-display font-semibold text-[1.35rem] leading-none tracking-tight shrink-0">
+                    {{ $activeTheme['name'] ?? 'VoltexaHub' }}<span class="text-[color:var(--accent)]">.</span>
                 </a>
-                <form method="GET" action="{{ route('search') }}" class="hidden md:block flex-1 max-w-sm">
-                    <input name="q" type="search" value="{{ request('q') }}" placeholder="Search..." class="vx-input text-sm" />
+                <span class="hidden md:inline-block w-px h-6 bg-[color:var(--border)]"></span>
+                <form method="GET" action="{{ route('search') }}" class="hidden md:block flex-1 max-w-md">
+                    <input name="q" type="search" value="{{ request('q') }}" placeholder="Search the hub…" class="vx-input text-sm" />
                 </form>
-                <nav class="flex items-center gap-4 text-sm">
+                <nav class="flex items-center gap-5 text-[0.875rem] ml-auto">
                     @auth
                         @if(auth()->user()->is_admin)
-                            <a href="{{ route('admin.dashboard') }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium">Admin</a>
+                            <a href="{{ route('admin.dashboard') }}" class="vx-meta hover:vx-heading">Admin</a>
                         @endif
-                        <a href="{{ route('notifications.index') }}" class="relative text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100" title="Notifications">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
+                        <a href="{{ route('notifications.index') }}" class="relative vx-muted hover:vx-heading" title="Notifications">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
                             </svg>
                             @if(($unreadNotifications ?? 0) > 0)
-                                <span class="absolute -top-1.5 -right-1.5 min-w-[1.1rem] h-[1.1rem] px-1 text-[10px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                                <span class="absolute -top-1 -right-1.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">
                                     {{ $unreadNotifications }}
                                 </span>
                             @endif
                         </a>
-                        <a href="{{ route('messages.index') }}" class="relative text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
+                        <a href="{{ route('messages.index') }}" class="relative vx-muted hover:vx-heading">
                             Messages
                             @if(($unreadMessages ?? 0) > 0)
-                                <span class="absolute -top-1.5 -right-2 min-w-[1.1rem] h-[1.1rem] px-1 text-[10px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+                                <span class="absolute -top-1 -right-2.5 min-w-[1.05rem] h-[1.05rem] px-1 text-[10px] font-mono font-medium bg-[color:var(--accent)] text-white rounded-full flex items-center justify-center">
                                     {{ $unreadMessages }}
                                 </span>
                             @endif
                         </a>
-                        <a href="{{ route('dashboard') }}" class="text-slate-700 dark:text-slate-200 hover:vx-heading">{{ auth()->user()->name }}</a>
+                        <a href="{{ route('dashboard') }}" class="vx-muted hover:vx-heading">{{ auth()->user()->name }}</a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="vx-muted hover:vx-heading">Log out</button>
+                            <button type="submit" class="vx-subtle hover:vx-heading">Log out</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="text-slate-700 dark:text-slate-200 hover:vx-heading">Log in</a>
-                        <a href="{{ route('register') }}" class="text-slate-700 dark:text-slate-200 hover:vx-heading">Register</a>
+                        <a href="{{ route('login') }}" class="vx-muted hover:vx-heading">Log in</a>
+                        <a href="{{ route('register') }}" class="vx-btn-primary text-xs py-1.5 px-3">Register</a>
                     @endauth
                     <button id="vx-theme-toggle" type="button" aria-label="Toggle dark mode"
-                            class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m0-13.728l1.414 1.414M17.95 17.95l1.414 1.414M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            class="p-1.5 rounded-md vx-muted hover:vx-heading hover:bg-[color:var(--surface-mute)] transition">
+                        <svg class="w-4.5 h-4.5 hidden dark:block" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1.5m0 15V21m9-9h-1.5M4.5 12H3m15.364-6.364l-1.06 1.06M6.697 17.303l-1.06 1.06m0-13.728l1.06 1.06M17.303 17.303l1.06 1.06M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
-                        <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        <svg class="w-4.5 h-4.5 dark:hidden" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                         </svg>
                     </button>
                 </nav>
@@ -75,25 +77,30 @@
         </header>
 
         @if(session('flash.success'))
-            <div class="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200/70 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-200 px-4 py-2 text-sm">
-                <div class="max-w-6xl mx-auto">{{ session('flash.success') }}</div>
+            <div class="vx-flash vx-flash-success">
+                <div class="max-w-5xl mx-auto px-5">{{ session('flash.success') }}</div>
             </div>
         @endif
         @if(session('flash.error'))
-            <div class="bg-red-50 dark:bg-red-950/40 border-b border-red-200/70 dark:border-red-900/60 text-red-800 dark:text-red-200 px-4 py-2 text-sm">
-                <div class="max-w-6xl mx-auto">{{ session('flash.error') }}</div>
+            <div class="vx-flash vx-flash-error">
+                <div class="max-w-5xl mx-auto px-5">{{ session('flash.error') }}</div>
             </div>
         @endif
 
-        <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
+        <main class="flex-1 max-w-5xl w-full mx-auto px-5 py-10">
             @hook('before_content')
             @yield('content')
             @hook('after_content')
         </main>
 
-        <footer class="border-t border-slate-200/70 dark:border-slate-800/70 bg-white/50 dark:bg-slate-900/50 py-4 text-center text-xs vx-muted">
-            Powered by <a href="https://github.com/VoltexaHub/VoltexaHub" class="hover:underline">VoltexaHub</a>
-            · Theme: {{ $activeTheme['name'] ?? 'Default' }}
+        <footer class="border-t vx-hairline py-6">
+            <div class="max-w-5xl mx-auto px-5 flex items-center justify-between">
+                <p class="vx-meta">
+                    <span class="text-[color:var(--accent)]">/</span>
+                    Powered by <a href="https://github.com/VoltexaHub/voltexahub" class="hover:text-[color:var(--accent)]">VoltexaHub</a>
+                </p>
+                <p class="vx-meta">Theme · {{ $activeTheme['name'] ?? 'Default' }}</p>
+            </div>
         </footer>
     </div>
 

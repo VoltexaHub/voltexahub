@@ -17,40 +17,43 @@
         ['label' => $other?->name ?? 'Conversation'],
     ]])
 
-    <div class="flex items-center gap-3 mb-5">
+    <header class="flex items-center gap-3 mb-8 pb-5 border-b vx-hairline">
         @if($other)
-            <img src="{{ $other->avatar_url }}" alt="" class="w-10 h-10 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-            <a href="{{ route('users.show', $other) }}" class="text-lg font-semibold vx-heading hover:text-indigo-500">{{ $other->name }}</a>
+            <img src="{{ $other->avatar_url }}" alt="" class="w-12 h-12 rounded-full border vx-hairline" />
+            <a href="{{ route('users.show', $other) }}" class="vx-display text-2xl font-semibold vx-heading hover:text-[color:var(--accent)]">{{ $other->name }}</a>
         @else
-            <span class="vx-muted">[deleted user]</span>
+            <span class="vx-muted italic">[deleted user]</span>
         @endif
-    </div>
+    </header>
 
-    <div class="space-y-3 mb-6">
+    <div class="space-y-4 mb-10">
         @foreach($messages as $message)
             @php $mine = $message->user_id === $me->id; @endphp
             <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}">
                 <div class="max-w-[75%]">
-                    <div class="text-xs vx-subtle mb-1 {{ $mine ? 'text-right' : '' }}">
-                        {{ $message->author?->name ?? '[deleted]' }} · {{ $message->created_at->format('M j, Y g:i A') }}
+                    <div class="vx-meta normal-case tracking-normal text-[0.7rem] mb-1 {{ $mine ? 'text-right' : '' }}">
+                        {{ $message->author?->name ?? '[deleted]' }} · {{ $message->created_at->format('M j · g:i A') }}
                     </div>
-                    <div class="px-4 py-2.5 rounded-2xl prose prose-sm max-w-none shadow-sm
-                                {{ $mine
-                                    ? 'bg-indigo-600 text-white prose-invert rounded-br-sm'
-                                    : 'bg-white dark:bg-slate-900 ring-1 ring-slate-200/70 dark:ring-slate-800/70 dark:prose-invert rounded-bl-sm' }}">
-                        {!! $message->body_html !!}
-                    </div>
+                    @if($mine)
+                        <div class="px-4 py-2.5 rounded-2xl rounded-br-sm vx-prose" style="background:var(--accent);color:#fff;">
+                            <div style="color:#fff;">{!! $message->body_html !!}</div>
+                        </div>
+                    @else
+                        <div class="px-4 py-2.5 rounded-2xl rounded-bl-sm vx-card vx-prose">
+                            {!! $message->body_html !!}
+                        </div>
+                    @endif
                 </div>
             </div>
         @endforeach
     </div>
 
-    <div class="mb-4">{{ $messages->links() }}</div>
+    <div class="mb-6">{{ $messages->links() }}</div>
 
-    <form method="POST" action="{{ route('messages.reply', $conversation) }}" class="vx-card p-4">
+    <form method="POST" action="{{ route('messages.reply', $conversation) }}" class="pt-6 border-t vx-hairline">
         @csrf
-        <textarea name="body" rows="4" data-markdown required class="vx-input" placeholder="Type a reply in markdown..."></textarea>
-        @error('body')<p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>@enderror
+        <textarea name="body" rows="4" data-markdown required class="vx-input" placeholder="Type a reply in markdown…"></textarea>
+        @error('body')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
         <div class="mt-3 flex justify-end">
             <button type="submit" class="vx-btn-primary">Send</button>
         </div>

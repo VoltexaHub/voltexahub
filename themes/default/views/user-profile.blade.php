@@ -8,60 +8,58 @@
         ['label' => $user->name],
     ]])
 
-    <div class="vx-card p-6 mb-6 flex items-center gap-6">
-        <img src="{{ $user->avatar_url }}" alt="" class="w-20 h-20 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
+    <header class="mb-10 flex items-center gap-6 pb-8 border-b vx-hairline">
+        <img src="{{ $user->avatar_url }}" alt="" class="w-20 h-20 rounded-full border vx-hairline" />
         <div class="flex-1">
+            <p class="vx-meta mb-1">Member since {{ $user->created_at->format('M Y') }}</p>
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-semibold vx-heading">{{ $user->name }}</h1>
-                @if($user->is_admin)
-                    <span class="inline-block px-2 py-0.5 text-xs rounded-md bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200/60 dark:ring-indigo-900/60">Admin</span>
-                @endif
+                <h1 class="vx-display text-4xl font-semibold tracking-tight vx-heading">{{ $user->name }}</h1>
+                @if($user->is_admin)<span class="vx-chip">Admin</span>@endif
             </div>
-            <p class="text-sm vx-muted mt-1">Joined {{ $user->created_at->format('F j, Y') }} · {{ $user->created_at->diffForHumans() }}</p>
             @auth
                 @if(auth()->id() !== $user->id)
-                    <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="inline-block mt-3 vx-btn-primary text-xs py-1.5 px-3">Send Message</a>
+                    <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="inline-block mt-3 vx-btn-secondary text-xs py-1.5 px-3">Send Message</a>
                 @endif
             @endauth
         </div>
-        <div class="grid grid-cols-2 gap-6 text-center">
+        <div class="hidden sm:grid grid-cols-2 gap-8 text-right shrink-0">
             <div>
-                <div class="text-2xl font-semibold vx-heading tabular-nums">{{ $threadsCount }}</div>
-                <div class="text-xs vx-subtle uppercase tracking-wide">Threads</div>
+                <div class="vx-display text-3xl font-semibold vx-heading tabular-nums">{{ $threadsCount }}</div>
+                <div class="vx-meta">Threads</div>
             </div>
             <div>
-                <div class="text-2xl font-semibold vx-heading tabular-nums">{{ $postsCount }}</div>
-                <div class="text-xs vx-subtle uppercase tracking-wide">Posts</div>
+                <div class="vx-display text-3xl font-semibold vx-heading tabular-nums">{{ $postsCount }}</div>
+                <div class="vx-meta">Posts</div>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="grid md:grid-cols-2 gap-6">
-        <section class="vx-card overflow-hidden">
-            <header class="vx-card-header"><h2 class="font-semibold vx-heading">Recent threads</h2></header>
+    <div class="grid md:grid-cols-2 gap-10">
+        <section>
+            <h2 class="vx-meta mb-3 text-[color:var(--accent)]">Recent threads</h2>
             <ul class="vx-row-divide">
                 @forelse($recentThreads as $thread)
-                    <li class="px-4 py-3">
-                        <a href="{{ route('threads.show', [$thread->forum->slug, $thread->slug]) }}" class="vx-link font-medium truncate block">{{ $thread->title }}</a>
-                        <div class="text-xs vx-subtle">in {{ $thread->forum->name }} · {{ $thread->created_at->diffForHumans() }}</div>
+                    <li class="py-3">
+                        <a href="{{ route('threads.show', [$thread->forum->slug, $thread->slug]) }}" class="vx-display font-medium vx-heading hover:text-[color:var(--accent)] truncate block">{{ $thread->title }}</a>
+                        <p class="vx-meta normal-case tracking-normal text-[0.7rem] mt-0.5">in {{ $thread->forum->name }} · {{ $thread->created_at->diffForHumans() }}</p>
                     </li>
                 @empty
-                    <li class="px-4 py-6 text-center vx-muted text-sm">No threads yet.</li>
+                    <li class="py-6 vx-muted text-sm italic">No threads yet.</li>
                 @endforelse
             </ul>
         </section>
 
-        <section class="vx-card overflow-hidden">
-            <header class="vx-card-header"><h2 class="font-semibold vx-heading">Recent posts</h2></header>
+        <section>
+            <h2 class="vx-meta mb-3 text-[color:var(--accent)]">Recent posts</h2>
             <ul class="vx-row-divide">
                 @forelse($recentPosts as $post)
-                    <li class="px-4 py-3">
-                        <a href="{{ route('threads.show', [$post->thread->forum->slug, $post->thread->slug]) }}#post-{{ $post->id }}" class="vx-link font-medium truncate block">{{ $post->thread->title }}</a>
-                        <div class="text-xs vx-subtle">in {{ $post->thread->forum->name }} · {{ $post->created_at->diffForHumans() }}</div>
-                        <p class="text-sm vx-muted mt-1 line-clamp-2">{{ Str::limit($post->body, 160) }}</p>
+                    <li class="py-3">
+                        <a href="{{ route('threads.show', [$post->thread->forum->slug, $post->thread->slug]) }}#post-{{ $post->id }}" class="vx-display font-medium vx-heading hover:text-[color:var(--accent)] truncate block">{{ $post->thread->title }}</a>
+                        <p class="vx-meta normal-case tracking-normal text-[0.7rem] mt-0.5">in {{ $post->thread->forum->name }} · {{ $post->created_at->diffForHumans() }}</p>
+                        <p class="vx-muted text-sm mt-1 line-clamp-2">{{ Str::limit($post->body, 180) }}</p>
                     </li>
                 @empty
-                    <li class="px-4 py-6 text-center vx-muted text-sm">No posts yet.</li>
+                    <li class="py-6 vx-muted text-sm italic">No posts yet.</li>
                 @endforelse
             </ul>
         </section>
