@@ -14,21 +14,44 @@
     ]])
 
     <header class="mb-10">
-        <div class="flex items-center gap-2 mb-3">
-            @if($thread->is_pinned)<span class="vx-chip">Pinned</span>@endif
-            @if($thread->is_locked)<span class="vx-chip" style="color:#991b1b;background:#fee2e2;border-color:#fecaca;">Locked</span>@endif
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-3">
+                    @if($thread->is_pinned)<span class="vx-chip">Pinned</span>@endif
+                    @if($thread->is_locked)<span class="vx-chip" style="color:#991b1b;background:#fee2e2;border-color:#fecaca;">Locked</span>@endif
+                </div>
+                <h1 class="vx-display text-[2.25rem] md:text-[2.75rem] leading-[1.1] font-semibold tracking-tight vx-heading">
+                    {{ $thread->title }}
+                </h1>
+                <p class="vx-meta mt-4 normal-case tracking-normal text-[0.78rem]">
+                    Started by
+                    @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="vx-heading hover:text-[color:var(--accent)] font-medium">{{ $thread->author->name }}</a>@else [deleted]@endif
+                    <span class="mx-2 text-[color:var(--accent)]">·</span>
+                    {{ $thread->created_at->format('F j, Y') }}
+                    <span class="mx-2 text-[color:var(--accent)]">·</span>
+                    <span class="vx-meta">{{ $thread->posts_count }} replies · {{ $thread->views_count }} views</span>
+                </p>
+            </div>
+            @auth
+                @if($mutedByUser ?? false)
+                    <form method="POST" action="{{ route('threads.unmute', $thread) }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="You won't be notified of new replies">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.73 21a2 2 0 01-3.46 0M18.63 13A17.89 17.89 0 0118 8M6.26 6.26A5.86 5.86 0 006 8c0 7-3 9-3 9h14M18 8a6 6 0 00-9.33-5M1 1l22 22"/></svg>
+                            Muted
+                        </button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('threads.mute', $thread) }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="vx-btn-secondary text-xs py-1.5 px-3" title="Stop getting notifications for this thread">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14V11a6 6 0 10-12 0v3a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0"/></svg>
+                            Mute
+                        </button>
+                    </form>
+                @endif
+            @endauth
         </div>
-        <h1 class="vx-display text-[2.25rem] md:text-[2.75rem] leading-[1.1] font-semibold tracking-tight vx-heading">
-            {{ $thread->title }}
-        </h1>
-        <p class="vx-meta mt-4 normal-case tracking-normal text-[0.78rem]">
-            Started by
-            @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="vx-heading hover:text-[color:var(--accent)] font-medium">{{ $thread->author->name }}</a>@else [deleted]@endif
-            <span class="mx-2 text-[color:var(--accent)]">·</span>
-            {{ $thread->created_at->format('F j, Y') }}
-            <span class="mx-2 text-[color:var(--accent)]">·</span>
-            <span class="vx-meta">{{ $thread->posts_count }} replies · {{ $thread->views_count }} views</span>
-        </p>
     </header>
 
     <div class="space-y-0 border-t vx-hairline" data-thread-posts data-thread-id="{{ $thread->id }}">

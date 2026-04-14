@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\PostCreated;
 use App\Models\Forum;
 use App\Models\Thread;
+use App\Models\ThreadSubscription;
 use App\Models\User;
 use App\Notifications\NewThreadReply;
 use Illuminate\Http\RedirectResponse;
@@ -46,8 +47,14 @@ class PostController extends Controller
             ->pluck('user_id')
             ->push($thread->user_id)
             ->filter(fn ($id) => $id && $id !== $request->user()->id)
-            ->unique()
-            ->values();
+            ->unique();
+
+        $mutedIds = ThreadSubscription::query()
+            ->where('thread_id', $thread->id)
+            ->where('state', ThreadSubscription::STATE_MUTED)
+            ->pluck('user_id');
+
+        $recipientIds = $recipientIds->diff($mutedIds)->values();
 
         if ($recipientIds->isNotEmpty()) {
             Notification::send(User::whereIn('id', $recipientIds)->get(), new NewThreadReply($post));

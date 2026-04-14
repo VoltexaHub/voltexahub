@@ -16,7 +16,11 @@ class NewThreadReply extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = [];
+        if ($notifiable->notify_reply_email ?? true) $channels[] = 'mail';
+        if ($notifiable->notify_reply_app ?? true)   $channels[] = 'database';
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

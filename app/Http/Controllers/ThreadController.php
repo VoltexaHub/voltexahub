@@ -25,7 +25,16 @@ class ThreadController extends Controller
         $thread->load('author:id,name');
         $forum->load('category:id,name,slug');
 
-        return view('theme::thread-show', compact('forum', 'thread', 'posts'));
+        $mutedByUser = false;
+        if ($user = request()->user()) {
+            $mutedByUser = \App\Models\ThreadSubscription::query()
+                ->where('user_id', $user->id)
+                ->where('thread_id', $thread->id)
+                ->where('state', \App\Models\ThreadSubscription::STATE_MUTED)
+                ->exists();
+        }
+
+        return view('theme::thread-show', compact('forum', 'thread', 'posts', 'mutedByUser'));
     }
 
     public function create(Forum $forum): View

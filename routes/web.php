@@ -6,6 +6,8 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\ThreadSubscriptionController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
@@ -50,6 +52,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/profile/avatar', [AvatarController::class, 'update'])->middleware('throttle:avatar.update')->name('profile.avatar.update');
     Route::delete('/profile/avatar', [AvatarController::class, 'destroy'])->name('profile.avatar.destroy');
+    Route::patch('/profile/notification-preferences', [NotificationPreferenceController::class, 'update'])->name('profile.notifications.update');
+
+    Route::post('/threads/{thread}/mute', [ThreadSubscriptionController::class, 'mute'])->name('threads.mute');
+    Route::post('/threads/{thread}/unmute', [ThreadSubscriptionController::class, 'unmute'])->name('threads.unmute');
 });
 
 Route::get('/forums/{forum:slug}/threads/{thread:slug}', [ThreadController::class, 'show'])->name('threads.show');
