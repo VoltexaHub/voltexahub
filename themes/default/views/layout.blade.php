@@ -26,6 +26,14 @@
                         @if(auth()->user()->is_admin)
                             <a href="{{ route('admin.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">Admin</a>
                         @endif
+                        <a href="{{ route('messages.index') }}" class="relative text-gray-700 hover:text-gray-900">
+                            Messages
+                            @if(($unreadMessages ?? 0) > 0)
+                                <span class="absolute -top-2 -right-3 min-w-[1.15rem] h-[1.15rem] px-1 text-[10px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
+                                    {{ $unreadMessages }}
+                                </span>
+                            @endif
+                        </a>
                         <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900">{{ auth()->user()->name }}</a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf

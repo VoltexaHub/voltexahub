@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ForumIndexController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -26,6 +27,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/posts/{post}', [PostEditController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostEditController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/report', [ReportController::class, 'store'])->name('posts.report');
+
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/new', [MessageController::class, 'create'])->name('messages.create');
+    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{conversation}/reply', [MessageController::class, 'reply'])->name('messages.reply');
 
     Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->middleware('verified')->name('dashboard');
 

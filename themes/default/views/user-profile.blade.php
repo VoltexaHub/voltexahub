@@ -18,6 +18,14 @@
                 @endif
             </div>
             <p class="text-sm text-gray-500 mt-1">Joined {{ $user->created_at->format('F j, Y') }} · {{ $user->created_at->diffForHumans() }}</p>
+            @auth
+                @if(auth()->id() !== $user->id)
+                    <a href="{{ route('messages.create', ['to' => $user->id]) }}"
+                       class="inline-block mt-2 px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700">
+                        Send Message
+                    </a>
+                @endif
+            @endauth
         </div>
         <div class="grid grid-cols-2 gap-4 text-center">
             <div>
