@@ -38,6 +38,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('flash.success'),
                 'error' => fn () => $request->session()->get('flash.error'),
             ],
+            'oauth' => [
+                'github' => (bool) config('services.github.client_id'),
+                'google' => (bool) config('services.google.client_id'),
+            ],
         ];
     }
 }
