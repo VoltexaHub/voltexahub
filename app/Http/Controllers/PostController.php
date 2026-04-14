@@ -8,6 +8,8 @@ use App\Models\Thread;
 use App\Models\ThreadSubscription;
 use App\Models\User;
 use App\Notifications\NewThreadReply;
+use App\Notifications\UserMentioned;
+use App\Support\Mentions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -55,6 +57,20 @@ class PostController extends Controller
             ->pluck('user_id');
 
         $recipientIds = $recipientIds->diff($mutedIds)->values();
+
+        // Mentions take priority: they get the UserMentioned notification and are
+        // excluded from the generic thread-reply fan-out so they don't get both.
+        $mentionIds = collect(Mentions::extractUserIds($data['body']))
+            ->reject(fn ($id) => $id === $request->user()->id)
+            ->values();
+
+        if ($mentionIds->isNotEmpty()) {
+            Notification::send(
+                User::whereIn('id', $mentionIds)->get(),
+                new UserMentioned($post, $request->user()),
+            );
+            $recipientIds = $recipientIds->diff($mentionIds)->values();
+        }
 
         if ($recipientIds->isNotEmpty()) {
             Notification::send(User::whereIn('id', $recipientIds)->get(), new NewThreadReply($post));

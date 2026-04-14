@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Mentions;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
@@ -27,8 +28,92 @@ class Markdown
     public function toHtml(string $markdown): string
     {
         $html = (string) $this->converter->convert($markdown);
+        $html = $this->embedLinks($html);
+        $html = $this->renderMentions($html);
 
-        return $this->embedLinks($html);
+        return $html;
+    }
+
+    /**
+     * Replace @mentions in text (not inside code/pre/existing anchors) with profile links.
+     * Walks the DOM so fenced code blocks stay untouched.
+     */
+    private function renderMentions(string $html): string
+    {
+        if (! preg_match(Mentions::PATTERN, $html)) {
+            return $html;
+        }
+
+        $names = [];
+        preg_match_all(Mentions::PATTERN, $html, $m);
+        $names = array_unique($m[1]);
+        if (empty($names)) {
+            return $html;
+        }
+
+        $userMap = \App\Models\User::query()
+            ->whereIn('name', $names)
+            ->pluck('id', 'name')
+            ->all();
+
+        if (empty($userMap)) {
+            return $html;
+        }
+
+        $dom = new \DOMDocument();
+        $prev = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="UTF-8"?><div id="vx-root">'.$html.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+
+        $xpath = new \DOMXPath($dom);
+        $textNodes = $xpath->query('//text()[not(ancestor::code) and not(ancestor::pre) and not(ancestor::a)]');
+        if (! $textNodes) {
+            return $html;
+        }
+
+        foreach (iterator_to_array($textNodes) as $node) {
+            $text = $node->nodeValue;
+            if (! preg_match(Mentions::PATTERN, $text)) continue;
+
+            $fragment = $dom->createDocumentFragment();
+            $offset = 0;
+            preg_match_all(Mentions::PATTERN, $text, $all, PREG_OFFSET_CAPTURE);
+
+            foreach ($all[0] as $i => $match) {
+                [$whole, $pos] = $match;
+                $name = $all[1][$i][0];
+                if (! isset($userMap[$name])) continue;
+
+                if ($pos > $offset) {
+                    $fragment->appendChild($dom->createTextNode(substr($text, $offset, $pos - $offset)));
+                }
+
+                $a = $dom->createElement('a', '@'.$name);
+                $a->setAttribute('href', '/users/'.$userMap[$name]);
+                $a->setAttribute('class', 'vx-mention');
+                $a->setAttribute('style', 'color:var(--accent);font-weight:500;text-decoration:none;background:var(--accent-weak);padding:0 0.25em;border-radius:0.25em');
+                $fragment->appendChild($a);
+
+                $offset = $pos + strlen($whole);
+            }
+
+            if ($offset < strlen($text)) {
+                $fragment->appendChild($dom->createTextNode(substr($text, $offset)));
+            }
+
+            if ($fragment->hasChildNodes()) {
+                $node->parentNode->replaceChild($fragment, $node);
+            }
+        }
+
+        $root = $dom->getElementById('vx-root');
+        $out = '';
+        foreach ($root->childNodes as $child) {
+            $out .= $dom->saveHTML($child);
+        }
+
+        return $out;
     }
 
     /**
