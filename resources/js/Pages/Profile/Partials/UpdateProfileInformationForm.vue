@@ -18,6 +18,7 @@ const user = usePage().props.auth.user;
 
 const form = useForm({
     name: user.name,
+    handle: user.handle,
     email: user.email,
 });
 </script>
@@ -52,6 +53,27 @@ const form = useForm({
                 />
 
                 <InputError class="mt-2" :message="form.errors.name" />
+            </div>
+
+            <div>
+                <InputLabel for="handle" value="Handle" />
+
+                <div class="mt-1 flex items-center">
+                    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-500 h-10">@</span>
+                    <TextInput
+                        id="handle"
+                        type="text"
+                        class="block w-full rounded-l-none font-mono"
+                        v-model="form.handle"
+                        required
+                        minlength="2"
+                        maxlength="32"
+                        pattern="[A-Za-z0-9][A-Za-z0-9._\-]{1,31}"
+                        autocomplete="off"
+                    />
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Your @handle — 2–32 chars, letters/numbers/._-</p>
+                <InputError class="mt-2" :message="form.errors.handle" />
             </div>
 
             <div>

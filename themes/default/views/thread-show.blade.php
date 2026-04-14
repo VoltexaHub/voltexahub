@@ -12,7 +12,7 @@
 @endpush
 
 @push('scripts')
-    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js', 'resources/js/quote.js'])
+    @vite(['resources/js/markdown-editor.js', 'resources/js/thread-live.js', 'resources/js/reactions.js', 'resources/js/quote.js', 'resources/js/mentions.js'])
 @endpush
 
 @section('content')

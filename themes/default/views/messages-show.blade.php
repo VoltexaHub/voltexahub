@@ -8,7 +8,7 @@
 @section('title', ($other?->name ?? 'Conversation').' · '.config('app.name'))
 
 @push('scripts')
-    @vite('resources/js/markdown-editor.js')
+    @vite(['resources/js/markdown-editor.js', 'resources/js/mentions.js'])
 @endpush
 
 @section('content')

@@ -44,20 +44,15 @@ class Markdown
             return $html;
         }
 
-        $names = [];
-        preg_match_all(Mentions::PATTERN, $html, $m);
-        $names = array_unique($m[1]);
-        if (empty($names)) {
-            return $html;
-        }
-
-        $userMap = \App\Models\User::query()
-            ->whereIn('name', $names)
-            ->pluck('id', 'name')
-            ->all();
-
+        $userMap = Mentions::resolve($html);
         if (empty($userMap)) {
             return $html;
+        }
+        // Resolution is case-insensitive via strtolower; the handle column is stored lowercase-ish
+        // but user-typed case should still link. Keep a case-normalized lookup for the renderer.
+        $lookup = [];
+        foreach ($userMap as $handle => $id) {
+            $lookup[strtolower($handle)] = ['id' => $id, 'handle' => $handle];
         }
 
         $dom = new \DOMDocument();
@@ -82,15 +77,15 @@ class Markdown
 
             foreach ($all[0] as $i => $match) {
                 [$whole, $pos] = $match;
-                $name = $all[1][$i][0];
-                if (! isset($userMap[$name])) continue;
+                $handle = strtolower($all[1][$i][0]);
+                if (! isset($lookup[$handle])) continue;
 
                 if ($pos > $offset) {
                     $fragment->appendChild($dom->createTextNode(substr($text, $offset, $pos - $offset)));
                 }
 
-                $a = $dom->createElement('a', '@'.$name);
-                $a->setAttribute('href', '/users/'.$userMap[$name]);
+                $a = $dom->createElement('a', '@'.$lookup[$handle]['handle']);
+                $a->setAttribute('href', '/users/'.$lookup[$handle]['id']);
                 $a->setAttribute('class', 'vx-mention');
                 $a->setAttribute('style', 'color:var(--accent);font-weight:500;text-decoration:none;background:var(--accent-weak);padding:0 0.25em;border-radius:0.25em');
                 $fragment->appendChild($a);
