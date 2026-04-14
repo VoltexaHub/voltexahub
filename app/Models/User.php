@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'is_admin', 'email_verified_at', 'oauth_provider', 'oauth_provider_id', 'oauth_avatar'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'email_verified_at', 'oauth_provider', 'oauth_provider_id', 'oauth_avatar', 'avatar_path'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,8 +28,16 @@ class User extends Authenticatable
     protected function avatarUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->oauth_avatar
-                ?: 'https://www.gravatar.com/avatar/'.md5(strtolower(trim($this->email ?? ''))).'?d=identicon&s=80',
+            get: function () {
+                if ($this->avatar_path) {
+                    return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path);
+                }
+                if ($this->oauth_avatar) {
+                    return $this->oauth_avatar;
+                }
+
+                return 'https://www.gravatar.com/avatar/'.md5(strtolower(trim($this->email ?? ''))).'?d=identicon&s=80';
+            },
         );
     }
 }
