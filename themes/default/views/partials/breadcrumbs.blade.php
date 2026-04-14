@@ -1,10 +1,10 @@
-<nav class="text-sm text-gray-500 mb-4">
+<nav class="text-sm vx-muted mb-5">
     @foreach($items as $i => $item)
-        @if(!$loop->first)<span class="mx-2">/</span>@endif
+        @if(!$loop->first)<span class="mx-2 vx-subtle">/</span>@endif
         @if(!empty($item['url']) && !$loop->last)
-            <a href="{{ $item['url'] }}" class="hover:underline">{{ $item['label'] }}</a>
+            <a href="{{ $item['url'] }}" class="hover:vx-heading">{{ $item['label'] }}</a>
         @else
-            <span class="text-gray-800">{{ $item['label'] }}</span>
+            <span class="vx-heading">{{ $item['label'] }}</span>
         @endif
     @endforeach
 </nav>

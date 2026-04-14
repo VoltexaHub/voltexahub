@@ -9,54 +9,49 @@
         ['label' => $forum->name],
     ]])
 
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-5">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">{{ $forum->name }}</h1>
+            <h1 class="text-2xl font-semibold vx-heading">{{ $forum->name }}</h1>
             @if($forum->description)
-                <p class="text-gray-500">{{ $forum->description }}</p>
+                <p class="vx-muted mt-1">{{ $forum->description }}</p>
             @endif
         </div>
         @auth
-            <a href="{{ route('threads.create', $forum->slug) }}"
-               class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">
-                New Thread
-            </a>
+            <a href="{{ route('threads.create', $forum->slug) }}" class="vx-btn-primary">New Thread</a>
         @endauth
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <ul class="divide-y divide-gray-100">
+    <div class="vx-card overflow-hidden">
+        <ul class="vx-row-divide">
             @forelse($threads as $thread)
-                <li class="px-4 py-3 flex items-center gap-4 hover:bg-gray-50">
+                <li class="px-4 py-3 flex items-center gap-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            @if($thread->is_pinned)<span class="text-xs font-semibold text-amber-600 uppercase">Pinned</span>@endif
-                            @if($thread->is_locked)<span class="text-xs font-semibold text-red-600 uppercase">Locked</span>@endif
+                            @if($thread->is_pinned)<span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Pinned</span>@endif
+                            @if($thread->is_locked)<span class="text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide">Locked</span>@endif
                             <a href="{{ route('threads.show', [$forum->slug, $thread->slug]) }}"
-                               class="font-medium text-indigo-600 hover:underline truncate">{{ $thread->title }}</a>
+                               class="font-medium vx-link truncate">{{ $thread->title }}</a>
                         </div>
-                        <div class="text-xs text-gray-500">
-                            by @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="hover:text-indigo-600">{{ $thread->author->name }}</a>@else [deleted] @endif · {{ $thread->created_at->diffForHumans() }}
+                        <div class="text-xs vx-subtle mt-0.5">
+                            by @if($thread->author)<a href="{{ route('users.show', $thread->author) }}" class="hover:text-indigo-500">{{ $thread->author->name }}</a>@else [deleted] @endif · {{ $thread->created_at->diffForHumans() }}
                         </div>
                     </div>
-                    <div class="hidden sm:block text-sm text-gray-500 w-24 text-center">
+                    <div class="hidden sm:block text-sm vx-muted w-24 text-center tabular-nums">
                         <div>{{ $thread->posts_count }} replies</div>
                         <div>{{ $thread->views_count }} views</div>
                     </div>
-                    <div class="hidden md:block text-sm text-gray-500 w-48 truncate">
+                    <div class="hidden md:block text-sm vx-muted w-48 truncate">
                         @if($thread->lastPost)
-                            <div class="truncate">by @if($thread->lastPost->author)<a href="{{ route('users.show', $thread->lastPost->author) }}" class="hover:text-indigo-600">{{ $thread->lastPost->author->name }}</a>@else [deleted] @endif</div>
-                            <div class="text-xs">{{ $thread->last_post_at?->diffForHumans() }}</div>
+                            <div class="truncate">by @if($thread->lastPost->author)<a href="{{ route('users.show', $thread->lastPost->author) }}" class="hover:text-indigo-500">{{ $thread->lastPost->author->name }}</a>@else [deleted] @endif</div>
+                            <div class="text-xs vx-subtle">{{ $thread->last_post_at?->diffForHumans() }}</div>
                         @endif
                     </div>
                 </li>
             @empty
-                <li class="px-4 py-8 text-center text-gray-500">No threads yet. Be the first to post!</li>
+                <li class="px-4 py-10 text-center vx-muted">No threads yet. Be the first to post!</li>
             @endforelse
         </ul>
     </div>
 
-    <div class="mt-4">
-        {{ $threads->links() }}
-    </div>
+    <div class="mt-4">{{ $threads->links() }}</div>
 @endsection

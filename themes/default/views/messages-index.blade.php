@@ -3,14 +3,13 @@
 @section('title', 'Messages · '.config('app.name'))
 
 @section('content')
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold text-gray-900">Messages</h1>
-        <a href="{{ route('messages.create') }}"
-           class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">New Message</a>
+    <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-semibold vx-heading">Messages</h1>
+        <a href="{{ route('messages.create') }}" class="vx-btn-primary">New Message</a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <ul class="divide-y divide-gray-100">
+    <div class="vx-card overflow-hidden">
+        <ul class="vx-row-divide">
             @php $me = auth()->user(); @endphp
             @forelse($conversations as $conversation)
                 @php
@@ -21,18 +20,18 @@
                 @endphp
                 <li>
                     <a href="{{ route('messages.show', $conversation) }}"
-                       class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 {{ $isUnread ? 'bg-indigo-50/40' : '' }}">
+                       class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors {{ $isUnread ? 'bg-indigo-50/40 dark:bg-indigo-950/20' : '' }}">
                         @if($other)
-                            <img src="{{ $other->avatar_url }}" alt="" class="w-10 h-10 rounded-full" />
+                            <img src="{{ $other->avatar_url }}" alt="" class="w-10 h-10 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
                         @endif
                         <div class="flex-1 min-w-0">
                             <div class="flex items-baseline justify-between gap-2">
-                                <span class="font-medium text-gray-900 truncate">{{ $other?->name ?? '[deleted user]' }}</span>
-                                <span class="text-xs text-gray-400 shrink-0">{{ $conversation->last_message_at?->diffForHumans() }}</span>
+                                <span class="font-medium vx-heading truncate">{{ $other?->name ?? '[deleted user]' }}</span>
+                                <span class="text-xs vx-subtle shrink-0">{{ $conversation->last_message_at?->diffForHumans() }}</span>
                             </div>
                             @if($conversation->latestMessage)
-                                <p class="text-sm text-gray-600 truncate {{ $isUnread ? 'font-semibold' : '' }}">
-                                    @if($conversation->latestMessage->user_id === $me->id)<span class="text-gray-400">You:</span> @endif
+                                <p class="text-sm vx-muted truncate {{ $isUnread ? 'font-semibold text-slate-700 dark:text-slate-200' : '' }}">
+                                    @if($conversation->latestMessage->user_id === $me->id)<span class="vx-subtle">You:</span> @endif
                                     {{ Str::limit($conversation->latestMessage->body, 120) }}
                                 </p>
                             @endif
@@ -43,7 +42,7 @@
                     </a>
                 </li>
             @empty
-                <li class="p-8 text-center text-gray-500">No messages yet. Start a conversation.</li>
+                <li class="p-10 text-center vx-muted">No messages yet. Start a conversation.</li>
             @endforelse
         </ul>
     </div>

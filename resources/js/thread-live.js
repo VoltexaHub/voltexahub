@@ -9,25 +9,25 @@ if (container) {
             if (document.getElementById(`post-${payload.id}`)) return;
 
             const article = document.createElement('article');
-            article.className = 'bg-white rounded-lg shadow-sm border border-indigo-300 overflow-hidden ring-1 ring-indigo-100';
+            article.className = 'vx-card overflow-hidden ring-indigo-300/60 dark:ring-indigo-700/60';
             article.id = `post-${payload.id}`;
 
             const authorHtml = payload.author
-                ? `<a href="${payload.author.profile_url}" class="flex items-center gap-2 hover:opacity-80">
-                       <img src="${payload.author.avatar_url}" alt="" class="w-7 h-7 rounded-full" />
-                       <span class="font-medium text-gray-800 hover:text-indigo-600">${escapeHtml(payload.author.name)}</span>
+                ? `<a href="${payload.author.profile_url}" class="flex items-center gap-2.5 hover:opacity-90">
+                       <img src="${payload.author.avatar_url}" alt="" class="w-8 h-8 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
+                       <span class="font-medium vx-heading hover:text-indigo-500">${escapeHtml(payload.author.name)}</span>
                    </a>`
-                : '<span class="text-gray-500">[deleted]</span>';
+                : '<span class="vx-muted">[deleted]</span>';
 
             article.innerHTML = `
-                <header class="px-4 py-2 bg-indigo-50 border-b border-indigo-200 flex items-center justify-between text-sm">
-                    <div class="flex items-center gap-2">${authorHtml}</div>
+                <header class="vx-card-header flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2.5">${authorHtml}</div>
                     <div class="flex items-center gap-3">
-                        <span class="text-xs font-semibold text-indigo-600 uppercase">New</span>
-                        <span class="text-gray-500">${escapeHtml(payload.created_at_formatted)}</span>
+                        <span class="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">New</span>
+                        <span class="vx-subtle tabular-nums">${escapeHtml(payload.created_at_formatted)}</span>
                     </div>
                 </header>
-                <div class="px-4 py-4 prose prose-sm max-w-none prose-indigo">${payload.body_html}</div>
+                <div class="px-5 py-5 prose prose-sm max-w-none prose-indigo dark:prose-invert">${payload.body_html}</div>
             `;
 
             container.appendChild(article);

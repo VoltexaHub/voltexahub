@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html { color-scheme: light; }
+    html.dark { color-scheme: dark; }
+
+    body {
+        @apply text-slate-800 dark:text-slate-200 antialiased;
+    }
+}
+
+@layer components {
+    .vx-card {
+        @apply bg-white dark:bg-slate-900 rounded-xl ring-1 ring-slate-200/70 dark:ring-slate-800/70
+               shadow-[0_1px_2px_rgba(15,23,42,0.04),_0_4px_14px_-4px_rgba(15,23,42,0.05)]
+               dark:shadow-[0_1px_2px_rgba(0,0,0,0.35),_0_4px_14px_-4px_rgba(0,0,0,0.25)]
+               transition-shadow duration-150;
+    }
+    .vx-card-hover {
+        @apply hover:shadow-[0_1px_2px_rgba(15,23,42,0.04),_0_8px_24px_-6px_rgba(15,23,42,0.08)]
+               dark:hover:shadow-[0_1px_2px_rgba(0,0,0,0.4),_0_8px_24px_-6px_rgba(0,0,0,0.35)];
+    }
+    .vx-card-header {
+        @apply px-4 py-3 border-b border-slate-200/70 dark:border-slate-800/70
+               bg-slate-50/60 dark:bg-slate-900/60 rounded-t-xl;
+    }
+    .vx-row-divide > * + * {
+        @apply border-t border-slate-200/70 dark:border-slate-800/70;
+    }
+    .vx-link {
+        @apply text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline;
+    }
+    .vx-btn {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
+               transition-[background-color,box-shadow,transform] duration-150 active:scale-[0.98]
+               focus:outline-none focus:ring-2 focus:ring-indigo-500/40;
+    }
+    .vx-btn-primary {
+        @apply vx-btn bg-indigo-600 text-white hover:bg-indigo-500
+               shadow-[0_1px_2px_rgba(79,70,229,0.25)];
+    }
+    .vx-btn-secondary {
+        @apply vx-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
+               ring-1 ring-slate-200 dark:ring-slate-700
+               hover:bg-slate-50 dark:hover:bg-slate-700;
+    }
+    .vx-input {
+        @apply w-full rounded-lg bg-white dark:bg-slate-900
+               border-slate-300 dark:border-slate-700
+               text-slate-900 dark:text-slate-100
+               placeholder:text-slate-400 dark:placeholder:text-slate-500
+               focus:border-indigo-500 focus:ring-indigo-500/30;
+    }
+    .vx-muted { @apply text-slate-500 dark:text-slate-400; }
+    .vx-subtle { @apply text-slate-400 dark:text-slate-500; }
+    .vx-heading { @apply text-slate-900 dark:text-slate-100; }
+}
