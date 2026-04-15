@@ -1,0 +1,91 @@
+# Production overlay. Use together with the base docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Notable differences from dev:
+#   - No bind-mounted source at runtime (code is baked into the image by the Dockerfile)
+#   - Dev bindings on localhost ports are removed — nothing is exposed to the host
+#   - Caddy fronts the stack with automatic HTTPS for whatever domain is in .env as APP_URL_HOST
+#   - A queue worker handles mail + notification dispatch
+#   - A scheduler loop fires weekly digests and any other cron-like work
+#   - The Vite dev server is disabled; assets are pre-built into public/build
+
+services:
+  app:
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_bootcache:/var/www/html/bootstrap/cache
+
+  nginx:
+    restart: unless-stopped
+    ports: !reset []
+    expose:
+      - "80"
+    volumes:
+      - app_storage:/var/www/html/storage:ro
+
+  postgres:
+    restart: unless-stopped
+    ports: !reset []
+
+  redis:
+    restart: unless-stopped
+    ports: !reset []
+
+  reverb:
+    restart: unless-stopped
+    ports: !reset []
+    expose:
+      - "8081"
+
+  node:
+    profiles: ["disabled"]
+
+  queue:
+    build:
+      context: .
+      args: { UID: 1000, GID: 1000 }
+    container_name: voltexa-queue
+    command: php artisan queue:work --tries=3 --timeout=90 --sleep=3
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on: [ postgres, redis ]
+    restart: unless-stopped
+    networks: [ voltexa ]
+
+  scheduler:
+    build:
+      context: .
+      args: { UID: 1000, GID: 1000 }
+    container_name: voltexa-scheduler
+    command: php artisan schedule:work
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on: [ postgres, redis ]
+    restart: unless-stopped
+    networks: [ voltexa ]
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: voltexa-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [ nginx, reverb ]
+    networks: [ voltexa ]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  app_storage:
+  app_bootcache:
