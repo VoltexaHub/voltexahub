@@ -44,6 +44,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
+# Vite imports from vendor/tightenco/ziggy at build time, so we need composer
+# deps in place before `npm run build` runs.
+COPY --from=composer-deps /app/vendor /app/vendor
 RUN npm run build
 
 # -------- prod: final lean runtime image --------
