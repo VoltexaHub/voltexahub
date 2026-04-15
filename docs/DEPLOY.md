@@ -212,11 +212,9 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ### Asset build
 
-Build assets on the host (or in a throwaway container) before deploying so they're baked into `public/build`:
+The multi-stage `Dockerfile` builds assets inside the `asset-build` stage and copies the result into the `prod` image, so `docker compose ... build` is all you need. No manual `npm run build` on the host.
 
-```bash
-docker run --rm -v "$(pwd):/app" -w /app node:20-alpine sh -c "npm ci && npm run build"
-```
+If you want to force an assets-only rebuild without restarting services, `docker compose build app` is enough — only the `asset-build` stage reruns when `package.json` / `package-lock.json` / `resources/**` have changed.
 
 ### Logs
 
@@ -228,19 +226,23 @@ docker compose logs -f --tail=100 reverb
 
 ### Backups
 
-Postgres:
+`scripts/backup.sh` dumps Postgres and tars user uploads, pruning older files so the backup directory doesn't grow unbounded:
 
 ```bash
-docker compose exec -T postgres pg_dump -U voltexa voltexahub | gzip > /var/backups/vx-$(date +%F).sql.gz
+# One-off
+./scripts/backup.sh
+
+# Nightly at 03:00, keeping 30 days
+crontab -e
+0 3 * * *  cd /opt/voltexahub && BACKUP_KEEP=30 ./scripts/backup.sh >> /var/log/vx-backup.log 2>&1
 ```
 
-Uploads (covers avatars + inline post images):
+Tweak via env:
+- `BACKUP_DIR` (default `/var/backups/voltexahub`)
+- `BACKUP_KEEP` (default 14)
+- `DB_USERNAME`, `DB_DATABASE` (default to `voltexa` / `voltexahub`)
 
-```bash
-tar -czf /var/backups/vx-uploads-$(date +%F).tgz storage/app/public/uploads storage/app/public/avatars
-```
-
-Hook both into a nightly cron.
+The archive is plain `tar.gz` + `.sql.gz`, so restoring is just `gunzip | psql` and `tar xzf` into `storage/app/public/`.
 
 ---
 
