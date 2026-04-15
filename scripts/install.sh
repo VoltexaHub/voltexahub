@@ -140,6 +140,8 @@ REVERB_APP_ID="$(random_hex 4)"
 REVERB_APP_KEY="$(random_hex 16)"
 REVERB_APP_SECRET="$(random_hex 32)"
 
+APP_KEY="base64:$(openssl rand -base64 32)"
+
 if [ -f .env ]; then
     note ".env already exists — leaving it alone"
 else
@@ -148,6 +150,7 @@ else
     {
         echo ""
         echo "# Injected by install.sh"
+        echo "APP_KEY=${APP_KEY}"
         echo "APP_ENV=production"
         echo "APP_DEBUG=false"
         echo "APP_URL=https://${DOMAIN}"
@@ -208,10 +211,17 @@ say "Booting the stack"
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 # ---------- App key, migrations, storage, admin ----------
-say "Generating APP_KEY (if blank)"
+say "Ensuring APP_KEY is set on disk"
 if ! grep -qE '^APP_KEY=base64:' .env; then
-    docker compose exec -T app php artisan key:generate --force
+    echo "APP_KEY=${APP_KEY}" >> .env
 fi
+
+# Belt-and-suspenders: copy .env directly into every PHP container so Artisan
+# commands don't depend on the bind-mount being correctly resolved by compose.
+say "Copying .env into containers"
+for svc in app queue scheduler reverb; do
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml cp .env "${svc}:/var/www/html/.env" 2>/dev/null || true
+done
 
 say "Waiting for Postgres"
 for i in {1..30}; do
