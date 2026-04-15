@@ -10,15 +10,26 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (app()->environment('production')) {
+            $this->command?->warn('Refusing to seed demo data in production.');
+            $this->command?->line('  Create your admin account manually, e.g.:');
+            $this->command?->line('    php artisan tinker --execute="\App\Models\User::create([');
+            $this->command?->line('        \'name\' => \'Admin\',');
+            $this->command?->line('        \'handle\' => \'admin\',');
+            $this->command?->line('        \'email\' => \'you@example.com\',');
+            $this->command?->line('        \'password\' => bcrypt(\'a-real-strong-password\'),');
+            $this->command?->line('        \'email_verified_at\' => now(),');
+            $this->command?->line('        \'is_admin\' => true,');
+            $this->command?->line('    ]);"');
+
+            return;
+        }
 
         User::factory()->create([
             'name' => 'Admin',
+            'handle' => 'admin',
             'email' => 'admin@voltexahub.test',
             'password' => bcrypt('password'),
             'is_admin' => true,
@@ -26,6 +37,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
+            'handle' => 'test',
             'email' => 'test@example.com',
         ]);
 

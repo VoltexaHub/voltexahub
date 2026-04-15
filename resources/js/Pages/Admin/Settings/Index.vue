@@ -11,6 +11,10 @@ const form = useForm({
     google_client_secret: '',
     announcement_message: props.settings.announcement?.message || '',
     announcement_tone: props.settings.announcement?.tone || 'info',
+    privacy_title: props.settings.pages?.privacy?.title || '',
+    privacy_body: props.settings.pages?.privacy?.body || '',
+    terms_title: props.settings.pages?.terms?.title || '',
+    terms_body: props.settings.pages?.terms?.body || '',
 });
 
 const save = () => {
@@ -121,6 +125,44 @@ const clearSecret = (provider) => {
                             <option value="notice">Notice (neutral)</option>
                             <option value="warning">Warning (amber)</option>
                         </select>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <header class="mb-5">
+                    <h2 class="font-serif text-2xl font-semibold tracking-tight" style="font-family:'Fraunces',serif;color:var(--text)">Pages</h2>
+                    <p class="text-sm mt-1" style="color:var(--text-muted)">
+                        Markdown body shown at <code style="color:var(--accent)">/privacy</code> and <code style="color:var(--accent)">/terms</code>. Blank reverts to the built-in default copy.
+                    </p>
+                </header>
+
+                <div class="space-y-8">
+                    <div class="pt-5 border-t space-y-3" :style="{ borderColor: 'var(--border)' }">
+                        <h3 class="font-serif text-lg font-medium" style="font-family:'Fraunces',serif;color:var(--text)">Privacy Policy</h3>
+                        <div>
+                            <label class="vx-meta mb-2 block">Title</label>
+                            <input v-model="form.privacy_title" type="text" maxlength="120" class="vx-input text-sm" />
+                        </div>
+                        <div>
+                            <label class="vx-meta mb-2 block">Body (markdown)</label>
+                            <textarea v-model="form.privacy_body" rows="10" maxlength="20000"
+                                      placeholder="Leave blank to use the built-in default"
+                                      class="vx-input font-mono text-sm"></textarea>
+                        </div>
+                    </div>
+                    <div class="pt-5 border-t space-y-3" :style="{ borderColor: 'var(--border)' }">
+                        <h3 class="font-serif text-lg font-medium" style="font-family:'Fraunces',serif;color:var(--text)">Terms of Service</h3>
+                        <div>
+                            <label class="vx-meta mb-2 block">Title</label>
+                            <input v-model="form.terms_title" type="text" maxlength="120" class="vx-input text-sm" />
+                        </div>
+                        <div>
+                            <label class="vx-meta mb-2 block">Body (markdown)</label>
+                            <textarea v-model="form.terms_body" rows="10" maxlength="20000"
+                                      placeholder="Leave blank to use the built-in default"
+                                      class="vx-input font-mono text-sm"></textarea>
+                        </div>
                     </div>
                 </div>
             </section>

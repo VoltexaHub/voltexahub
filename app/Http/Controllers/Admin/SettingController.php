@@ -29,6 +29,16 @@ class SettingController extends Controller
                     'message' => Setting::get('announcement.message', ''),
                     'tone' => Setting::get('announcement.tone', 'info'),
                 ],
+                'pages' => [
+                    'privacy' => [
+                        'title' => Setting::get('pages.privacy.title', 'Privacy Policy'),
+                        'body' => Setting::get('pages.privacy.body', ''),
+                    ],
+                    'terms' => [
+                        'title' => Setting::get('pages.terms.title', 'Terms of Service'),
+                        'body' => Setting::get('pages.terms.body', ''),
+                    ],
+                ],
             ],
             'callbackUrls' => [
                 'github' => url('/auth/github/callback'),
@@ -46,6 +56,10 @@ class SettingController extends Controller
             'google_client_secret' => ['nullable', 'string', 'max:500'],
             'announcement_message' => ['nullable', 'string', 'max:1000'],
             'announcement_tone' => ['nullable', 'string', 'in:info,notice,warning'],
+            'privacy_title' => ['nullable', 'string', 'max:120'],
+            'privacy_body' => ['nullable', 'string', 'max:20000'],
+            'terms_title' => ['nullable', 'string', 'max:120'],
+            'terms_body' => ['nullable', 'string', 'max:20000'],
         ]);
 
         Setting::put('oauth.github.client_id', $data['github_client_id'] ?? null);
@@ -65,6 +79,15 @@ class SettingController extends Controller
         if ($newMessage !== $oldMessage) {
             $version = (int) Setting::get('announcement.version', 0) + 1;
             Setting::put('announcement.version', (string) $version);
+        }
+
+        foreach (['privacy', 'terms'] as $page) {
+            if (array_key_exists("{$page}_title", $data)) {
+                Setting::put("pages.{$page}.title", $data["{$page}_title"] ?: null);
+            }
+            if (array_key_exists("{$page}_body", $data)) {
+                Setting::put("pages.{$page}.body", $data["{$page}_body"] ?: null);
+            }
         }
 
         return back()->with('flash.success', 'Settings saved.');
