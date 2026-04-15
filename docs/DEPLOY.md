@@ -85,9 +85,12 @@ openssl rand -hex 16   # paste into REVERB_APP_SECRET
 
 ---
 
-## 3. Production Docker Compose overlay
+## 3. Production Docker Compose overlay (committed — reference only)
 
-The repository ships a single `docker-compose.yml` tuned for development (binding to `localhost:8080`, mounting source code live, etc). For production, drop this alongside it as `docker-compose.prod.yml`:
+The repository ships `docker-compose.prod.yml` and `docker/Caddyfile` ready to use. Edit the Caddyfile and replace `forum.example.com` with your real domain. Caddy fetches a Let's Encrypt certificate for it automatically on first request.
+
+<details>
+<summary>Reference: contents of <code>docker-compose.prod.yml</code></summary>
 
 ```yaml
 # docker-compose.prod.yml
@@ -149,20 +152,7 @@ volumes:
   caddy_config:
 ```
 
-And `docker/Caddyfile`:
-
-```
-forum.example.com {
-    encode zstd gzip
-    reverse_proxy /app/* reverb:8081
-    @websocket {
-        header Connection *Upgrade*
-        header Upgrade    websocket
-    }
-    reverse_proxy @websocket reverb:8081
-    reverse_proxy nginx:80
-}
-```
+</details>
 
 ---
 
@@ -177,6 +167,9 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 # Generate the app key
 docker compose exec app php artisan key:generate --force
+
+# Pre-flight the deployment
+docker compose exec app php artisan app:preflight
 
 # Install deps, build assets, migrate
 docker compose exec app composer install --no-dev --optimize-autoloader

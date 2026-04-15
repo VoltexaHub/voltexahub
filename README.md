@@ -119,7 +119,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Solo for now; contributions welcome as t
 
 ## Deploying to production
 
-See [docs/DEPLOY.md](docs/DEPLOY.md) for a single-host Docker Compose recipe with Caddy, a queue worker, Reverb WebSockets, and a production .env template.
+See [docs/DEPLOY.md](docs/DEPLOY.md) for a single-host recipe. The repo ships `docker-compose.prod.yml` and `docker/Caddyfile` — point the Caddyfile at your domain, fill in your `.env`, and the stack boots with HTTPS, a queue worker, a scheduler (for weekly digests), and Reverb WebSockets.
+
+Pre-flight a deployment any time with:
+
+```bash
+docker compose exec app php artisan app:preflight
+```
+
+— it checks APP_DEBUG, DB connectivity, pending migrations, storage link, mail/queue drivers, Reverb, OAuth providers, and exits non-zero on any blocker so you can wire it into a CI/CD gate.
 
 ## Roadmap
 
