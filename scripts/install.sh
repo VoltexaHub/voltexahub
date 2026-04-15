@@ -27,19 +27,19 @@ die()  { printf "${c_red}✗${c_reset} %s\n" "$*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "This script needs root. Re-run with: sudo bash $0"
 
-# When invoked via `curl ... | bash`, stdin is the pipe, not the terminal —
-# so we read prompts from /dev/tty directly when it's available.
-TTY_IN=""
-if [ -r /dev/tty ] && [ -w /dev/tty ]; then
-    TTY_IN=/dev/tty
+# When invoked via `curl ... | sudo bash`, stdin is the pipe, so `read` would
+# consume the script (or return nothing). Re-open stdin from /dev/tty if we can.
+if [ ! -t 0 ]; then
+    exec 0</dev/tty 2>/dev/null || true
 fi
+
+INTERACTIVE=0
+[ -t 0 ] && INTERACTIVE=1
 
 ask() {
     local prompt="$1" default="${2:-}" var=""
-    if [ -n "$TTY_IN" ]; then
-        # Write the prompt to the tty directly so it shows through the pipe.
-        printf "  %s%s: " "$prompt" "${default:+ [$default]}" > /dev/tty
-        IFS= read -r var < "$TTY_IN" || var=""
+    if [ $INTERACTIVE -eq 1 ]; then
+        read -r -p "  ${prompt}${default:+ [$default]}: " var || var=""
     fi
     printf "%s" "${var:-$default}"
 }
@@ -49,7 +49,7 @@ ask_required() {
     for _ in 1 2 3; do
         value="$(ask "$prompt" '')"
         [ -n "$value" ] && { printf "%s" "$value"; return; }
-        [ -n "$TTY_IN" ] && printf "${c_red}  (required)${c_reset}\n" > /dev/tty
+        [ $INTERACTIVE -eq 1 ] && printf "${c_red}  (required — try again)${c_reset}\n" >&2
     done
     die "'${prompt}' is required"
 }
