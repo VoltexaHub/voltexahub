@@ -14,6 +14,7 @@
         "laravel/socialite": "^5.26",
         "laravel/tinker": "^3.0",
         "league/commonmark": "^2.8",
+        "sentry/sentry-laravel": "^4.25",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {

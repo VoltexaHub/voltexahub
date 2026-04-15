@@ -3,20 +3,22 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 #
 # Notable differences from dev:
-#   - No bind-mounted source at runtime (code is baked into the image by the Dockerfile)
+#   - No bind-mounted source: code + built assets are baked into the multi-stage image
 #   - Dev bindings on localhost ports are removed — nothing is exposed to the host
-#   - Caddy fronts the stack with automatic HTTPS for whatever domain is in .env as APP_URL_HOST
+#   - Caddy fronts the stack with automatic HTTPS for the domain you set in docker/Caddyfile
 #   - A queue worker handles mail + notification dispatch
 #   - A scheduler loop fires weekly digests and any other cron-like work
-#   - The Vite dev server is disabled; assets are pre-built into public/build
+#   - The Vite dev server is disabled; assets come from the prod stage
 
 services:
   app:
+    build:
+      target: prod
     restart: unless-stopped
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
-    volumes:
+    volumes: !reset
       - app_storage:/var/www/html/storage
       - app_bootcache:/var/www/html/bootstrap/cache
 
@@ -25,7 +27,7 @@ services:
     ports: !reset []
     expose:
       - "80"
-    volumes:
+    volumes: !reset
       - app_storage:/var/www/html/storage:ro
 
   postgres:
@@ -37,10 +39,14 @@ services:
     ports: !reset []
 
   reverb:
+    build:
+      target: prod
     restart: unless-stopped
     ports: !reset []
     expose:
       - "8081"
+    volumes: !reset
+      - app_storage:/var/www/html/storage
 
   node:
     profiles: ["disabled"]
@@ -48,6 +54,7 @@ services:
   queue:
     build:
       context: .
+      target: prod
       args: { UID: 1000, GID: 1000 }
     container_name: voltexa-queue
     command: php artisan queue:work --tries=3 --timeout=90 --sleep=3
@@ -60,6 +67,7 @@ services:
   scheduler:
     build:
       context: .
+      target: prod
       args: { UID: 1000, GID: 1000 }
     container_name: voltexa-scheduler
     command: php artisan schedule:work

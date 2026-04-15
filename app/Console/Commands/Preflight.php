@@ -81,6 +81,10 @@ class Preflight extends Command
         $this->check('At least one OAuth provider configured', (bool) ($gh || $gg), false, $warnings,
             'Email+password still works, but OAuth buttons will stay hidden');
 
+        // Error tracking
+        $this->check('Error tracking configured (Sentry)', (bool) config('sentry.dsn'), false, $warnings,
+            'Set SENTRY_LARAVEL_DSN to capture production errors');
+
         $this->newLine();
         $this->line(sprintf(
             '<fg=%s>%s</>  · %d blocker%s, %d warning%s',

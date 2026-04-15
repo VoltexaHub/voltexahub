@@ -254,6 +254,7 @@ Hook both into a nightly cron.
 - Set up Caddy's built-in Let's Encrypt (handled automatically by the image on first request)
 - Consider a WAF / bot-filter in front (Cloudflare Tunnel is a zero-cost option)
 - Configure SMTP DKIM + SPF so notification mail doesn't land in spam
+- Wire up error tracking — set `SENTRY_LARAVEL_DSN` (Sentry.io or self-hosted GlitchTip). `php artisan app:preflight` warns if it's missing.
 
 ---
 
