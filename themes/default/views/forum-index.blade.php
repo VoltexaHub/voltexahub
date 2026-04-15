@@ -73,11 +73,15 @@
                                     <p class="vx-muted text-sm mt-0.5 max-w-xl">{{ $forum->description }}</p>
                                 @endif
                             </div>
-                            <div class="hidden sm:flex flex-col items-end w-28 shrink-0">
-                                <span class="vx-display text-lg font-medium vx-heading tabular-nums">{{ $forum->threads_count }}</span>
-                                <span class="vx-meta">threads</span>
-                                <span class="vx-display text-lg font-medium vx-heading tabular-nums mt-1">{{ $forum->posts_count }}</span>
-                                <span class="vx-meta">posts</span>
+                            <div class="hidden sm:flex items-baseline gap-4 w-40 shrink-0 justify-end">
+                                <div class="text-right">
+                                    <span class="vx-display text-lg font-medium vx-heading tabular-nums block leading-none">{{ $forum->threads_count }}</span>
+                                    <span class="vx-meta">threads</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="vx-display text-lg font-medium vx-heading tabular-nums block leading-none">{{ $forum->posts_count }}</span>
+                                    <span class="vx-meta">posts</span>
+                                </div>
                             </div>
                             <div class="hidden md:block w-56 shrink-0 text-sm">
                                 @if($forum->lastPost && $forum->lastPost->thread)

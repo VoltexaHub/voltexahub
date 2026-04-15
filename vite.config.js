@@ -20,6 +20,7 @@ export default defineConfig({
                 'resources/js/thread-live.js',
                 'resources/js/reactions.js',
                 'resources/js/quote.js',
+                'resources/js/shortcuts.js',
             ],
             refresh: [
                 'app/Http/**',
