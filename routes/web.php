@@ -19,7 +19,9 @@ use App\Http\Controllers\PostEditController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThreadController;
 use App\Http\Controllers\ThreadExportController;
 use App\Http\Controllers\UserBlockController;
@@ -28,6 +30,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', ForumIndexController::class)->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 Route::get('/search', SearchController::class)->middleware('throttle:search')->name('search');
 Route::get('/users/{user}', UserProfileController::class)->name('users.show');
 Route::get('/forums/{forum:slug}', [ForumController::class, 'show'])->name('forums.show');

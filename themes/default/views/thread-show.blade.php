@@ -3,8 +3,10 @@
 @section('title', $thread->title.' · '.config('app.name'))
 
 @push('head')
+    @php $threadDesc = \Illuminate\Support\Str::limit(strip_tags($posts->first()?->body ?? ''), 200); @endphp
+    <meta name="description" content="{{ $threadDesc ?: $thread->title }}">
     <meta property="og:title" content="{{ $thread->title }}" />
-    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($posts->first()?->body ?? ''), 200) }}" />
+    <meta property="og:description" content="{{ $threadDesc }}" />
     <meta property="og:image" content="{{ route('og.thread', $thread) }}" />
     <meta property="og:type" content="article" />
     <meta name="twitter:card" content="summary_large_image" />

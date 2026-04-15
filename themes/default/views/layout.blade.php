@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="vx-user" content="{{ auth()->check() ? '1' : '0' }}">
+    <meta name="description" content="{{ $metaDescription ?? ($announcement['message'] ?? 'A modern, open-source forum. Discuss, share, and build community.') }}">
+    <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
+    <meta name="theme-color" content="#fbf8f2" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#15130f" media="(prefers-color-scheme: dark)">
     <title>@yield('title', config('app.name'))</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
