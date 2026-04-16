@@ -99,6 +99,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', Admin\DashboardController::class)->name('dashboard');
     Route::resource('categories', Admin\CategoryController::class)->except(['show']);
     Route::resource('forums', Admin\ForumController::class)->except(['show']);
+    Route::delete('threads/bulk', [Admin\ThreadController::class, 'bulkDestroy'])->name('threads.bulk-destroy');
     Route::resource('threads', Admin\ThreadController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('polls', Admin\PollController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::get('posts', [Admin\PostController::class, 'index'])->name('posts.index');

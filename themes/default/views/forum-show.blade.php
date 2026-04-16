@@ -42,6 +42,15 @@
         @endauth
     </header>
 
+    @php $canModerate = auth()->check() && auth()->user()->is_admin; @endphp
+
+    @if($canModerate)
+        <form id="vx-thread-mod" method="POST" action="{{ route('admin.threads.bulk-destroy') }}"
+              onsubmit="return confirm('Delete the selected threads? This cannot be undone.');">
+            @csrf
+            @method('DELETE')
+    @endif
+
     <ul class="vx-row-divide">
         @forelse($threads as $thread)
             @php
@@ -55,6 +64,12 @@
                     && $thread->last_post_at->gt($lastRead);
             @endphp
             <li class="py-5 flex items-start gap-6 group">
+                @if($canModerate)
+                    <label class="flex items-center pt-1 cursor-pointer" onclick="event.stopPropagation()">
+                        <input type="checkbox" name="ids[]" value="{{ $thread->id }}" class="vx-mod-check"
+                               style="border-color:var(--border);color:var(--accent)" />
+                    </label>
+                @endif
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         @if($thread->is_pinned)<span class="vx-chip">Pinned</span>@endif
@@ -105,6 +120,41 @@
             </li>
         @endforelse
     </ul>
+
+    @if($canModerate)
+        </form>
+
+        <div id="vx-mod-bar"
+             style="position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(120%);
+                    background:var(--surface);border:1px solid var(--border-strong);border-radius:0.75rem;
+                    box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:0.65rem 0.85rem 0.65rem 1rem;
+                    display:flex;align-items:center;gap:0.75rem;font-size:0.85rem;z-index:50;
+                    transition:transform 160ms ease;">
+            <span id="vx-mod-count" style="color:var(--text-muted);font-family:'JetBrains Mono',monospace">0 selected</span>
+            <button type="button" id="vx-mod-clear" class="vx-btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.75rem">Clear</button>
+            <button type="submit" form="vx-thread-mod"
+                    style="padding:0.4rem 0.9rem;font-size:0.8rem;border-radius:0.5rem;background:#dc2626;color:#fff;border:1px solid #dc2626;font-weight:500;cursor:pointer">
+                Delete selected
+            </button>
+        </div>
+
+        <script>
+            (function () {
+                var bar = document.getElementById('vx-mod-bar');
+                var count = document.getElementById('vx-mod-count');
+                var clear = document.getElementById('vx-mod-clear');
+                var boxes = document.querySelectorAll('.vx-mod-check');
+                function refresh() {
+                    var n = 0;
+                    boxes.forEach(function (b) { if (b.checked) n++; });
+                    count.textContent = n + (n === 1 ? ' selected' : ' selected');
+                    bar.style.transform = 'translateX(-50%) translateY(' + (n ? '0' : '120%') + ')';
+                }
+                boxes.forEach(function (b) { b.addEventListener('change', refresh); });
+                clear.addEventListener('click', function () { boxes.forEach(function (b) { b.checked = false; }); refresh(); });
+            })();
+        </script>
+    @endif
 
     <div class="mt-6">{{ $threads->links() }}</div>
 @endsection

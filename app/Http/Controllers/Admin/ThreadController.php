@@ -8,6 +8,7 @@ use App\Models\Forum;
 use App\Models\Thread;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -87,5 +88,38 @@ class ThreadController extends Controller
         $forum->decrement('posts_count', $postsRemoved);
 
         return back()->with('flash.success', 'Thread deleted.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['integer', 'exists:threads,id'],
+        ]);
+
+        $threads = Thread::whereIn('id', $data['ids'])
+            ->get(['id', 'title', 'forum_id', 'posts_count']);
+
+        AdminActivity::record('thread.bulk-delete', null, count($threads).' threads',
+            ['ids' => $threads->pluck('id')->all(), 'titles' => $threads->pluck('title')->all()]);
+
+        DB::transaction(function () use ($threads) {
+            $perForum = $threads->groupBy('forum_id')->map(fn ($group) => [
+                'threads' => $group->count(),
+                'posts' => (int) $group->sum('posts_count'),
+            ]);
+
+            Thread::whereIn('id', $threads->pluck('id'))->delete();
+
+            foreach ($perForum as $forumId => $counts) {
+                Forum::where('id', $forumId)->update([
+                    'threads_count' => DB::raw('GREATEST(threads_count - '.$counts['threads'].', 0)'),
+                    'posts_count' => DB::raw('GREATEST(posts_count - '.$counts['posts'].', 0)'),
+                ]);
+            }
+        });
+
+        $n = $threads->count();
+        return back()->with('flash.success', "Deleted {$n} thread".($n === 1 ? '' : 's').'.');
     }
 }
