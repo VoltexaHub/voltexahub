@@ -101,6 +101,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('forums', Admin\ForumController::class)->except(['show']);
     Route::resource('threads', Admin\ThreadController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('polls', Admin\PollController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::get('posts', [Admin\PostController::class, 'index'])->name('posts.index');
+    Route::delete('posts/bulk', [Admin\PostController::class, 'bulkDestroy'])->name('posts.bulk-destroy');
+    Route::delete('posts/{post}', [Admin\PostController::class, 'destroy'])->name('posts.destroy');
+    Route::get('activity', [Admin\ActivityController::class, 'index'])->name('activity.index');
     Route::resource('users', Admin\UserController::class)->only(['index', 'update', 'destroy']);
 
     Route::get('plugins', [Admin\PluginController::class, 'index'])->name('plugins.index');

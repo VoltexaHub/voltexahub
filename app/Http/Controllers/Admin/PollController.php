@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivity;
 use App\Models\Poll;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,11 +84,14 @@ class PollController extends Controller
             });
         });
 
+        AdminActivity::record('poll.update', $poll, $poll->question);
+
         return back()->with('flash.success', 'Poll updated.');
     }
 
     public function destroy(Poll $poll): RedirectResponse
     {
+        AdminActivity::record('poll.delete', $poll, $poll->question);
         $poll->delete();
 
         return back()->with('flash.success', 'Poll deleted.');

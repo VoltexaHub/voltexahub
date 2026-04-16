@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivity;
 use App\Models\Forum;
 use App\Models\Thread;
 use Illuminate\Http\RedirectResponse;
@@ -80,6 +81,7 @@ class ThreadController extends Controller
 
     public function destroy(Thread $thread): RedirectResponse
     {
+        AdminActivity::record('thread.delete', $thread, $thread->title);
         $forum = $thread->forum;
         $thread->delete();
 

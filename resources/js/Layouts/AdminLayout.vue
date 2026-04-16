@@ -12,9 +12,11 @@ const nav = [
     { label: 'Forums',     route: 'admin.forums.index' },
     { label: 'Threads',    route: 'admin.threads.index' },
     { label: 'Polls',      route: 'admin.polls.index' },
+    { label: 'Posts',      route: 'admin.posts.index' },
     { label: 'Reports',    route: 'admin.reports.index', badgeKey: 'pending_reports' },
     { label: 'Users',      route: 'admin.users.index' },
     { label: 'Plugins',    route: 'admin.plugins.index' },
+    { label: 'Activity',   route: 'admin.activity.index' },
     { label: 'Settings',   route: 'admin.settings.index' },
 ];
 
