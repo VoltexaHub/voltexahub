@@ -24,7 +24,9 @@ class Thread extends Model
     protected static function booted(): void
     {
         static::creating(function (Thread $thread) {
-            $thread->slug = Str::slug($thread->title) . '-' . Str::random(6);
+            if (empty($thread->slug)) {
+                $thread->slug = Str::slug($thread->title) . '-' . Str::random(6);
+            }
         });
     }
 

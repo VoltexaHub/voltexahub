@@ -14,8 +14,8 @@ class Setting extends Model
     public static function get(string $key, mixed $default = null): mixed
     {
         return Cache::rememberForever("setting:{$key}", fn() =>
-            static::where('key', $key)->value('value') ?? $default
-        );
+            static::where('key', $key)->value('value')
+        ) ?? $default;
     }
 
     public static function set(string $key, mixed $value): void
