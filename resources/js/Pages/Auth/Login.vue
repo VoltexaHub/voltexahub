@@ -36,6 +36,7 @@ function submit() { form.post(route('login')) }
           <input v-model="form.password" type="password" required
                  class="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 ring-purple-500"
                  style="background:var(--surface);border:1px solid var(--border);color:var(--text)" />
+          <p v-if="form.errors.password" class="text-red-400 text-xs mt-1">{{ form.errors.password }}</p>
         </div>
         <div ref="turnstileWidget"></div>
         <p v-if="form.errors._turnstile" class="text-red-400 text-xs">{{ form.errors._turnstile }}</p>

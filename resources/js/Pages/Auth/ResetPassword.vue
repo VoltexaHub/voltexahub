@@ -31,6 +31,7 @@ function submit() { form.post(route('password.update')) }
           <input v-model="form.password_confirmation" type="password" required
                  class="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 ring-purple-500"
                  style="background:var(--surface);border:1px solid var(--border);color:var(--text)" />
+          <p v-if="form.errors.password_confirmation" class="text-red-400 text-xs mt-1">{{ form.errors.password_confirmation }}</p>
         </div>
         <button type="submit" :disabled="form.processing"
                 class="w-full py-2 rounded-lg text-white font-medium text-sm"

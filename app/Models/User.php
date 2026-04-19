@@ -7,10 +7,11 @@ use App\Forum\Models\Post as ForumPost;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -27,7 +28,6 @@ class User extends Authenticatable
         'last_seen_at' => 'datetime',
         'banned_at' => 'datetime',
         'is_trusted' => 'boolean',
-        'password' => 'hashed',
     ];
 
     public function group(): BelongsTo { return $this->belongsTo(Group::class); }

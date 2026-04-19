@@ -3,6 +3,7 @@ namespace App\Auth\Controllers;
 
 use App\Auth\Services\TurnstileService;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +27,7 @@ class RegisterController
 
         $data = $request->validate([
             'username' => ['required', 'string', 'min:3', 'max:30', 'unique:users', 'regex:/^[a-zA-Z0-9_-]+$/'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users', 'lowercase'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -38,6 +39,7 @@ class RegisterController
         ]);
 
         Auth::login($user);
+        event(new Registered($user));
         $request->session()->regenerate();
 
         return redirect()->route('forum.index');
