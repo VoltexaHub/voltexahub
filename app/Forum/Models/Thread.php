@@ -23,6 +23,8 @@ class Thread extends Model
 
     protected static function booted(): void
     {
+        static::addGlobalScope('active', fn($q) => $q->where('is_deleted', false));
+
         static::creating(function (Thread $thread) {
             if (empty($thread->slug)) {
                 $thread->slug = Str::slug($thread->title) . '-' . Str::random(6);

@@ -12,6 +12,7 @@ class ForumIndexController
         $categories = Category::with([
             'forums' => fn($q) => $q->orderBy('display_order'),
             'forums.lastPost.user',
+            'forums.lastPost.thread',
         ])->orderBy('display_order')->get();
 
         return Inertia::render('Forum/Index', [

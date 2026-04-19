@@ -20,6 +20,11 @@ class Post extends Model
         return PostFactory::new();
     }
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope('active', fn($q) => $q->where('is_deleted', false));
+    }
+
     public function thread(): BelongsTo { return $this->belongsTo(Thread::class); }
     public function user(): BelongsTo { return $this->belongsTo(\App\Models\User::class); }
     public function reactions(): HasMany { return $this->hasMany(PostReaction::class); }
