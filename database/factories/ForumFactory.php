@@ -23,6 +23,7 @@ class ForumFactory extends Factory
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
             'display_order' => 0,
+            'icon' => null,
         ];
     }
 }
