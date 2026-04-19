@@ -15,10 +15,10 @@ const auth = computed(() => page.props.auth)
     </Link>
 
     <div class="flex items-center gap-5 text-sm ml-2" style="color:var(--text-muted)">
-      <Link :href="route('forum.index')" class="hover:text-white transition-colors">Forums</Link>
-      <Link :href="route('members.index')" class="hover:text-white transition-colors">Members</Link>
-      <Link :href="route('staff')" class="hover:text-white transition-colors">Staff</Link>
-      <Link :href="route('groups.index')" class="hover:text-white transition-colors">Groups</Link>
+      <Link :href="route('forum.index')" class="transition-colors hover:opacity-100" style="color:var(--text-muted)" @mouseenter="$event.target.style.color='var(--text)'" @mouseleave="$event.target.style.color='var(--text-muted)'">Forums</Link>
+      <Link :href="route('members.index')" class="transition-colors" style="color:var(--text-muted)" @mouseenter="$event.target.style.color='var(--text)'" @mouseleave="$event.target.style.color='var(--text-muted)'">Members</Link>
+      <Link :href="route('staff')" class="transition-colors" style="color:var(--text-muted)" @mouseenter="$event.target.style.color='var(--text)'" @mouseleave="$event.target.style.color='var(--text-muted)'">Staff</Link>
+      <Link :href="route('groups.index')" class="transition-colors" style="color:var(--text-muted)" @mouseenter="$event.target.style.color='var(--text)'" @mouseleave="$event.target.style.color='var(--text-muted)'">Groups</Link>
     </div>
 
     <div class="ml-auto flex items-center gap-2">
