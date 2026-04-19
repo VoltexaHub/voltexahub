@@ -14,7 +14,7 @@ const auth = computed(() => usePage().props.auth)
       <div>
         <div class="text-xs mb-1" style="color:var(--text-faint)">
           <Link :href="route('forum.index')" class="hover:underline" style="color:var(--accent)">Forums</Link>
-          → {{ forum.category?.name }}
+          → {{ forum.category?.name }} → {{ forum.name }}
         </div>
         <h1 class="text-xl font-bold" style="color:var(--text)">{{ forum.name }}</h1>
       </div>
