@@ -1,0 +1,89 @@
+<h2>Thread view — how should posts look?</h2>
+<p class="subtitle">The layout of a thread page with replies</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;border-radius:6px;padding:12px;font-family:system-ui;font-size:11px">
+      <!-- Thread title -->
+      <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:10px">⚡ Best way to harden an Ubuntu 24 VPS?</div>
+      <!-- Post 1 -->
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div style="flex-shrink:0;text-align:center;width:60px">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;margin:0 auto 4px"></div>
+          <div style="color:#a78bfa;font-size:9px;font-weight:700">joogiebear</div>
+          <div style="color:#475569;font-size:8px">Admin</div>
+          <div style="color:#475569;font-size:8px;margin-top:2px">Posts: 412</div>
+          <div style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;padding:1px 4px;border-radius:8px;font-size:7px;margin-top:3px">⭐ 1,200cr</div>
+        </div>
+        <div style="flex:1;background:#16213e;border-radius:6px;padding:10px">
+          <div style="color:#e2e8f0;font-size:11px;line-height:1.5;margin-bottom:8px">Start with <code style="background:#0f172a;color:#a78bfa;padding:1px 4px;border-radius:3px">ufw</code>, disable root SSH, use key auth only. Then look at fail2ban...</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="color:#475569;font-size:9px">Jan 15 · 2:34pm</span>
+            <span style="color:#475569;font-size:9px">·</span>
+            <span style="color:#64748b;font-size:9px">👍 12</span>
+            <span style="margin-left:auto;color:#475569;font-size:9px">Quote · Report</span>
+          </div>
+        </div>
+      </div>
+      <!-- Post 2 -->
+      <div style="display:flex;gap:10px">
+        <div style="flex-shrink:0;text-align:center;width:60px">
+          <div style="width:36px;height:36px;background:#334155;border-radius:50%;margin:0 auto 4px"></div>
+          <div style="color:#94a3b8;font-size:9px;font-weight:700">devuser</div>
+          <div style="color:#475569;font-size:8px">Member</div>
+          <div style="color:#475569;font-size:8px;margin-top:2px">Posts: 87</div>
+        </div>
+        <div style="flex:1;background:#16213e;border-radius:6px;padding:10px">
+          <div style="color:#e2e8f0;font-size:11px;line-height:1.5;margin-bottom:8px">Also consider CrowdSec as a modern fail2ban alternative — community threat intel built in.</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="color:#475569;font-size:9px">Jan 15 · 3:01pm</span>
+            <span style="color:#475569;font-size:9px">·</span>
+            <span style="color:#64748b;font-size:9px">👍 5</span>
+            <span style="margin-left:auto;color:#475569;font-size:9px">Quote · Report</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Classic Forum (Avatar Left)</h3>
+      <p>User info column on the left, post content on the right. Exactly how MyBB/Xenforo look. Familiar, shows user stats and rank at a glance. My recommendation.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;border-radius:6px;padding:12px;font-family:system-ui;font-size:11px">
+      <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:10px">⚡ Best way to harden an Ubuntu 24 VPS?</div>
+      <!-- Post 1 -->
+      <div style="background:#16213e;border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:24px;height:24px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%"></div>
+          <span style="color:#a78bfa;font-size:10px;font-weight:700">joogiebear</span>
+          <span style="background:#7c3aed;color:white;padding:1px 5px;border-radius:8px;font-size:8px">Admin</span>
+          <span style="color:#475569;font-size:9px;margin-left:auto">Jan 15 · 2:34pm</span>
+        </div>
+        <div style="color:#e2e8f0;font-size:11px;line-height:1.5;margin-bottom:8px">Start with <code style="background:#0f172a;color:#a78bfa;padding:1px 4px;border-radius:3px">ufw</code>, disable root SSH, use key auth only. Then look at fail2ban...</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="color:#64748b;font-size:9px">👍 12</span>
+          <span style="color:#475569;font-size:9px">Quote</span>
+          <span style="color:#475569;font-size:9px">Report</span>
+        </div>
+      </div>
+      <!-- Post 2 -->
+      <div style="background:#16213e;border-radius:6px;padding:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:24px;height:24px;background:#334155;border-radius:50%"></div>
+          <span style="color:#94a3b8;font-size:10px;font-weight:700">devuser</span>
+          <span style="background:#334155;color:#94a3b8;padding:1px 5px;border-radius:8px;font-size:8px">Member</span>
+          <span style="color:#475569;font-size:9px;margin-left:auto">Jan 15 · 3:01pm</span>
+        </div>
+        <div style="color:#e2e8f0;font-size:11px;line-height:1.5">Also consider CrowdSec as a modern fail2ban alternative — community threat intel built in.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Modern Compact (Header Row)</h3>
+      <p>Avatar + username in a row above the post content. More vertical-efficient. Feels like a modern discussion board (GitHub issues, Linear). Less "forum", more "app".</p>
+    </div>
+  </div>
+
+</div>

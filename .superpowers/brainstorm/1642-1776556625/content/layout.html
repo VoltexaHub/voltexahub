@@ -1,0 +1,116 @@
+<h2>Overall page layout — how should navigation work?</h2>
+<p class="subtitle">How the forum is structured on every page</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;border-radius:6px;overflow:hidden;font-family:system-ui;font-size:11px">
+      <!-- Top nav -->
+      <div style="background:#16213e;padding:8px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2d3a5e">
+        <div style="width:18px;height:18px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:4px"></div>
+        <span style="color:#f1f5f9;font-weight:700;font-size:11px;letter-spacing:0.5px">VOLTEXAHUB</span>
+        <div style="margin-left:auto;display:flex;gap:12px">
+          <span style="color:#94a3b8">Forums</span>
+          <span style="color:#94a3b8">Members</span>
+          <span style="color:#94a3b8">Staff</span>
+          <span style="color:#94a3b8">Groups</span>
+        </div>
+        <div style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;padding:3px 8px;border-radius:4px;font-size:10px">Login</div>
+      </div>
+      <!-- Page content -->
+      <div style="padding:10px 12px">
+        <!-- Category -->
+        <div style="color:#a78bfa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Development</div>
+        <div style="background:#16213e;border-left:2px solid #7c3aed;padding:8px 10px;margin-bottom:4px;border-radius:0 4px 4px 0">
+          <div style="color:#e2e8f0;font-weight:500">Web Development</div>
+          <div style="color:#475569;font-size:9px;margin-top:2px">HTML, CSS, JS, frameworks</div>
+        </div>
+        <div style="background:#16213e;border-left:2px solid #2563eb;padding:8px 10px;margin-bottom:8px;border-radius:0 4px 4px 0">
+          <div style="color:#e2e8f0;font-weight:500">Server Admin</div>
+          <div style="color:#475569;font-size:9px;margin-top:2px">Linux, Nginx, Docker</div>
+        </div>
+        <div style="color:#a78bfa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">General</div>
+        <div style="background:#16213e;border-left:2px solid #3b82f6;padding:8px 10px;border-radius:0 4px 4px 0">
+          <div style="color:#e2e8f0;font-weight:500">Introductions</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Top Nav + Full Width</h3>
+      <p>Classic forum layout. Navigation across the top, full-width content below. Clean and familiar — how MyBB/Xenforo work. Best use of horizontal space.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;border-radius:6px;overflow:hidden;font-family:system-ui;font-size:11px;display:flex;flex-direction:column">
+      <!-- Top nav -->
+      <div style="background:#16213e;padding:8px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2d3a5e">
+        <div style="width:18px;height:18px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:4px"></div>
+        <span style="color:#f1f5f9;font-weight:700;font-size:11px">VOLTEXAHUB</span>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <span style="color:#94a3b8">🔔</span>
+          <span style="color:#94a3b8">✉️</span>
+          <div style="width:20px;height:20px;background:#7c3aed;border-radius:50%"></div>
+        </div>
+      </div>
+      <!-- Body with sidebar -->
+      <div style="display:flex;flex:1">
+        <!-- Sidebar -->
+        <div style="width:80px;background:#12122a;padding:8px;border-right:1px solid #2d3a5e;flex-shrink:0">
+          <div style="color:#7c3aed;font-size:9px;font-weight:700;margin-bottom:6px">NAV</div>
+          <div style="color:#94a3b8;font-size:9px;margin-bottom:4px">🏠 Home</div>
+          <div style="color:#e2e8f0;font-size:9px;margin-bottom:4px;background:#1e1e3f;padding:2px 4px;border-radius:3px">📋 Forums</div>
+          <div style="color:#94a3b8;font-size:9px;margin-bottom:4px">👥 Members</div>
+          <div style="color:#94a3b8;font-size:9px;margin-bottom:4px">🏆 Awards</div>
+          <div style="color:#94a3b8;font-size:9px">⚙️ Admin</div>
+        </div>
+        <!-- Content -->
+        <div style="padding:8px;flex:1">
+          <div style="color:#a78bfa;font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:4px">Development</div>
+          <div style="background:#16213e;padding:6px 8px;margin-bottom:3px;border-radius:4px">
+            <div style="color:#e2e8f0;font-size:10px">Web Development</div>
+          </div>
+          <div style="background:#16213e;padding:6px 8px;border-radius:4px">
+            <div style="color:#e2e8f0;font-size:10px">Server Admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Top Nav + Left Sidebar</h3>
+      <p>Persistent sidebar for quick navigation. More like a modern app (Discord/Notion feel). Takes horizontal space but always-accessible nav. Works great on large screens.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1a1a2e;border-radius:6px;overflow:hidden;font-family:system-ui;font-size:11px">
+      <!-- Top nav with centered content -->
+      <div style="background:#16213e;padding:8px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2d3a5e">
+        <div style="width:18px;height:18px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:4px"></div>
+        <span style="color:#f1f5f9;font-weight:700;font-size:11px;letter-spacing:0.5px">VOLTEXAHUB</span>
+        <div style="margin-left:auto;display:flex;gap:12px">
+          <span style="color:#94a3b8">Forums</span>
+          <span style="color:#94a3b8">Members</span>
+          <span style="color:#94a3b8">Staff</span>
+        </div>
+      </div>
+      <!-- Centered constrained content -->
+      <div style="padding:10px;max-width:320px;margin:0 auto">
+        <div style="color:#a78bfa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Development</div>
+        <div style="background:#16213e;border-radius:6px;padding:8px 10px;margin-bottom:4px;box-shadow:0 1px 3px rgba(0,0,0,0.3)">
+          <div style="color:#e2e8f0;font-weight:500">Web Development</div>
+          <div style="color:#475569;font-size:9px;margin-top:2px">32 threads · 189 posts</div>
+        </div>
+        <div style="background:#16213e;border-radius:6px;padding:8px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.3)">
+          <div style="color:#e2e8f0;font-weight:500">Server Admin</div>
+          <div style="color:#475569;font-size:9px;margin-top:2px">18 threads · 94 posts</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Top Nav + Centered Container</h3>
+      <p>Content constrained to a max-width centered column (like Reddit/modern sites). More readable on wide monitors. Cleaner but wastes side space.</p>
+    </div>
+  </div>
+
+</div>

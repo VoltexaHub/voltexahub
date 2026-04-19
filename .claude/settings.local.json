@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git -C /s/Claude/VoltexaHub add docs/superpowers/plans/2026-04-18-phase1-foundation.md)",
+      "Bash(git -C /s/Claude/VoltexaHub commit -m \"docs: Phase 1 foundation implementation plan \\(16 tasks\\)\")",
+      "Bash(git check-ignore *)",
+      "Bash(git -C /s/Claude/VoltexaHub add .gitignore)",
+      "Bash(git -C /s/Claude/VoltexaHub commit -m \"chore: ignore .worktrees directory\")",
+      "Bash(git -C /s/Claude/VoltexaHub worktree add .worktrees/phase1-foundation -b feature/phase1-foundation)",
+      "Bash(php --version)",
+      "Bash(composer --version)",
+      "Bash(npm --version)",
+      "Bash(git commit *)"
+    ]
+  }
+}
