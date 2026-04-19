@@ -21,6 +21,7 @@ class PostController
 
         $thread->increment('reply_count');
         $thread->update(['last_post_id' => $post->id]);
+        $thread->loadMissing('forum');
         $thread->forum->increment('post_count');
         $thread->forum->update(['last_post_id' => $post->id]);
         $request->user()->increment('post_count');

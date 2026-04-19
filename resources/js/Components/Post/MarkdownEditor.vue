@@ -1,19 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { marked } from 'marked'
-import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
-
-marked.use({
-    renderer: {
-        code(token) {
-            const lang = token.lang || 'plaintext'
-            const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-            const highlighted = hljs.highlight(token.text, { language }).value
-            return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`
-        }
-    }
-})
+import { renderMarkdown } from '@/lib/markdown.js'
 
 const props = defineProps({
     modelValue: String,
@@ -22,7 +10,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const tab = ref('write')
-const preview = computed(() => marked.parse(props.modelValue || ''))
+const preview = computed(() => renderMarkdown(props.modelValue || ''))
 
 function insert(before, after = '') {
     const ta = document.getElementById('md-editor')

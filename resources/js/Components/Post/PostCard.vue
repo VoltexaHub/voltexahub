@@ -2,25 +2,13 @@
 import { ref, computed } from 'vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import MarkdownEditor from './MarkdownEditor.vue'
-import { marked } from 'marked'
-import hljs from 'highlight.js'
-
-marked.use({
-    renderer: {
-        code(token) {
-            const lang = token.lang || 'plaintext'
-            const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-            const highlighted = hljs.highlight(token.text, { language }).value
-            return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`
-        }
-    }
-})
+import { renderMarkdown } from '@/lib/markdown.js'
 
 const props = defineProps({ post: Object, isFirst: Boolean })
 const auth = computed(() => usePage().props.auth)
 const editing = ref(false)
 const editForm = useForm({ body: props.post.body })
-const renderedBody = computed(() => marked.parse(props.post.body || ''))
+const renderedBody = computed(() => renderMarkdown(props.post.body || ''))
 
 function saveEdit() {
     editForm.put(route('post.update', props.post.id), {
