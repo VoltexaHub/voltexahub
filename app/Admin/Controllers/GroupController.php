@@ -23,11 +23,18 @@ class GroupController
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:50'],
-            'color'       => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'icon'        => ['nullable', 'string', 'max:10'],
-            'is_staff'    => ['boolean'],
-            'permissions' => ['required', 'array'],
+            'name'                          => ['required', 'string', 'max:50'],
+            'color'                         => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'icon'                          => ['nullable', 'string', 'max:10'],
+            'is_staff'                      => ['boolean'],
+            'permissions'                   => ['required', 'array'],
+            'permissions.can_post'          => ['boolean'],
+            'permissions.can_create_thread' => ['boolean'],
+            'permissions.can_upload_avatar' => ['boolean'],
+            'permissions.can_use_signature' => ['boolean'],
+            'permissions.can_react'         => ['boolean'],
+            'permissions.is_moderator'      => ['boolean'],
+            'permissions.is_admin'          => ['boolean'],
         ]);
         Group::create($data + ['display_order' => (Group::max('display_order') ?? 0) + 1]);
         return back()->with('success', 'Group created.');
@@ -41,11 +48,18 @@ class GroupController
     public function update(Request $request, Group $group)
     {
         $data = $request->validate([
-            'name'        => ['required', 'string', 'max:50'],
-            'color'       => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'icon'        => ['nullable', 'string', 'max:10'],
-            'is_staff'    => ['boolean'],
-            'permissions' => ['required', 'array'],
+            'name'                          => ['required', 'string', 'max:50'],
+            'color'                         => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'icon'                          => ['nullable', 'string', 'max:10'],
+            'is_staff'                      => ['boolean'],
+            'permissions'                   => ['required', 'array'],
+            'permissions.can_post'          => ['boolean'],
+            'permissions.can_create_thread' => ['boolean'],
+            'permissions.can_upload_avatar' => ['boolean'],
+            'permissions.can_use_signature' => ['boolean'],
+            'permissions.can_react'         => ['boolean'],
+            'permissions.is_moderator'      => ['boolean'],
+            'permissions.is_admin'          => ['boolean'],
         ]);
         $group->update($data);
         return back()->with('success', 'Group updated.');

@@ -37,6 +37,7 @@ function updateGroup(user, groupId) {
           <tr>
             <th class="text-left px-4 py-3 text-xs font-semibold" style="color:var(--text-muted)">User</th>
             <th class="text-left px-4 py-3 text-xs font-semibold" style="color:var(--text-muted)">Group</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold" style="color:var(--text-muted)">Trusted</th>
             <th class="text-left px-4 py-3 text-xs font-semibold" style="color:var(--text-muted)">Status</th>
             <th class="px-4 py-3"></th>
           </tr>
@@ -58,9 +59,13 @@ function updateGroup(user, groupId) {
               </select>
             </td>
             <td class="px-4 py-3">
+              <input type="checkbox" :checked="user.is_trusted"
+                     @change="useForm({ is_trusted: $event.target.checked }).put(route('admin.users.update', user.id))" />
+            </td>
+            <td class="px-4 py-3">
               <span v-if="user.banned_at"
                     class="text-xs px-2 py-0.5 rounded"
-                    style="background:#ef4444;color:white">Banned</span>
+                    style="background:var(--danger);color:white">Banned</span>
               <span v-else class="text-xs" style="color:var(--text-faint)">Active</span>
             </td>
             <td class="px-4 py-3 text-right">

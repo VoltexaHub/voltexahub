@@ -17,7 +17,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('forums', ForumController::class)->except(['show', 'create', 'edit']);
     Route::resource('threads', ThreadController::class)->only(['index', 'destroy']);
     Route::resource('posts', PostController::class)->only(['index', 'update', 'destroy']);
-    Route::resource('users', UserController::class)->except(['create', 'store']);
+    Route::resource('users', UserController::class)->except(['create', 'store', 'show', 'edit']);
     Route::post('users/{user}/ban', [UserController::class, 'ban'])->name('users.ban');
     Route::post('users/{user}/unban', [UserController::class, 'unban'])->name('users.unban');
     Route::resource('groups', GroupController::class)->except(['show']);

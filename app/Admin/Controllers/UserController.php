@@ -25,15 +25,6 @@ class UserController
         ]);
     }
 
-    public function edit(User $user)
-    {
-        return Inertia::render('Admin/Users/Index', [
-            'users'   => User::with('group')->latest()->paginate(30)->withQueryString(),
-            'groups'  => Group::orderBy('display_order')->get(),
-            'filters' => [],
-        ]);
-    }
-
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
